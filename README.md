@@ -1,2 +1,2 @@
 HTTPServerをJavaで書いて見る
-https://circleci.com/gh/asada0701/MyWebServer
+[![CircleCI](https://circleci.com/gh/asada0701/MyWebServer.svg?style=svg)](https://circleci.com/gh/asada0701/MyWebServer)
