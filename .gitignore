@@ -1,0 +1,4 @@
+#.gradleは要らない子
+/.gradle/
+#.ideaは要らない子
+/.idea/
