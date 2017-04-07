@@ -2,3 +2,5 @@
 /.gradle/
 #.ideaは要らない子
 /.idea/
+#buildは要らない子
+/build/
