@@ -1,5 +1,6 @@
 package jp.co.topgate.asada.web;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 
@@ -14,25 +15,29 @@ public class RequestMessage {
     HashMap<String, String> headerFielduri = null;
     HashMap<String, String> messageBodyuri = null;
 
-    public void prarse(InputStream requestMessage){
+    public void parse(InputStream requestMessage) throws IOException{
         System.out.println("パースをします");
+        System.out.println(requestMessage.read());
+        headerFielduri.put("例えば","こんな感じ");
     }
     public String getMethod() {
-        return null;
+        return method;
     }
     public String getUri() {
-        return null;
+        return uri;
     }
     public String findUriQuery(String name) {
-        return null;
+        return uriQuery;
     }
     public String getProtocolVersion(String name) {
-        return null;
+        return protocolVersion;
     }
     public String findHeaderByName(String fieldName) {
-        return null;
+        String result = headerFielduri.get(fieldName);
+        return result;
     }
     public String findMessageBody(String key) {
-        return null;
+        String result = messageBodyuri.get(key);
+        return result;
     }
 }
