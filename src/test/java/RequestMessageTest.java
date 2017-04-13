@@ -11,15 +11,15 @@ import static org.junit.Assert.assertThat;
  * Created by yusuke-pc on 2017/04/13.
  */
 public class RequestMessageTest {
-    @Test
-    public void リクエストメッセージクラスのテスト() {
-        RequestMessage rm = new RequestMessage();
-        InputStream is = null;
-        try {
-            rm.parse(is);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        assertThat(null, is(rm.getMethod()));
-    }
+//    @Test
+//    public void リクエストメッセージクラスのテスト() {
+//        RequestMessage rm = new RequestMessage();
+//        InputStream is = null;
+//        try {
+//            rm.parse(is);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+//        assertThat(null, is(rm.getMethod()));
+//    }
 }
