@@ -1,5 +1,6 @@
 package jp.co.topgate.asada.web;
 
+import java.io.IOException;
 import java.util.Scanner;
 
 /*
@@ -9,6 +10,7 @@ public class App {
 
     public static void main(String[] args) {
         String choices;
+        Server server = new Server();
         Scanner scan = new Scanner(System.in);
         do{
             System.out.println("--------------------");
@@ -20,16 +22,44 @@ public class App {
                 System.out.print("1,2,3,4のいずれかの数字を入力してください:");
                 choices = scan.next();
             }while(!(choices.equals("1") || choices.equals("2") || choices.equals("3") || choices.equals("4")));
+            boolean isServerStart = server.isSeverStart();
             switch(choices){
                 case "1":
+                    try {
+                        if(isServerStart == true){
+                            System.out.println("すでにサーバーは立ち上がっています");
+                        }else{
+                            server.serverStart();
+                            System.out.println("サーバーを立ち上げました");
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     break;
                 case "2":
+                    try {
+                        if(isServerStart == false){
+                            System.out.println("サーバーが立ち上がっていないので停止できませんでした");
+                        }else{
+                            server.serverStop();
+                            System.out.println("サーバーを停止しました");
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     break;
                 case "3":
+                    try{
+                        server.serverRestart();
+                        System.out.println("サーバーを立ち上げました");
+                    }catch (IOException e) {
+                        e.printStackTrace();
+                    }
                     break;
                 case "4":
                     break;
                 default:
+                    System.out.println("入力エラーが発生いたしました。¥nもう一度入力してください。");
                     break;
             }
         }while(!choices.equals("4"));

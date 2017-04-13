@@ -12,15 +12,28 @@ public class Server extends Thread{
     public static final int portNumber = 80;
     private ServerSocket serverSocket = null;
     private Socket socket = null;
+    private boolean isSeverStart = false;       //serverが動いているとtrueである
 
     public void serverStart() throws IOException{
-        serverSocket = new ServerSocket(portNumber);
+//        if(serverSocket == null){
+//            serverSocket = new ServerSocket(portNumber);
+//            isSeverStart = true;
+//        }
+        isSeverStart = true;
     }
     public void serverStop() throws IOException{
-        serverSocket.close();
+//        if(serverSocket != null && !socket.isClosed()){
+//            serverSocket.close();
+//            isSeverStart = false;
+//        }
+        isSeverStart = false;
     }
     public void serverRestart() throws IOException{
+        isSeverStart = true;
+    }
 
+    public boolean isSeverStart() {
+        return isSeverStart;
     }
 
     public void run() {
