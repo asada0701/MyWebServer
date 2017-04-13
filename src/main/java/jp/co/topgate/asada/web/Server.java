@@ -24,9 +24,9 @@ public class Server extends Thread{
     }
 
     public void run() {
-        socket = serverSocket.accept();
-        System.out.println("リクエストを受けられる状態になりました。");
         try{
+            socket = serverSocket.accept();
+            System.out.println("リクエストを受けられる状態になりました。");
             InputStream is = socket.getInputStream();
         }catch(IOException e){
             e.printStackTrace();
