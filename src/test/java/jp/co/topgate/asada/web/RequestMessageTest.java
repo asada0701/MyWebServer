@@ -1,14 +1,14 @@
-import jp.co.topgate.asada.web.RequestMessage;
+package jp.co.topgate.asada.web;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Created by yusuke-pc on 2017/04/13.
@@ -22,17 +22,18 @@ public class RequestMessageTest {
         assertNull(rm.getUri());
         assertNull(rm.getProtocolVersion());
 
-        File file = new File("./src/test/java/requestMessage.txt");
+        File file = new File("./src/test/java/jp/co/topgate/asada/web/requestMessage.txt");
         InputStream is = new FileInputStream(file);
-        try {
-            rm.parse(is);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+
+        assertTrue("リクエストメッセージのエラーです", rm.parse(is));
+
+        //以降のテストはparseメソッド前提である
 
         assertThat("GET", is(rm.getMethod()));
-        assertThat("/",is(rm.getUri()));
+        assertThat("/index.html",is(rm.getUri()));
         assertThat("HTTP/1.1",is(rm.getProtocolVersion()));
         assertThat("www.xxx.zzz",is(rm.findHeaderByName("Host")));
+        assertThat("asada",is(rm.findUriQuery("name")));
+        assertThat("cat",is(rm.findUriQuery("like")));
     }
 }
