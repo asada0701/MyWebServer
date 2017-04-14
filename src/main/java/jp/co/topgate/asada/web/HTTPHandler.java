@@ -18,7 +18,7 @@ public class HTTPHandler {
             //リクエストメッセージには問題なし
             responseMessage.getResposeMessage(os);
         }else{
-            //404対象、リクエストメッセージ関連での異常
+            //400バッドリクエスト対象、リクエストメッセージ関連での異常
         }
         return os;
     }

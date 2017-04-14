@@ -17,7 +17,7 @@ public class RequestMessage {
     public static final String HEADER_BODY_COLON = ":";     //ヘッダーボディのコロン（その後のスペースは自由のため注意）
     public static final int HEADER_BODY_LENGTH = 2;         //１つのヘッダーボディの項目数
     public static final String URI_QUESTION_MARK = "\\?";     //URIのクエリー前のクエスチョンマーク
-    public static final String URI_QUERY_ampersand = "&";   //URIのクエリー内のアンパサンド
+    public static final String URI_QUERY_AMPERSAND = "&";   //URIのクエリー内のアンパサンド
     public static final String URI_QUERY_EQUAL = "=";       //URIのクエリーの中のイコール
     public static final int URI_QUERY = 2;                  //URIのクエリーの項目数
     private String method = null;
@@ -45,7 +45,7 @@ public class RequestMessage {
                         }
                         headerFieldUri.put(header[0],header[1]);
                     }else{
-                        //404対象、ヘッダーフィールドに誤りがあった
+                        /*400バッドリクエスト対象、ヘッダーフィールドに誤りがあった*/
                         isParseOK = false;
                     }
                 }
@@ -62,13 +62,13 @@ public class RequestMessage {
                 if(s1.length > 0){
                     //クエリーがあった場合
                     for(int i = 1; i < s1.length; i++) {
-                        String[] s2 = s1[i].split(URI_QUERY_ampersand);     //s2でクエリーが複数かの判断となる
+                        String[] s2 = s1[i].split(URI_QUERY_AMPERSAND);     //s2でクエリーが複数かの判断となる
                         for(int k = 0; k < s2.length; k++){
                             String[] s3 = s2[k].split(URI_QUERY_EQUAL);     //クエリーの最小化に成功
                             if(s3.length == URI_QUERY){
                                 uriQuery.put(s3[0], s3[1]);
                             }else{
-                                //404対象、イコールが含まれないクエリーが存在してしまった
+                                /*400バッドリクエスト対象、イコールが含まれないクエリーが存在してしまった*/
                                 isParseOK = false;
                             }
                         }
@@ -76,12 +76,12 @@ public class RequestMessage {
                 }
 
             }else{
-                //404対象、リクエストラインに誤りがあった
+                /*400バッドリクエスト対象、リクエストラインに誤りがあった*/
                 isParseOK = false;
             }
         }catch(IOException e){
             e.printStackTrace();
-            //404対象、br.readLine()ができなかった
+            /*400バッドリクエスト対象、br.readLine()ができなかった*/
             isParseOK = false;
         }
 
