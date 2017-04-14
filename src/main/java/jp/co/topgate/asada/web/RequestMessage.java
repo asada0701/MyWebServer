@@ -14,12 +14,15 @@ import java.util.regex.PatternSyntaxException;
 public class RequestMessage {
     public static final String REQUEST_LINE_SPACE = " ";    //リクエストラインのスペース
     public static final int REQUEST_LINE_LENGTH = 3;        //リクエスト行の項目数
-    public static final String HEADER_BODY_COLON = ":";     //ヘッダーボディのコロン（その後のスペースは自由のため注意）
-    public static final int HEADER_BODY_LENGTH = 2;         //１つのヘッダーボディの項目数
-    public static final String URI_QUESTION_MARK = "\\?";     //URIのクエリー前のクエスチョンマーク
+    public static final String URI_QUESTION_MARK = "\\?";   //URIのクエリー前のクエスチョンマーク
     public static final String URI_QUERY_AMPERSAND = "&";   //URIのクエリー内のアンパサンド
     public static final String URI_QUERY_EQUAL = "=";       //URIのクエリーの中のイコール
-    public static final int URI_QUERY = 2;                  //URIのクエリーの項目数
+    public static final int URI_QUERY_LENGTH = 2;           //URIのクエリーの項目数
+    public static final String HEADER_FIELD_COLON = ":";    //ヘッダーフィールドのコロン（その後のスペースは自由のため注意）
+    public static final int HEADER_FIELD_LENGTH = 2;        //ヘッダーフィールドの項目数
+    public static final String MESSAGE_BODY_AMPERSAND = "&";//メッセージボディのアンパサンド
+    public static final String MESSAGE_BODY_EQUAL = "=";    //メッセージボディのイコール
+    public static final int MESSAGE_BODY_LENGTH = 2;        //メッセージボディの項目数
     private String method = null;
     private String uri = null;
     private HashMap<String, String> uriQuery = new HashMap<>();
@@ -37,40 +40,51 @@ public class RequestMessage {
                 method = requestLine[0];
                 uri = requestLine[1];
                 protocolVersion = requestLine[2];
+                boolean isMessageBody = false;
                 while((str = br.readLine()) != null){
-                    String[] header = str.split(HEADER_BODY_COLON);
-                    if(header.length == HEADER_BODY_LENGTH){    //ヘッダーフィールドを一行ずつ処理
-                        if(header[1].charAt(0) == ' '){
-                            header[1] = header[1].substring(1,header[1].length());
+                    if(str.equals("\n")){
+                        isMessageBody = true;   //リクエストメッセージが終わっておらず、空行があったためメッセージボディの処理を行う
+                    }
+                    if(!isMessageBody){
+                        //ヘッダーフィールドのパース
+                        String[] header = str.split(HEADER_FIELD_COLON);
+                        if(header.length == HEADER_FIELD_LENGTH){    //ヘッダーフィールドを一行ずつ処理
+                            if(header[1].charAt(0) == ' '){
+                                header[1] = header[1].substring(1,header[1].length());
+                            }
+                            headerFieldUri.put(header[0],header[1]);
+                        }else{
+                            /*400バッドリクエスト対象、ヘッダーフィールドにコロンが入っていない*/
+                            isParseOK = false;
                         }
-                        headerFieldUri.put(header[0],header[1]);
                     }else{
-                        /*400バッドリクエスト対象、ヘッダーフィールドに誤りがあった*/
-                        isParseOK = false;
+                        //メッセージボディのパース
+                        String[] s1 = str.split(MESSAGE_BODY_AMPERSAND);
+                        for(int i = 0; i > s1.length; i++){
+                            String[] s2 = str.split(MESSAGE_BODY_EQUAL);
+                            if(s2.length == MESSAGE_BODY_LENGTH){
+                                messageBodyUri.put(s2[0], s2[1]);
+                            }else{
+                            /*400バッドリクエスト対象、ヘッダーフィールドにコロンが入っていない*/
+                                isParseOK = false;
+                            }
+                        }
                     }
                 }
 
                 //URIのパース処理（ここはメソッドにするか悩ましいけどなんども呼ばれる訳じゃないのでメッソドにしない）
-                String[] s1 = null;
-                try{
-                    s1 = uri.split(URI_QUESTION_MARK);             //s1でクエリーがあるかの判断となる
-                }catch(PatternSyntaxException e){
-                    e.printStackTrace();
-                }
-
+                String[] s1 = uri.split(URI_QUESTION_MARK);             //s1でクエリーがあるかの判断となる
                 uri = s1[0];     //これで純粋なuriになった
                 if(s1.length > 0){
                     //クエリーがあった場合
-                    for(int i = 1; i < s1.length; i++) {
-                        String[] s2 = s1[i].split(URI_QUERY_AMPERSAND);     //s2でクエリーが複数かの判断となる
-                        for(int k = 0; k < s2.length; k++){
-                            String[] s3 = s2[k].split(URI_QUERY_EQUAL);     //クエリーの最小化に成功
-                            if(s3.length == URI_QUERY){
-                                uriQuery.put(s3[0], s3[1]);
-                            }else{
-                                /*400バッドリクエスト対象、イコールが含まれないクエリーが存在してしまった*/
-                                isParseOK = false;
-                            }
+                    String[] s2 = s1[1].split(URI_QUERY_AMPERSAND);     //s2でクエリーが複数かの判断となる
+                    for(int k = 0; k < s2.length; k++){
+                        String[] s3 = s2[k].split(URI_QUERY_EQUAL);     //クエリーの最小化に成功
+                        if(s3.length == URI_QUERY_LENGTH){
+                            uriQuery.put(s3[0], s3[1]);
+                        }else{
+                            /*400バッドリクエスト対象、イコールが含まれないクエリーが存在してしまった*/
+                            isParseOK = false;
                         }
                     }
                 }

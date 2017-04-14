@@ -31,21 +31,34 @@ public class ResponseMessage {
         headerField.add(name + HEADER_FIELD_COLON +  value);
     }
 
-    public void setMessageBody(String uri){
+    public boolean setMessageBody(String uri){
         //文字ストリームなのかバイトストリームなのかを特定しても結局使うのはバイトストリームじゃん！！
         messageBody = new File(FILE_PATH + uri);
+        return false;
     }
 
     public OutputStream getResposeMessage(OutputStream os){
+        DataOutputStream dos = new DataOutputStream(os);
         try{
-            DataOutputStream dos = new DataOutputStream(os);
             dos.writeBytes(protocolVersion);
             dos.writeBytes(" ");
             dos.writeBytes(statusCode);
             dos.writeBytes(" ");
             dos.writeBytes(reasonPhrase);
+            dos.writeChar('\n');        //レスポンスラインの改行
+            for(String s : headerField) {
+                dos.writeBytes(s);
+                dos.writeChar('\n');    //ヘッダーフィールドの改行でもありメッセージボディ前の空行でもある
+            }
+            dos.flush();
         }catch(IOException e){
             e.printStackTrace();
+        }finally {
+            try {
+                dos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
         return os;
     }
