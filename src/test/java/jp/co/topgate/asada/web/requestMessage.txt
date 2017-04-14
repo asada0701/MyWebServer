@@ -1,4 +1,4 @@
-GET / HTTP/1.1
+GET /index.html?name=asada&like=cat HTTP/1.1
 Accept: image/gif, image/jpeg, */*
 Accept-Language: ja
 Accept-Encoding: gzip, deflate
