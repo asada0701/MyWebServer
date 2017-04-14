@@ -41,15 +41,11 @@ public class Server extends Thread{
             try{
                 socket = serverSocket.accept();
                 //レスポンスを返している途中かの判断を行う。trueの場合は終了している
-                if(httpHandler.isResponseFinish()){
-                    System.out.println("リクエストが来ました。");
-                    httpHandler.requestComes(socket.getInputStream(), socket.getOutputStream());
-                    socket.close();
-                }else{
-                    //レスポンス途中でリクエストが来た場合
-                }
+                httpHandler.requestComes(socket.getInputStream(), socket.getOutputStream());
+                socket.close();
             }catch(IOException e){
                 //ここにくるってことはソケットがおかしい
+                e.printStackTrace();
             }
         }
         try{
@@ -57,7 +53,8 @@ public class Server extends Thread{
                 socket.close();
             }
         }catch(IOException e){
-
+            //ソケットのクローズに失敗
+            e.printStackTrace();
         }
     }
 }

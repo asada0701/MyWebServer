@@ -30,11 +30,11 @@ public class ResponseMessage {
         headerField.add(name + HEADER_FIELD_COLON +  value);
     }
 
-    public boolean setMessageBody(String uri){
-        return false;
+    public void setMessageBody(File messageBody){
+        this.messageBody = messageBody;
     }
 
-    public OutputStream getResposeMessage(OutputStream os){
+    private void createResponse(OutputStream os){
         DataOutputStream dos = new DataOutputStream(os);
         try{
             dos.writeBytes(protocolVersion);
@@ -57,7 +57,57 @@ public class ResponseMessage {
                 e.printStackTrace();
             }
         }
-        return os;
+    }
+
+    public void returnResponseChar(OutputStream os) {
+        DataOutputStream dos = new DataOutputStream(os);
+        BufferedReader br = null;
+        try {
+            br = new BufferedReader(new FileReader(messageBody));
+            String str;
+            while((str = br.readLine()) != null){
+                dos.writeBytes(str);
+            }
+        }catch(IOException e){
+            e.printStackTrace();
+        }finally {
+            try{
+                br.close();
+                dos.close();
+            }catch(IOException e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void returnResponseImage(OutputStream os) {
+        createResponse(os);
+    }
+
+    public void returnResponse(String stringMessageBody, OutputStream os) {
+        DataOutputStream dos = new DataOutputStream(os);
+        try{
+            dos.writeBytes(protocolVersion);
+            dos.writeBytes(" ");
+            dos.writeBytes(statusCode);
+            dos.writeBytes(" ");
+            dos.writeBytes(reasonPhrase);
+            dos.writeChar('\n');        //レスポンスラインの改行
+            for(String s : headerField) {
+                dos.writeBytes(s);
+                dos.writeChar('\n');    //ヘッダーフィールドの改行でもありメッセージボディ前の空行でもある
+            }
+            dos.writeBytes(stringMessageBody);
+            dos.flush();
+        }catch(IOException e){
+            e.printStackTrace();
+        }finally {
+            try {
+                dos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     //テスト用ゲッター

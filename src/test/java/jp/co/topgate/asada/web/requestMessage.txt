@@ -1,7 +1,10 @@
-GET /index.html?name=asada&like=cat HTTP/1.1
-Accept: image/gif, image/jpeg, */*
-Accept-Language: ja
-Accept-Encoding: gzip, deflate
-User-Agent: Mozilla/4.0 (Compatible; MSIE 6.0; Windows NT 5.1;)
-Host: www.xxx.zzz
-Connection: Keep-Alive
+GET / HTTP/1.1
+Host: localhost:8080
+Connection: keep-alive
+Pragma: no-cache
+Cache-Control: no-cache
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Accept-Encoding: gzip, deflate, sdch, br
+Accept-Language: ja,en-US;q=0.8,en;q=0.6
