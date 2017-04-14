@@ -9,7 +9,6 @@ import java.io.OutputStream;
  * Created by yusuke-pc on 2017/04/12.
  */
 public class HTTPHandler {
-    private OutputStream os = null;
 
     public OutputStream requestComes(InputStream is, OutputStream os){
         RequestMessage requestMessage = new RequestMessage();
