@@ -9,60 +9,50 @@ import java.util.Scanner;
 public class App {
 
     public static void main(String[] args) {
-        String choices;
-        Server server = new Server();
-        Scanner scan = new Scanner(System.in);
-        do{
-            System.out.println("--------------------");
-            System.out.println("1:サーバーを立ち上げる");
-            System.out.println("2:サーバーを停止する");
-            System.out.println("3:サーバーを再起動する");
-            System.out.println("4:終了する");
+        try {
+            Server server = new Server();
+            String choices;
+            Scanner scan = new Scanner(System.in);
             do{
-                System.out.print("1,2,3,4のいずれかの数字を入力してください:");
-                choices = scan.next();
-            }while(!(choices.equals("1") || choices.equals("2") || choices.equals("3") || choices.equals("4")));
-            boolean isServerStart = server.isSeverStart();
-            switch(choices){
-                case "1":
-                    try {
-                        if(isServerStart == true){
+                System.out.println("--------------------");
+                System.out.println("1:サーバーを立ち上げる");
+                System.out.println("2:サーバーを停止する");
+                System.out.println("3:終了する");
+                do{
+                    System.out.print("1,2,3のいずれかの数字を入力してください:");
+                    choices = scan.next();
+                }while(!(choices.equals("1") || choices.equals("2") || choices.equals("3")));
+                boolean isServerStart = server.isServerRun();
+                switch(choices){
+                    case "1":
+                        if(isServerStart){
                             System.out.println("すでにサーバーは立ち上がっています");
                         }else{
-                            server.serverStart();
+                            server.serverStart();                                       //サーバースタート
                             System.out.println("サーバーを立ち上げました");
                         }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    break;
-                case "2":
-                    try {
-                        if(isServerStart == false){
-                            System.out.println("サーバーが立ち上がっていないので停止できませんでした");
-                        }else{
-                            server.serverStop();
+                        break;
+                    case "2":
+                        if(isServerStart){
+                            server.serverStop();                                        //サーバーストップ
                             System.out.println("サーバーを停止しました");
+                        }else{
+                            System.out.println("サーバーが立ち上がっていないので停止できませんでした");
                         }
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    break;
-                case "3":
-                    try{
-                        server.serverRestart();
-                        System.out.println("サーバーを立ち上げました");
-                    }catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    break;
-                case "4":
-                    break;
-                default:
-                    System.out.println("入力エラーが発生いたしました。¥nもう一度入力してください。");
-                    break;
-            }
-        }while(!choices.equals("4"));
-        System.out.println("HTTPServerを終了します");
+                        break;
+                    case "3":
+                        server.serverEnd();
+                        System.out.println("サーバーを停止しました");
+                        break;
+                    default:
+                        System.out.println("入力エラーが発生いたしました。¥nもう一度入力してください。");
+                        break;
+                }
+            }while(!choices.equals("3"));
+            System.out.println("HTTPServerを終了します");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 }

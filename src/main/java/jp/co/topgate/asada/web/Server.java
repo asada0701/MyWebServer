@@ -1,7 +1,6 @@
 package jp.co.topgate.asada.web;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -9,41 +8,56 @@ import java.net.Socket;
  * Created by yusuke-pc on 2017/04/12.
  */
 public class Server extends Thread{
-    public static final int portNumber = 80;
+    public static final int portNumber = 8080;
     private ServerSocket serverSocket = null;
     private Socket socket = null;
-    private boolean isSeverStart = false;       //serverが動いているとtrueである
+    private HTTPHandler httpHandler = new HTTPHandler();
+    private boolean isServerRun = false;                      //serverRunがtrueの時は動いている
 
-    public void serverStart() throws IOException{
-//        if(serverSocket == null){
-//            serverSocket = new ServerSocket(portNumber);
-//            isSeverStart = true;
-//        }
-        isSeverStart = true;
-    }
-    public void serverStop() throws IOException{
-//        if(serverSocket != null && !socket.isClosed()){
-//            serverSocket.close();
-//            isSeverStart = false;
-//        }
-        isSeverStart = false;
-    }
-    public void serverRestart() throws IOException{
-        isSeverStart = true;
+    public Server() throws IOException {
+        serverSocket = new ServerSocket(portNumber);
     }
 
-    public boolean isSeverStart() {
-        return isSeverStart;
+    public void serverStart() {
+        isServerRun = true;
+        this.start();
+    }
+
+    public void serverStop() {
+       isServerRun = false;
+    }
+
+    public void serverEnd() throws IOException{
+        serverStop();
+        serverSocket.close();
+    }
+
+    public boolean isServerRun() {
+        return isServerRun;
     }
 
     public void run() {
-        try{
-            socket = serverSocket.accept();
-            System.out.println("リクエストを受けられる状態になりました。");
-            InputStream is = socket.getInputStream();
-        }catch(IOException e){
-            e.printStackTrace();
+        while (isServerRun) {
+            try{
+                socket = serverSocket.accept();
+                //レスポンスを返している途中かの判断を行う。trueの場合は終了している
+                if(httpHandler.isResponseFinish()){
+                    System.out.println("リクエストが来ました。");
+                    httpHandler.requestComes(socket.getInputStream(), socket.getOutputStream());
+                    socket.close();
+                }else{
+                    //レスポンス途中でリクエストが来た場合
+                }
+            }catch(IOException e){
+                //ここにくるってことはソケットがおかしい
+            }
         }
+        try{
+            if(socket != null){
+                socket.close();
+            }
+        }catch(IOException e){
 
+        }
     }
 }

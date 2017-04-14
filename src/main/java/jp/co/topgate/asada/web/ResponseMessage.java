@@ -8,7 +8,6 @@ import java.util.ArrayList;
  */
 public class ResponseMessage {
     public static final String HEADER_FIELD_COLON = ": ";
-    public static final String FILE_PATH = "./src/test/java/jp/co/topgate/asada/web/Documents";
     private String protocolVersion = null;
     private String statusCode = null;
     private String reasonPhrase = null;
@@ -32,8 +31,6 @@ public class ResponseMessage {
     }
 
     public boolean setMessageBody(String uri){
-        //文字ストリームなのかバイトストリームなのかを特定しても結局使うのはバイトストリームじゃん！！
-        messageBody = new File(FILE_PATH + uri);
         return false;
     }
 
