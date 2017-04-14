@@ -32,8 +32,8 @@ public class RequestMessageTest {
         assertThat("GET", is(rm.getMethod()));
         assertThat("/index.html",is(rm.getUri()));
         assertThat("HTTP/1.1",is(rm.getProtocolVersion()));
-        assertThat("www.xxx.zzz",is(rm.findHeaderByName("Host")));
-        assertThat("asada",is(rm.findUriQuery("name")));
-        assertThat("cat",is(rm.findUriQuery("like")));
+        assertThat("localhost:8080",is(rm.findHeaderByName("Host")));
+        //assertThat("asada",is(rm.findUriQuery("name")));
+        //assertThat("cat",is(rm.findUriQuery("like")));
     }
 }

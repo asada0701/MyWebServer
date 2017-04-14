@@ -44,6 +44,6 @@ public class ResponseMessageTest {
         rm.addHeader("Server", "mywebserver/1.0");
         rm.addHeader("Content-Type", "text/html");
 
-        rm.setMessageBody("/index.html");
+        //rm.setMessageBody("/index.html");
     }
 }
