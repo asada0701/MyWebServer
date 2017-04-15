@@ -40,9 +40,12 @@ public class Server extends Thread{
         while (isServerRun) {
             try{
                 socket = serverSocket.accept();
+                System.out.println("リクエストが来た");
                 //レスポンスを返している途中かの判断を行う。trueの場合は終了している
                 httpHandler.requestComes(socket.getInputStream(), socket.getOutputStream());
+                System.out.println("レスポンス返した");
                 socket.close();
+                System.out.println("ソケットクローズ");
             }catch(IOException e){
                 //ここにくるってことはソケットがおかしい
                 e.printStackTrace();

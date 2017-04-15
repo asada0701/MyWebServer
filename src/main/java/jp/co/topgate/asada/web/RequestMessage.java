@@ -28,92 +28,91 @@ public class RequestMessage {
     private HashMap<String, String> uriQuery = new HashMap<>();
     private String protocolVersion = null;
     private HashMap<String, String> headerFieldUri = new HashMap<>();
-    private HashMap<String, String> messageBodyUri = new HashMap<>();
-    private boolean isRequestImage = false;
+    private HashMap<String, String> messageBody = new HashMap<>();
 
     public boolean parse(InputStream requestMessage) {
         boolean isParseOK = true;
         BufferedReader br = new BufferedReader(new InputStreamReader(requestMessage));
         try{
-            String str = br.readLine(); //一行目は先に読んでしまう。
-            if(str != null){
-                String[] requestLine = str.split(REQUEST_LINE_SPACE);
+            String str = br.readLine();                                             //一行目は先に読んでしまう。
+            if(str != null){                                                        //nullチェック
+                String[] requestLine = str.split(REQUEST_LINE_SPACE);               //リクエストライン
                 if(requestLine.length == REQUEST_LINE_LENGTH){
                     method = requestLine[0];
                     uri = requestLine[1];
+                    if(uri.equals("/")){                                            //"/"を要求された場合の処理
+                        uri = "/index.html";
+                    }
                     protocolVersion = requestLine[2];
-                    boolean isMessageBody = false;
-                    while((str = br.readLine()) != null){
-                        if(str.equals("")){
-                            isMessageBody = true;   //空行に到達
-                        }else{
-                            if(!isMessageBody){
-                                //ヘッダーフィールドのパース
-                                String[] header = str.split(HEADER_FIELD_COLON);
-                                if(header.length == HEADER_FIELD_LENGTH) {    //ヘッダーフィールドを一行ずつ処理
-                                    if (header[1].charAt(0) == ' ') {
-                                        header[1] = header[1].substring(1, header[1].length());
-                                    }
-                                    headerFieldUri.put(header[0],header[1]);        //ポート番号の処理
-                                }else if(header.length > HEADER_FIELD_LENGTH){
-                                    if (header[1].charAt(0) == ' ') {
-                                        header[1] = header[1].substring(1, header[1].length());
-                                    }
-                                    headerFieldUri.put(header[0],header[1] + HEADER_FIELD_COLON + header[2]);
-                                }else{
-                                    /*400バッドリクエスト対象、ヘッダーフィールドにコロンが入っていない*/
-                                    isParseOK = false;
-                                }
-                            }else{
-                                //メッセージボディのパース
-                                String[] s1 = str.split(MESSAGE_BODY_AMPERSAND);
-                                for(int i = 0; i > s1.length; i++){
-                                    String[] s2 = str.split(MESSAGE_BODY_EQUAL);
-                                    if(s2.length == MESSAGE_BODY_LENGTH){
-                                        messageBodyUri.put(s2[0], s2[1]);
-                                    }else{
-                                        /*400バッドリクエスト対象、ヘッダーフィールドにコロンが入っていない*/
-                                        isParseOK = false;
-                                    }
-                                }
+                    //System.out.println(method + " " + uri + " " + protocolVersion);
+                    while(!(str = br.readLine()).equals("")){
+                        //System.out.println(str);
+                        String[] header = str.split(HEADER_FIELD_COLON);            //ヘッダーフィールド
+                        if(header.length == HEADER_FIELD_LENGTH) {
+                            if (header[1].charAt(0) == ' ') {
+                                header[1] = header[1].substring(1, header[1].length());
                             }
+                            headerFieldUri.put(header[0],header[1]);                //ポート番号の処理
+                        }else if(header.length > HEADER_FIELD_LENGTH){
+                            if (header[1].charAt(0) == ' ') {
+                                header[1] = header[1].substring(1, header[1].length());
+                            }
+                            headerFieldUri.put(header[0],header[1] + HEADER_FIELD_COLON + header[2]);
+                        }else{
+                            /*400バッドリクエスト対象、ヘッダーフィールドにコロンが入っていない*/
+                            isParseOK = false;
                         }
                     }
 
-                    //URIのパース処理（ここはメソッドにするか悩ましいけどなんども呼ばれる訳じゃないのでメッソドにしない）
-                    String[] s1 = uri.split(URI_QUESTION_MARK);             //s1でクエリーがあるかの判断となる
-                    uri = s1[0];     //これで純粋なuriになった
-                    if(uri.equals("/")){                                    //"/"を要求された場合の処理
-                        uri = "/index.html";
-                    }
-                    if(s1.length > 1){
-                        //クエリーがあった場合
-                        String[] s2 = s1[1].split(URI_QUERY_AMPERSAND);     //s2でクエリーが複数かの判断となる
-                        for(int k = 0; k < s2.length; k++){
-                            String[] s3 = s2[k].split(URI_QUERY_EQUAL);     //クエリーの最小化に成功
-                            if(s3.length == URI_QUERY_LENGTH){
-                                uriQuery.put(s3[0], s3[1]);
-                            }else{
-                            /*400バッドリクエスト対象、イコールが含まれないクエリーが存在してしまった*/
-                                isParseOK = false;
+                    //ここからは動的なページの対応処理
+
+                    if("HOST".equals(getMethod())) {
+                        //メソッドがHOSTの場合メッセージボディの処理を行う
+                        while(!(str = br.readLine()).equals("")) {
+                            String[] s1 = str.split(MESSAGE_BODY_AMPERSAND);
+                            for (int i = 0; i < s1.length; i++) {
+                                String[] s2 = s1[i].split(MESSAGE_BODY_EQUAL);
+                                if (s2.length == MESSAGE_BODY_LENGTH) {
+                                    messageBody.put(s2[0], s2[1]);
+                                } else {
+                                /*400バッドリクエスト対象、ヘッダーフィールドにコロンが入っていない*/
+                                    isParseOK = false;
+                                }
+                            }
+                        }
+                    }else if("GET".equals(getMethod())){
+                        String[] s1 = uri.split(URI_QUESTION_MARK);                 //uriのパース
+                        uri = s1[0];     //これで純粋なuriになった
+                        if(uri.equals("/")){                                        //"/"を要求された場合の処理
+                            uri = "/index.html";
+                        }
+                        if(s1.length > 1){
+                            String[] s2 = s1[1].split(URI_QUERY_AMPERSAND);
+                            for(int k = 0; k < s2.length; k++){
+                                String[] s3 = s2[k].split(URI_QUERY_EQUAL);
+                                if(s3.length == URI_QUERY_LENGTH){
+                                    uriQuery.put(s3[0], s3[1]);
+                                }else{
+                                    /*400バッドリクエスト、イコールが含まれないクエリーが存在してしまった*/
+                                    isParseOK = false;
+                                }
                             }
                         }
                     }
 
                 }else{
-                /*400バッドリクエスト対象、リクエストラインに誤りがあった*/
+                    /*400バッドリクエスト、リクエストラインに誤りがあった*/
                     isParseOK = false;
                 }
             }else{
-                //リクエストメッセージが空なんですが？
+                /*400バッドリクエスト、リクエストメッセージが空なんですが？*/
                 isParseOK = false;
             }
         }catch(IOException e){
             e.printStackTrace();
-            /*400バッドリクエスト対象、br.readLine()ができなかった*/
+            /*400バッドリクエスト、br.readLine()ができなかった*/
             isParseOK = false;
         }
-
         return isParseOK;
     }
 
@@ -140,18 +139,7 @@ public class RequestMessage {
     }
 
     public String findMessageBody(String key) {
-        String result = messageBodyUri.get(key);
+        String result = messageBody.get(key);
         return result;
-    }
-
-    public boolean isRequestImage() {
-        //URIが何で終わるのかをチェックすれば画像かどうかだってわかるはず
-        String[] s = {"jpeg","png","gif"};
-        for(String str : s) {
-            if(uri.endsWith(str)){
-                isRequestImage = true;
-            }
-        }
-        return isRequestImage;
     }
 }

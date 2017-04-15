@@ -33,7 +33,29 @@ public class RequestMessageTest {
         assertThat("/index.html",is(rm.getUri()));
         assertThat("HTTP/1.1",is(rm.getProtocolVersion()));
         assertThat("localhost:8080",is(rm.findHeaderByName("Host")));
-        //assertThat("asada",is(rm.findUriQuery("name")));
-        //assertThat("cat",is(rm.findUriQuery("like")));
+        assertThat("asada",is(rm.findUriQuery("name")));
+        assertThat("cat",is(rm.findUriQuery("like")));
+    }
+    @Test
+    public void HOSTでメッセージボディに何か入れてみる() throws Exception{
+        RequestMessage rm = new RequestMessage();
+
+        assertNull(rm.getMethod());
+        assertNull(rm.getUri());
+        assertNull(rm.getProtocolVersion());
+
+        File file = new File("./src/test/java/jp/co/topgate/asada/web/HostRequestMessage.txt");
+        InputStream is = new FileInputStream(file);
+
+        assertTrue("リクエストメッセージのエラーです", rm.parse(is));
+
+        //以降のテストはparseメソッド前提である
+
+        assertThat("HOST", is(rm.getMethod()));
+        assertThat("/index.html",is(rm.getUri()));
+        assertThat("HTTP/1.1",is(rm.getProtocolVersion()));
+        assertThat("localhost:8080",is(rm.findHeaderByName("Host")));
+        assertThat("asada",is(rm.findMessageBody("name")));
+        assertThat("cat",is(rm.findMessageBody("like")));
     }
 }
