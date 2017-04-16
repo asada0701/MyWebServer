@@ -10,10 +10,13 @@ public class ResourceFileType {
     private ArrayList<String> imgFile = new ArrayList<>();
 
     public ResourceFileType() {
+        txtFile.add("htm");
         txtFile.add("html");
         txtFile.add("css");
         txtFile.add("js");
+        txtFile.add("txt");
 
+        imgFile.add("jpg");
         imgFile.add("jpeg");
         imgFile.add("png");
         imgFile.add("gif");

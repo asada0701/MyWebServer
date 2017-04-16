@@ -50,8 +50,6 @@ public class ResponseMessage {
             while((str = br.readLine()) != null) {
                 builder.append(str);
             }
-            System.out.println("responce...");
-            System.out.println(builder.toString() + "\n");
             pw.println(builder.toString());
         }catch(IOException e){
             e.printStackTrace();

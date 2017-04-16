@@ -14,23 +14,34 @@ public class HTTPHandler {
     private ResourceFileType rft = new ResourceFileType();
 
     public void requestComes(InputStream is, OutputStream os){
-
         if(requestMessage.parse(is)){
-            //リクエストメッセージには問題なし
-            responseMessage.setProtocolVersion("HTTP/1.1");
-            responseMessage.setStatusCode("200");
-            responseMessage.setReasonPhrase("OK");
-            responseMessage.addHeader("Content-Type", "text/html");
+            File resource = new File(FILE_PATH + requestMessage.getUri());
+            if(resource.exists()){
+                //200:OK
+                responseMessage.setProtocolVersion("HTTP/1.1");
+                responseMessage.setStatusCode("200");
+                responseMessage.setReasonPhrase("OK");
+                responseMessage.setMessageBody(resource);
 
-            responseMessage.setMessageBody(new File(FILE_PATH + requestMessage.getUri()));
-
-            if(rft.isTxt(requestMessage.getUri())){
-                responseMessage.returnResponseChar(os);
-            }else if(rft.isImg(requestMessage.getUri())){
-                responseMessage.returnResponseImage(os);
+                if(rft.isTxt(requestMessage.getUri())){
+                    responseMessage.addHeader("Content-Type", "text/html");
+                    responseMessage.returnResponseChar(os);
+                }else if(rft.isImg(requestMessage.getUri())){
+                    responseMessage.returnResponseImage(os);
+                }
+            }else{
+                //404:NotFound
+                responseMessage.setProtocolVersion("HTTP/1.1");
+                responseMessage.setStatusCode("404");
+                responseMessage.setReasonPhrase("Not Found");
+                responseMessage.addHeader("Content-Type", "text/html");
+                String s = "<html><head><title>404 Not Found</title></head>" +
+                        "<body><h1>Not Found</h1>" +
+                        "<p>お探しのページは見つかりませんでした。<br /></p></body></html>";
+                responseMessage.returnResponse(s,os);
             }
         }else{
-            //400バッドリクエスト対象、リクエストメッセージ関連での異常
+            //400:BadRequest
             responseMessage.setProtocolVersion("HTTP/1.1");
             responseMessage.setStatusCode("400");
             responseMessage.setReasonPhrase("Bad Request");

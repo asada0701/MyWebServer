@@ -22,7 +22,7 @@ public class RequestMessageTest {
         assertNull(rm.getUri());
         assertNull(rm.getProtocolVersion());
 
-        File file = new File("./src/test/java/jp/co/topgate/asada/web/requestMessage.txt");
+        File file = new File("./src/test/java/jp/co/topgate/asada/web/Documents/requestMessage.txt");
         InputStream is = new FileInputStream(file);
 
         assertTrue("リクエストメッセージのエラーです", rm.parse(is));
@@ -44,7 +44,7 @@ public class RequestMessageTest {
         assertNull(rm.getUri());
         assertNull(rm.getProtocolVersion());
 
-        File file = new File("./src/test/java/jp/co/topgate/asada/web/HostRequestMessage.txt");
+        File file = new File("./src/test/java/jp/co/topgate/asada/web/Documents/HostRequestMessage.txt");
         InputStream is = new FileInputStream(file);
 
         assertTrue("リクエストメッセージのエラーです", rm.parse(is));
