@@ -42,19 +42,28 @@ public class Server extends Thread{
     public void run() {
         try {
             while (true) {
-                socket = serverSocket.accept();
+                socket = serverSocket.accept();     //例外発生箇所
                 httpHandler.requestComes(socket.getInputStream(), socket.getOutputStream());
                 socket.close();
                 socket = null;
             }
         } catch (SocketException e) {
             /*
-            ソケットが発生する前なので、socket.close()ができないため、例外をだして終了する　
+            ソケットが発生する前なので、socket.close()ができないため、例外をだして終了する
             java.net.SocketException: Socket is closed
             at java.net.ServerSocket.accept(ServerSocket.java:509)
+            ソケット作成中(accept()メソッド)にサーバーソケットをクローズしたため発生する
             */
         } catch (IOException e) {
             e.printStackTrace();
+        } finally {
+            if(socket != null){
+                try {
+                    socket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 }

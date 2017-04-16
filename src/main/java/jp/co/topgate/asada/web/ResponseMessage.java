@@ -7,7 +7,7 @@ import java.util.ArrayList;
  * Created by yusuke-pc on 2017/04/12.
  */
 public class ResponseMessage {
-    public static final String HEADER_FIELD_COLON = ": ";
+    private static final String HEADER_FIELD_COLON = ": ";
     private String protocolVersion = null;
     private String statusCode = null;
     private String reasonPhrase = null;
