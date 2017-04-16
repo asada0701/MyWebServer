@@ -34,46 +34,33 @@ public class ResponseMessage {
         this.messageBody = messageBody;
     }
 
-    private void createResponse(OutputStream os){
-        DataOutputStream dos = new DataOutputStream(os);
-        try{
-            dos.writeBytes(protocolVersion);
-            dos.writeBytes(" ");
-            dos.writeBytes(statusCode);
-            dos.writeBytes(" ");
-            dos.writeBytes(reasonPhrase);
-            dos.writeChar('\n');        //レスポンスラインの改行
-            for(String s : headerField) {
-                dos.writeBytes(s);
-                dos.writeChar('\n');    //ヘッダーフィールドの改行でもありメッセージボディ前の空行でもある
-            }
-            dos.flush();
-        }catch(IOException e){
-            e.printStackTrace();
-        }finally {
-            try {
-                dos.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
     public void returnResponseChar(OutputStream os) {
-        DataOutputStream dos = new DataOutputStream(os);
+        PrintWriter pw = null;
         BufferedReader br = null;
         try {
-            br = new BufferedReader(new FileReader(messageBody));
-            String str;
-            while((str = br.readLine()) != null){
-                dos.writeBytes(str);
+            pw = new PrintWriter(os, true);
+            StringBuilder builder = new StringBuilder();
+            builder.append(protocolVersion + " " + statusCode + " " + reasonPhrase).append("\n");
+            for(String s : headerField) {
+                builder.append(s).append("\n");
             }
+            builder.append("\n");
+            br = new BufferedReader(new FileReader(messageBody));           //FileNotFoundExceptionが出てしまう
+            String str;
+            while((str = br.readLine()) != null) {
+                builder.append(str);
+            }
+            pw.println(builder.toString());
         }catch(IOException e){
             e.printStackTrace();
         }finally {
             try{
-                br.close();
-                dos.close();
+                if(br != null){
+                    br.close();
+                }
+                if(pw != null){
+                    pw.close();
+                }
             }catch(IOException e){
                 e.printStackTrace();
             }
@@ -81,33 +68,21 @@ public class ResponseMessage {
     }
 
     public void returnResponseImage(OutputStream os) {
-        createResponse(os);
+        //createResponse(os);
     }
 
     public void returnResponse(String stringMessageBody, OutputStream os) {
-        DataOutputStream dos = new DataOutputStream(os);
-        try{
-            dos.writeBytes(protocolVersion);
-            dos.writeBytes(" ");
-            dos.writeBytes(statusCode);
-            dos.writeBytes(" ");
-            dos.writeBytes(reasonPhrase);
-            dos.writeChar('\n');        //レスポンスラインの改行
-            for(String s : headerField) {
-                dos.writeBytes(s);
-                dos.writeChar('\n');    //ヘッダーフィールドの改行でもありメッセージボディ前の空行でもある
-            }
-            dos.writeBytes(stringMessageBody);
-            dos.flush();
-        }catch(IOException e){
-            e.printStackTrace();
-        }finally {
-            try {
-                dos.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        PrintWriter pw = null;
+        pw = new PrintWriter(os, true);
+        StringBuilder builder = new StringBuilder();
+        builder.append(protocolVersion + " " + statusCode + " " + reasonPhrase).append("\n");
+        for(String s : headerField) {
+            builder.append(s).append("\n");
         }
+        builder.append("\n");
+        builder.append(stringMessageBody);
+        pw.println(builder.toString());
+        pw.close();
     }
 
     //テスト用ゲッター
