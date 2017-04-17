@@ -16,20 +16,35 @@ public class ResourceFileTypeTest {
         @Test
         public void trueが返ってくる () throws Exception{
             ResourceFileType sut = new ResourceFileType();
-            assertThat(sut.isTxt("fjklsda;fjkljds;af.htm"), is(true));
+            assertThat(sut.isTxt("/index.html"), is(true));
         }
         @Test
-        public void falseが返ってくる () throws Exception{
+        public void uriの途中で入れてみるfalseのはず () throws Exception{
             ResourceFileType sut = new ResourceFileType();
-            assertThat(sut.isTxt("aaahtmaaa"), is(false));
+            assertThat(sut.isTxt("aaahtmlaaa"), is(false));
+        }
+        @Test
+        public void uriの最後の一文字を間違えてみるfalseのはず () throws Exception{
+            ResourceFileType sut = new ResourceFileType();
+            assertThat(sut.isTxt("aaa.htmll"), is(false));
         }
     }
 
     public static class isImgメソッドのテスト {
         @Test
-        public void isImgメソッドのテスト () {
+        public void trueが返ってくる () {
             ResourceFileType sut = new ResourceFileType();
-            assertThat(sut.isImg(""), is(true));
+            assertThat(sut.isImg("/img/1.jpg"), is(true));
+        }
+        @Test
+        public void uriの途中で入れてみるfalseのはず () {
+            ResourceFileType sut = new ResourceFileType();
+            assertThat(sut.isImg("/img/1.jpg/"), is(false));
+        }
+        @Test
+        public void uriの最後の一文字を間違えてみるfalseのはず () {
+            ResourceFileType sut = new ResourceFileType();
+            assertThat(sut.isImg("/img/1.jpgg"), is(false));
         }
     }
 }
