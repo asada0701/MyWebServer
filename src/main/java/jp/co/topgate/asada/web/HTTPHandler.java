@@ -8,10 +8,10 @@ import java.io.OutputStream;
  * Created by yusuke-pc on 2017/04/12.
  */
 public class HTTPHandler {
+    public static final String FILE_PATH = "./src/main/java/jp/co/topgate/asada/web/Documents";
     private static final String STATUS_OK = "200";
     private static final String STATUS_BAD_REQUEST = "400";
     private static final String STATUS_NOT_FOUND = "404";
-    public static final String FILE_PATH = "./src/main/java/jp/co/topgate/asada/web/Documents";
     private static ResourceFileType rft = new ResourceFileType();
 
     public void requestComes(InputStream is, OutputStream os){
@@ -20,6 +20,7 @@ public class HTTPHandler {
 //        String method = null;
         String statusCode;
         File resource = null;
+
         if(requestMessage.parse(is)){
 //            method = requestMessage.getMethod();
             resource = new File(FILE_PATH + requestMessage.getUri());
@@ -46,6 +47,7 @@ public class HTTPHandler {
 //            case "DELETE":
 //            default:
 //        }
+
         String s;
         switch (statusCode) {
             case STATUS_OK:
@@ -55,10 +57,10 @@ public class HTTPHandler {
                 responseMessage.setReasonPhrase("OK");
                 responseMessage.setMessageBody(resource);
 
-                if(rft.isTxt(requestMessage.getUri())){
+                if(rft.isChar(requestMessage.getUri())){
                     responseMessage.addHeader("Content-Type", "text/html");
                     responseMessage.returnResponseChar(os);
-                }else if(rft.isImg(requestMessage.getUri())){
+                }else if(rft.isByte(requestMessage.getUri())){
                     responseMessage.addHeader("Content-Type", "image/jpg");
                     responseMessage.returnResponseByte(os);
                 }else{

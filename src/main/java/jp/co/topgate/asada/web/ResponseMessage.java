@@ -15,23 +15,33 @@ public class ResponseMessage {
     private File messageBody = null;
 
     public void setProtocolVersion(String protocolVersion){
-        this.protocolVersion = protocolVersion;
+        if(protocolVersion != null){
+            this.protocolVersion = protocolVersion;
+        }
     }
 
     public void setStatusCode(String statusCode){
-        this.statusCode = statusCode;
+        if(statusCode != null){
+            this.statusCode = statusCode;
+        }
     }
 
     public void setReasonPhrase(String reasonPhrase){
-        this.reasonPhrase = reasonPhrase;
+        if(reasonPhrase != null){
+            this.reasonPhrase = reasonPhrase;
+        }
     }
 
     public void addHeader(String name,String value){
-        headerField.add(name + HEADER_FIELD_COLON +  value);
+        if(name != null && value != null){
+            headerField.add(name + HEADER_FIELD_COLON +  value);
+        }
     }
 
     public void setMessageBody(File messageBody){
-        this.messageBody = messageBody;
+        if(messageBody != null && messageBody.exists()){
+            this.messageBody = messageBody;
+        }
     }
 
     public void returnResponseChar(OutputStream os) {
@@ -121,5 +131,8 @@ public class ResponseMessage {
     }
     ArrayList<String> getHeaderField() {
         return this.headerField;
+    }
+    File getMessageBody(){
+        return this.messageBody;
     }
 }

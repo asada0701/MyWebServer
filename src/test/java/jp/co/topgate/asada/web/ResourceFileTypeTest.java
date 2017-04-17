@@ -13,49 +13,59 @@ import static org.junit.Assert.assertThat;
  */
 @RunWith(Enclosed.class)
 public class ResourceFileTypeTest {
-    public static class isTxtメソッドのテスト {
+    public static class isCharメソッドのテスト {
         ResourceFileType sut = null;
         @Before
-        public void setUp () {
+        public void setUp () throws Exception{
             sut = new ResourceFileType();
         }
 
         @Test
         public void trueが返ってくる () throws Exception{
-            assertThat(sut.isTxt("/index.html"), is(true));
+            assertThat(sut.isChar("/index.html"), is(true));
         }
+
         @Test
         public void uriの途中で入れてみるfalseのはず () throws Exception{
-            assertThat(sut.isTxt("aaahtmlaaa"), is(false));
+            assertThat(sut.isChar("aaahtmlaaa"), is(false));
         }
+
         @Test
         public void uriの最後の一文字を間違えてみるfalseのはず () throws Exception{
-            assertThat(sut.isTxt("aaa.htmll"), is(false));
+            assertThat(sut.isChar("aaa.htmll"), is(false));
         }
+
         @Test
         public void uriをnullにしてみるfalseのはず () throws Exception{
-            assertThat(sut.isTxt(null), is(false));
+            assertThat(sut.isChar(null), is(false));
         }
     }
 
-    public static class isImgメソッドのテスト {
+    public static class isByteメソッドのテスト {
         ResourceFileType sut = null;
         @Before
-        public void setUp () {
+        public void setUp () throws Exception{
             sut = new ResourceFileType();
         }
 
         @Test
-        public void trueが返ってくる () {
-            assertThat(sut.isImg("/img/1.jpg"), is(true));
+        public void trueが返ってくる () throws Exception{
+            assertThat(sut.isByte("/img/1.jpg"), is(true));
         }
+
         @Test
-        public void uriの途中で入れてみるfalseのはず () {
-            assertThat(sut.isImg("/img/1.jpg/"), is(false));
+        public void uriの途中で入れてみるfalseのはず () throws Exception{
+            assertThat(sut.isByte("/img/1.jpg/"), is(false));
         }
+
         @Test
-        public void uriの最後の一文字を間違えてみるfalseのはず () {
-            assertThat(sut.isImg("/img/1.jpgg"), is(false));
+        public void uriの最後の一文字を間違えてみるfalseのはず () throws Exception{
+            assertThat(sut.isByte("/img/1.jpgg"), is(false));
+        }
+
+        @Test
+        public void uriをnullにしてみるfalseのはず () throws Exception {
+            assertThat(sut.isByte(null), is(false));
         }
     }
 }
