@@ -1,7 +1,5 @@
 package jp.co.topgate.asada.web;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -131,24 +129,16 @@ public class ResponseMessageTest {
     public static class レスポンスメッセージの生成テスト {
         @Before
         public void setUp () {
-
+            sut = new ResponseMessage();
         }
         @Test
         public void 正しく生成できるか () {
-            
+            sut.setProtocolVersion("HTTP/1.1");
+            sut.setStatusCode("200");
+            sut.setReasonPhrase("OK");
+            sut.addHeader("Date", "Thu,13 Api 2017 18:33:23 GMT");
+            sut.addHeader("Server", "mywebserver/1.0");
+            sut.addHeader("Content-Type", "text/html");
         }
-    }
-
-    @Ignore("未実装")
-    @Test
-    public void レスポンスメッセージクラス全体の振る舞い () {
-        sut.setProtocolVersion("HTTP/1.1");
-        sut.setStatusCode("200");
-        sut.setReasonPhrase("OK");
-        sut.addHeader("Date", "Thu,13 Api 2017 18:33:23 GMT");
-        sut.addHeader("Server", "mywebserver/1.0");
-        sut.addHeader("Content-Type", "text/html");
-
-        //rm.setMessageBody("/index.html");
     }
 }
