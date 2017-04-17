@@ -77,17 +77,17 @@ public class ResponseMessageTest {
             sut = new ResponseMessage();
         }
         @Test
-        public void nullチェック両方null () {
+        public void 両方null () {
             sut.addHeader(null,null);
             assertThat(sut.getHeaderField().size(), is(0));
         }
         @Test
-        public void nullチェックnameをnull () {
+        public void nameをnull () {
             sut.addHeader(null,"value");
             assertThat(sut.getHeaderField().size(), is(0));
         }
         @Test
-        public void nullチェックvalueをnull () {
+        public void valueをnull () {
             sut.addHeader("name",null);
             assertThat(sut.getHeaderField().size(), is(0));
         }
@@ -116,10 +116,26 @@ public class ResponseMessageTest {
             assertThat(sut.getMessageBody(), is(nullValue()));
         }
         @Test
+        public void ディレクトリのパスを渡してみるnullのままのはず () {
+            sut.setMessageBody(new File("./src/test/java/jp/co/topgate/asada/web/Documents"));
+            assertThat(sut.getMessageBody(), is(nullValue()));
+        }
+        @Test
         public void 正しくセットできているか () {
             sut.setMessageBody(
                     new File("./src/test/java/jp/co/topgate/asada/web/Documents/requestMessage.txt"));
             assertThat(sut.getMessageBody(), is(notNullValue()));
+        }
+    }
+
+    public static class レスポンスメッセージの生成テスト {
+        @Before
+        public void setUp () {
+
+        }
+        @Test
+        public void 正しく生成できるか () {
+            
         }
     }
 

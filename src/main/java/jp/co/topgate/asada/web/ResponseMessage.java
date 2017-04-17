@@ -39,7 +39,7 @@ public class ResponseMessage {
     }
 
     public void setMessageBody(File messageBody){
-        if(messageBody != null && messageBody.exists()){
+        if(messageBody != null && messageBody.exists() && messageBody.isFile()){
             this.messageBody = messageBody;
         }
     }
