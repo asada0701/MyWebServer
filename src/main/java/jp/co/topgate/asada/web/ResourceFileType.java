@@ -6,33 +6,33 @@ import java.util.ArrayList;
  * Created by yusuke-pc on 2017/04/15.
  */
 public class ResourceFileType {
-    private ArrayList<String> txtFile = new ArrayList<>();
-    private ArrayList<String> imgFile = new ArrayList<>();
+    private ArrayList<String> charFile = new ArrayList<>();
+    private ArrayList<String> byteFile = new ArrayList<>();
 
     public ResourceFileType() {
-        txtFile.add("htm");
-        txtFile.add("html");
-        txtFile.add("css");
-        txtFile.add("js");
-        txtFile.add("txt");
+        charFile.add("htm");
+        charFile.add("html");
+        charFile.add("css");
+        charFile.add("js");
+        charFile.add("txt");
 
-        imgFile.add("jpg");
-        imgFile.add("jpeg");
-        imgFile.add("png");
-        imgFile.add("gif");
+        byteFile.add("jpg");
+        byteFile.add("jpeg");
+        byteFile.add("png");
+        byteFile.add("gif");
     }
-    public boolean isTxt(String uri) {
+    public boolean isChar(String uri) {
         boolean result = false;
-        for(String str : txtFile) {
+        for(String str : charFile) {
             if(uri != null && uri.endsWith(str)){
                 result = true;
             }
         }
         return result;
     }
-    public boolean isImg(String uri) {
+    public boolean isByte(String uri) {
         boolean result = false;
-        for(String str : imgFile) {
+        for(String str : byteFile) {
             if(uri != null && uri.endsWith(str)){
                 result = true;
             }

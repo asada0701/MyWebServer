@@ -30,9 +30,9 @@ public class RequestMessage {
     private HashMap<String, String> headerFieldUri = new HashMap<>();
     private HashMap<String, String> messageBody = new HashMap<>();
 
-    public boolean parse(InputStream requestMessage) {
+    public boolean parse(InputStream is) {
         boolean isParseOK = true;
-        BufferedReader br = new BufferedReader(new InputStreamReader(requestMessage));
+        BufferedReader br = new BufferedReader(new InputStreamReader(is));
         try{
             String str = br.readLine();                                             //一行目は先に読んでしまう。
             if(str != null){                                                        //nullチェック
