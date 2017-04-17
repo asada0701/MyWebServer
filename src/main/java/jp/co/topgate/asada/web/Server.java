@@ -22,27 +22,23 @@ public class Server extends Thread{
         this.start();
     }
 
-    public boolean serverStop() {
+    public boolean serverStop() throws IOException{
         boolean result = false;
-        try {
-            if(socket == null){                 //socketがnullでない時はレスポンスが終わっていない
-                serverSocket.close();
-                result = true;
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        if(socket == null){                 //socketがnullでない時はレスポンスが終わっていない
+            serverSocket.close();
+            result = true;
         }
         return result;
     }
 
-    public boolean serverEnd() {
+    public boolean serverEnd() throws IOException {
         return serverStop();
     }
 
     public void run() {
         try {
             while (true) {
-                socket = serverSocket.accept();     //例外発生箇所
+                socket = serverSocket.accept();
                 httpHandler.requestComes(socket.getInputStream(), socket.getOutputStream());
                 socket.close();
                 socket = null;
@@ -56,14 +52,6 @@ public class Server extends Thread{
             */
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
-            if(socket != null){
-                try {
-                    socket.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
         }
     }
 }

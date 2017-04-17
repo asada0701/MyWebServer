@@ -61,11 +61,6 @@ public class App {
                             choices = "";
                         }
                         break;
-                    default:
-                        //ここにくるはずがないが、用意だけはしておく
-                        scan.close();
-                        scan = new Scanner(System.in);
-                        break;
                 }
             }while(!choices.equals(END_NUM));
         } catch (IOException e) {
