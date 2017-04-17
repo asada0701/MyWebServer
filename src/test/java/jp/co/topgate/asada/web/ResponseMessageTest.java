@@ -128,7 +128,16 @@ public class ResponseMessageTest {
         }
     }
 
-    public static class レスポンスメッセージの生成テスト
+    public static class レスポンスメッセージの生成テスト {
+        @Before
+        public void setUp () {
+
+        }
+        @Test
+        public void 正しく生成できるか () {
+            
+        }
+    }
 
     @Ignore("未実装")
     @Test
