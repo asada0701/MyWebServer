@@ -24,7 +24,7 @@ public class ResourceFileType {
     public boolean isTxt(String uri) {
         boolean result = false;
         for(String str : txtFile) {
-            if(uri.endsWith(str)){
+            if(uri != null && uri.endsWith(str)){
                 result = true;
             }
         }
@@ -33,7 +33,7 @@ public class ResourceFileType {
     public boolean isImg(String uri) {
         boolean result = false;
         for(String str : imgFile) {
-            if(uri.endsWith(str)){
+            if(uri != null && uri.endsWith(str)){
                 result = true;
             }
         }
