@@ -12,17 +12,17 @@ import java.util.regex.PatternSyntaxException;
  * Created by yusuke-pc on 2017/04/12.
  */
 public class RequestMessage {
-    public static final String REQUEST_LINE_SPACE = " ";    //リクエストラインのスペース
-    public static final int REQUEST_LINE_LENGTH = 3;        //リクエスト行の項目数
-    public static final String URI_QUESTION_MARK = "\\?";   //URIのクエリー前のクエスチョンマーク
-    public static final String URI_QUERY_AMPERSAND = "&";   //URIのクエリー内のアンパサンド
-    public static final String URI_QUERY_EQUAL = "=";       //URIのクエリーの中のイコール
-    public static final int URI_QUERY_LENGTH = 2;           //URIのクエリーの項目数
-    public static final String HEADER_FIELD_COLON = ":";    //ヘッダーフィールドのコロン（その後のスペースは自由のため注意）
-    public static final int HEADER_FIELD_LENGTH = 2;        //ヘッダーフィールドの項目数
-    public static final String MESSAGE_BODY_AMPERSAND = "&";//メッセージボディのアンパサンド
-    public static final String MESSAGE_BODY_EQUAL = "=";    //メッセージボディのイコール
-    public static final int MESSAGE_BODY_LENGTH = 2;        //メッセージボディの項目数
+    private static final String REQUEST_LINE_SPACE = " ";    //リクエストラインのスペース
+    private static final int REQUEST_LINE_LENGTH = 3;        //リクエスト行の項目数
+    private static final String URI_QUESTION_MARK = "\\?";   //URIのクエリー前のクエスチョンマーク
+    private static final String URI_QUERY_AMPERSAND = "&";   //URIのクエリー内のアンパサンド
+    private static final String URI_QUERY_EQUAL = "=";       //URIのクエリーの中のイコール
+    private static final int URI_QUERY_LENGTH = 2;           //URIのクエリーの項目数
+    private static final String HEADER_FIELD_COLON = ":";    //ヘッダーフィールドのコロン（その後のスペースは自由のため注意）
+    private static final int HEADER_FIELD_LENGTH = 2;        //ヘッダーフィールドの項目数
+    private static final String MESSAGE_BODY_AMPERSAND = "&";//メッセージボディのアンパサンド
+    private static final String MESSAGE_BODY_EQUAL = "=";    //メッセージボディのイコール
+    private static final int MESSAGE_BODY_LENGTH = 2;        //メッセージボディの項目数
     private String method = null;
     private String uri = null;
     private HashMap<String, String> uriQuery = new HashMap<>();

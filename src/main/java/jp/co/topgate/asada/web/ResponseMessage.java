@@ -7,7 +7,7 @@ import java.util.ArrayList;
  * Created by yusuke-pc on 2017/04/12.
  */
 public class ResponseMessage {
-    public static final String HEADER_FIELD_COLON = ": ";
+    private static final String HEADER_FIELD_COLON = ": ";
     private String protocolVersion = null;
     private String statusCode = null;
     private String reasonPhrase = null;
@@ -67,13 +67,37 @@ public class ResponseMessage {
         }
     }
 
-    public void returnResponseImage(OutputStream os) {
-        //createResponse(os);
+    public void returnResponseByte(OutputStream os) {
+        InputStream in = null;
+        StringBuilder builder = new StringBuilder();
+        try{
+            in = new FileInputStream(messageBody);
+            builder.append(protocolVersion + " " + statusCode + " " + reasonPhrase).append("\n");
+            for(String s : headerField) {
+                builder.append(s).append("\n");
+            }
+            builder.append("\n");
+            os.write(builder.toString().getBytes());
+            int num;
+            while((num = in.read()) != -1) {
+                os.write(num);
+            }
+            os.flush();
+        }catch(IOException e){
+            e.printStackTrace();
+        }finally {
+            try{
+                if(in != null){
+                    in.close();
+                }
+            }catch(IOException e){
+                e.printStackTrace();
+            }
+        }
     }
 
     public void returnResponse(String stringMessageBody, OutputStream os) {
-        PrintWriter pw = null;
-        pw = new PrintWriter(os, true);
+        PrintWriter pw = new PrintWriter(os, true);
         StringBuilder builder = new StringBuilder();
         builder.append(protocolVersion + " " + statusCode + " " + reasonPhrase).append("\n");
         for(String s : headerField) {
