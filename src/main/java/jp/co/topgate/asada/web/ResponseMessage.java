@@ -81,13 +81,13 @@ public class ResponseMessage {
         InputStream in = null;
         StringBuilder builder = new StringBuilder();
         try{
-            in = new FileInputStream(messageBody);
             builder.append(protocolVersion + " " + statusCode + " " + reasonPhrase).append("\n");
             for(String s : headerField) {
                 builder.append(s).append("\n");
             }
             builder.append("\n");
             os.write(builder.toString().getBytes());
+            in = new FileInputStream(messageBody);
             int num;
             while((num = in.read()) != -1) {
                 os.write(num);

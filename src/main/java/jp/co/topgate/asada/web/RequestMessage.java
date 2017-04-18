@@ -45,7 +45,7 @@ public class RequestMessage {
                     }
                     protocolVersion = requestLine[2];
                     //System.out.println(method + " " + uri + " " + protocolVersion);
-                    while(!(str = br.readLine()).equals("")){
+                    while(!(str = br.readLine()).equals("") && isParseOK == true){
                         //System.out.println(str);
                         String[] header = str.split(HEADER_FIELD_COLON);            //ヘッダーフィールド
                         if(header.length == HEADER_FIELD_LENGTH) {
@@ -66,7 +66,7 @@ public class RequestMessage {
 
                     //ここからは動的なページの対応処理
 
-                    if("HOST".equals(getMethod())) {
+                    if("HOST".equals(getMethod()) && isParseOK == true) {
                         //メソッドがHOSTの場合メッセージボディの処理を行う
                         while(!(str = br.readLine()).equals("")) {
                             String[] s1 = str.split(MESSAGE_BODY_AMPERSAND);
@@ -75,12 +75,12 @@ public class RequestMessage {
                                 if (s2.length == MESSAGE_BODY_LENGTH) {
                                     messageBody.put(s2[0], s2[1]);
                                 } else {
-                                /*400バッドリクエスト対象、ヘッダーフィールドにコロンが入っていない*/
+                                /*400バッドリクエスト、ヘッダーフィールドにコロンが入っていない*/
                                     isParseOK = false;
                                 }
                             }
                         }
-                    }else if("GET".equals(getMethod())){
+                    }else if("GET".equals(getMethod()) && isParseOK == true){
                         String[] s1 = uri.split(URI_QUESTION_MARK);                 //uriのパース
                         uri = s1[0];     //これで純粋なuriになった
                         if(uri.equals("/")){                                        //"/"を要求された場合の処理
@@ -105,7 +105,7 @@ public class RequestMessage {
                     isParseOK = false;
                 }
             }else{
-                /*400バッドリクエスト、リクエストメッセージが空なんですが？*/
+                /*400バッドリクエスト、リクエストメッセージが空？*/
                 isParseOK = false;
             }
         }catch(IOException e){
@@ -125,7 +125,12 @@ public class RequestMessage {
     }
 
     public String findUriQuery(String name) {
-        String result = uriQuery.get(name);
+        String result;
+        if(name != null){
+            result = uriQuery.get(name);
+        }else{
+            result = null;
+        }
         return result;
     }
 
@@ -134,12 +139,42 @@ public class RequestMessage {
     }
 
     public String findHeaderByName(String fieldName) {
-        String result = headerFieldUri.get(fieldName);
+        String result;
+        if(fieldName != null){
+            result = headerFieldUri.get(fieldName);
+        }else{
+            result = null;
+        }
         return result;
     }
 
     public String findMessageBody(String key) {
-        String result = messageBody.get(key);
+        String result;
+        if(key != null){
+            result = messageBody.get(key);
+        }else{
+            result = null;
+        }
         return result;
+    }
+
+    //テスト用セッター
+    void setMethod(String method){
+        this.method = method;
+    }
+    void setUri(String uri){
+        this.uri = uri;
+    }
+    void setUriQuery(String key, String value){
+        this.uriQuery.put(key, value);
+    }
+    void setProtocolVersion(String protocolVersion){
+        this.protocolVersion = protocolVersion;
+    }
+    void setHeaderFieldUri(String key, String value){
+        this.headerFieldUri.put(key, value);
+    }
+    void setMessageBody(String key, String value){
+        this.messageBody.put(key, value);
     }
 }
