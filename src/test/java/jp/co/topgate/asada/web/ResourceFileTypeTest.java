@@ -13,59 +13,26 @@ import static org.junit.Assert.assertThat;
  */
 @RunWith(Enclosed.class)
 public class ResourceFileTypeTest {
-    public static class isCharメソッドのテスト {
+    public static class コンストラクタのテスト {
         ResourceFileType sut = null;
-        @Before
-        public void setUp () throws Exception{
-            sut = new ResourceFileType();
-        }
-
         @Test
-        public void trueが返ってくる () throws Exception{
-            assertThat(sut.isChar("/index.html"), is(true));
+        public void nullチェック() {
+            sut = new ResourceFileType(null);
         }
-
         @Test
-        public void uriの途中で入れてみるfalseのはず () throws Exception{
-            assertThat(sut.isChar("aaahtmlaaa"), is(false));
-        }
-
-        @Test
-        public void uriの最後の一文字を間違えてみるfalseのはず () throws Exception{
-            assertThat(sut.isChar("aaa.htmll"), is(false));
-        }
-
-        @Test
-        public void uriをnullにしてみるfalseのはず () throws Exception{
-            assertThat(sut.isChar(null), is(false));
+        public void 正しくセットできるか() {
+            sut = new ResourceFileType("src/test/java/jp/co/topgate/asada/web/Documents/empty.txt");
         }
     }
-
-    public static class isByteメソッドのテスト {
+    public static class isRegisteredメソッドのテスト {
         ResourceFileType sut = null;
         @Before
-        public void setUp () throws Exception{
-            sut = new ResourceFileType();
+        public void setUp() {
+            sut = new ResourceFileType("src/test/java/jp/co/topgate/asada/web/Documents/empty.txt");
         }
-
         @Test
-        public void trueが返ってくる () throws Exception{
-            assertThat(sut.isByte("/img/1.jpg"), is(true));
-        }
-
-        @Test
-        public void uriの途中で入れてみるfalseのはず () throws Exception{
-            assertThat(sut.isByte("/img/1.jpg/"), is(false));
-        }
-
-        @Test
-        public void uriの最後の一文字を間違えてみるfalseのはず () throws Exception{
-            assertThat(sut.isByte("/img/1.jpgg"), is(false));
-        }
-
-        @Test
-        public void uriをnullにしてみるfalseのはず () throws Exception {
-            assertThat(sut.isByte(null), is(false));
+        public void 存在する拡張子ならtrue() {
+            assertThat(sut.isRegistered(), is(true));
         }
     }
 }

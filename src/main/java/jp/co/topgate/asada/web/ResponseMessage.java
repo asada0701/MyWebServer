@@ -44,40 +44,8 @@ public class ResponseMessage {
         }
     }
 
-    public void returnResponseChar(OutputStream os) {
-        PrintWriter pw = null;
+    public void returnResponse(OutputStream os,ResourceFileType rft) {
         BufferedReader br = null;
-        try {
-            pw = new PrintWriter(os, true);
-            StringBuilder builder = new StringBuilder();
-            builder.append(protocolVersion + " " + statusCode + " " + reasonPhrase).append("\n");
-            for(String s : headerField) {
-                builder.append(s).append("\n");
-            }
-            builder.append("\n");
-            br = new BufferedReader(new FileReader(messageBody));           //FileNotFoundExceptionが出てしまう
-            String str;
-            while((str = br.readLine()) != null) {
-                builder.append(str);
-            }
-            pw.println(builder.toString());
-        }catch(IOException e){
-            e.printStackTrace();
-        }finally {
-            try{
-                if(br != null){
-                    br.close();
-                }
-                if(pw != null){
-                    pw.close();
-                }
-            }catch(IOException e){
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public void returnResponseByte(OutputStream os) {
         InputStream in = null;
         StringBuilder builder = new StringBuilder();
         try{
@@ -86,11 +54,20 @@ public class ResponseMessage {
                 builder.append(s).append("\n");
             }
             builder.append("\n");
-            os.write(builder.toString().getBytes());
-            in = new FileInputStream(messageBody);
-            int num;
-            while((num = in.read()) != -1) {
-                os.write(num);
+            if(rft.isByteFile()){
+                os.write(builder.toString().getBytes());
+                in = new FileInputStream(messageBody);
+                int num;
+                while((num = in.read()) != -1) {
+                    os.write(num);
+                }
+            }else{
+                br = new BufferedReader(new FileReader(messageBody));
+                String str;
+                while((str = br.readLine()) != null){
+                    builder.append(str);
+                }
+                os.write(builder.toString().getBytes());
             }
             os.flush();
         }catch(IOException e){
@@ -100,23 +77,31 @@ public class ResponseMessage {
                 if(in != null){
                     in.close();
                 }
+                if(br != null){
+                    br.close();
+                }
             }catch(IOException e){
                 e.printStackTrace();
             }
         }
     }
 
-    public void returnResponse(String stringMessageBody, OutputStream os) {
-        PrintWriter pw = new PrintWriter(os, true);
-        StringBuilder builder = new StringBuilder();
-        builder.append(protocolVersion + " " + statusCode + " " + reasonPhrase).append("\n");
-        for(String s : headerField) {
-            builder.append(s).append("\n");
+    public boolean returnResponse(OutputStream os, String stringMessageBody) {
+        boolean result = false;
+        if(stringMessageBody != null){
+            PrintWriter pw = new PrintWriter(os, true);
+            StringBuilder builder = new StringBuilder();
+            builder.append(protocolVersion + " " + statusCode + " " + reasonPhrase).append("\n");
+            for(String s : headerField) {
+                builder.append(s).append("\n");
+            }
+            builder.append("\n");
+            builder.append(stringMessageBody);
+            pw.println(builder.toString());
+            pw.close();
+            result = true;
         }
-        builder.append("\n");
-        builder.append(stringMessageBody);
-        pw.println(builder.toString());
-        pw.close();
+        return result;
     }
 
     //テスト用ゲッター

@@ -4,15 +4,4 @@ package jp.co.topgate.asada.web;/*
 import org.junit.Test;
 
 public class AppTest {
-//    @Test public void testAppHasAGreeting() {
-//        App classUnderTest = new App();
-//        assertNotNull("app should have a greeting", classUnderTest.getGreeting());
-//    }
-//    @Test public void hamcrestを使ってみよう() {
-//        App app = new App();
-//        assertThat("Hello, world.", is(app.getGreeting()));
-//    }
-    @Test public void Appのmainメソッドのテスト() {
-        App app = new App();
-    }
 }
