@@ -1,9 +1,10 @@
 package jp.co.topgate.asada.web;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
+
+import jp.co.topgate.asada.web.RequestMessage;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,9 +12,7 @@ import java.io.InputStream;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Created by yusuke-pc on 2017/04/13.
@@ -21,7 +20,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(Enclosed.class)
 public class RequestMessageTest {
     public static class methodのテスト{
-        RequestMessage sut;
+        jp.co.topgate.asada.web.RequestMessage sut = new RequestMessage();
         @Before
         public void setUp () {
             sut = new RequestMessage();
@@ -89,53 +88,44 @@ public class RequestMessageTest {
     }
 
     public static class ヘッダーフィルードのテスト{
-        RequestMessage sut;
-        @Before
-        public void setUp () {
-            sut = new RequestMessage();
-        }
         @Test
         public void nullチェック () {
+            RequestMessage sut = new RequestMessage();
             assertThat(sut.findHeaderByName(null), is(nullValue()));
         }
         @Test
         public void 正しく値を得られるか () {
+            RequestMessage sut = new RequestMessage();
             sut.setHeaderFieldUri("person", "人");
             assertThat(sut.findHeaderByName("person"), is("人"));
         }
     }
 
     public static class メッセージボディのテスト{
-        RequestMessage sut;
-        @Before
-        public void setUp () {
-            sut = new RequestMessage();
-        }
         @Test
         public void nullチェック () {
+            RequestMessage sut = new RequestMessage();
             assertThat(sut.findMessageBody(null), is(nullValue()));
         }
         @Test
         public void 正しく値を得られるか () {
+            RequestMessage sut = new RequestMessage();
             sut.setMessageBody("person", "人");
             assertThat(sut.findMessageBody("person"), is("人"));
         }
     }
 
     public static class パースのテスト{
-        RequestMessage sut;
-        @Before
-        public void setUp () {
-            sut = new RequestMessage();
-        }
         @Test
         public void nullチェック () throws Exception{
+            RequestMessage sut = new RequestMessage();
             File file = new File("./src/test/java/jp/co/topgate/asada/web/Documents/empty.txt");
             InputStream is = new FileInputStream(file);
             assertThat(sut.parse(is), is(false));
         }
         @Test
         public void パースのテストをしようと思う () throws Exception{
+            RequestMessage sut = new RequestMessage();
             File file = new File("./src/test/java/jp/co/topgate/asada/web/Documents/requestMessage.txt");
             InputStream is = new FileInputStream(file);
 
@@ -152,6 +142,7 @@ public class RequestMessageTest {
         }
         @Test
         public void HOSTでメッセージボディに何か入れてみる() throws Exception{
+            RequestMessage sut = new RequestMessage();
             File file = new File("./src/test/java/jp/co/topgate/asada/web/Documents/HostRequestMessage.txt");
             InputStream is = new FileInputStream(file);
 

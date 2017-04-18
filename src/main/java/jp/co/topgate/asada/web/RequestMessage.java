@@ -4,9 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URI;
 import java.util.HashMap;
-import java.util.regex.PatternSyntaxException;
 
 /**
  * Created by yusuke-pc on 2017/04/12.
@@ -45,7 +43,7 @@ public class RequestMessage {
                     }
                     protocolVersion = requestLine[2];
                     //System.out.println(method + " " + uri + " " + protocolVersion);
-                    while(!(str = br.readLine()).equals("") && isParseOK == true){
+                    while(!(str = br.readLine()).equals("") && isParseOK){
                         //System.out.println(str);
                         String[] header = str.split(HEADER_FIELD_COLON);            //ヘッダーフィールド
                         if(header.length == HEADER_FIELD_LENGTH) {
@@ -66,7 +64,7 @@ public class RequestMessage {
 
                     //ここからは動的なページの対応処理
 
-                    if("HOST".equals(getMethod()) && isParseOK == true) {
+                    if("HOST".equals(getMethod()) && isParseOK) {
                         //メソッドがHOSTの場合メッセージボディの処理を行う
                         while(!(str = br.readLine()).equals("")) {
                             String[] s1 = str.split(MESSAGE_BODY_AMPERSAND);
@@ -80,7 +78,7 @@ public class RequestMessage {
                                 }
                             }
                         }
-                    }else if("GET".equals(getMethod()) && isParseOK == true){
+                    }else if("GET".equals(getMethod()) && isParseOK){
                         String[] s1 = uri.split(URI_QUESTION_MARK);                 //uriのパース
                         uri = s1[0];     //これで純粋なuriになった
                         if(uri.equals("/")){                                        //"/"を要求された場合の処理

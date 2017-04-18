@@ -1,6 +1,5 @@
 package jp.co.topgate.asada.web;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -13,29 +12,29 @@ public class ResourceFileType {
     private static final String EXTENSION_SLASH = "/";
     private HashMap<String, String> fileType = new HashMap<>();
     private ArrayList<String> byteType = new ArrayList<>();
-    private String uri = null;
     private String uri_extension;
 
     public ResourceFileType(String uri) {
         if(uri != null){
-            this.uri = uri;
             String[] s = uri.split(URI_DOT);
             if(s.length == URI_DOT_LENGTH) {
                 uri_extension = s[1];
             }
+            fileType.put("htm","text/html");
+            fileType.put("html","text/html");
+            fileType.put("css","text/css");
+            fileType.put("js","text/javascript");
+
+            fileType.put("txt","text/plain");
+
+            fileType.put("jpg","image/jpg");
+            fileType.put("jpeg","image/jpeg");
+            fileType.put("png","image/png");
+            fileType.put("gif","image/gif");
+
+            //byteTypeにaddしておけば画像以外のバイトファイルを追加しても問題ない
+            byteType.add("image");
         }
-        fileType.put("htm","text/html");
-        fileType.put("html","text/html");
-        fileType.put("css","text/css");
-        fileType.put("js","text/javascript");
-
-        fileType.put("jpg","image/jpg");
-        fileType.put("jpeg","image/jpeg");
-        fileType.put("png","image/png");
-        fileType.put("gif","image/gif");
-
-        //byteTypeにaddしておけば画像以外のバイトファイルを追加しても問題ない
-        byteType.add("image");
     }
     public boolean isRegistered(){
         return fileType.containsKey(uri_extension);

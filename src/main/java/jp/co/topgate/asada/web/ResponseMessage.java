@@ -1,7 +1,5 @@
 package jp.co.topgate.asada.web;
 
-import jdk.internal.util.xml.impl.Input;
-
 import java.io.*;
 import java.util.ArrayList;
 
@@ -46,7 +44,7 @@ public class ResponseMessage {
         }
     }
 
-    public void returnResponse(OutputStream os, ResourceFileType rft) {
+    public void returnResponse(OutputStream os,ResourceFileType rft) {
         BufferedReader br = null;
         InputStream in = null;
         StringBuilder builder = new StringBuilder();
