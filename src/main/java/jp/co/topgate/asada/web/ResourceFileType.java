@@ -1,5 +1,6 @@
 package jp.co.topgate.asada.web;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -7,64 +8,52 @@ import java.util.HashMap;
  * Created by yusuke-pc on 2017/04/15.
  */
 public class ResourceFileType {
-    private static final String UIR_DOT = "\\.";
-    private static final int UIR_DOT_LENGTH = 2;
-    private HashMap<String, String> charFile = new HashMap<>();
-    private HashMap<String, String> byteFile = new HashMap<>();
+    private static final String URI_DOT = "\\.";
+    private static final int URI_DOT_LENGTH = 2;
+    private static final String EXTENSION_SLASH = "/";
+    private HashMap<String, String> fileType = new HashMap<>();
+    private ArrayList<String> byteType = new ArrayList<>();
+    private String uri = null;
+    private String uri_extension;
 
-    public ResourceFileType() {
-        charFile.put("htm","text/html");
-        charFile.put("html","text/html");
-        charFile.put("css","text/css");
-        charFile.put("js","text/javascript");
+    public ResourceFileType(String uri) {
+        if(uri != null){
+            this.uri = uri;
+            String[] s = uri.split(URI_DOT);
+            if(s.length == URI_DOT_LENGTH) {
+                uri_extension = s[1];
+            }
+        }
+        fileType.put("htm","text/html");
+        fileType.put("html","text/html");
+        fileType.put("css","text/css");
+        fileType.put("js","text/javascript");
 
-        byteFile.put("jpg","image/jpg");
-        byteFile.put("jpeg","image/jpeg");
-        byteFile.put("png","image/png");
-        byteFile.put("gif","image/gif");
+        fileType.put("jpg","image/jpg");
+        fileType.put("jpeg","image/jpeg");
+        fileType.put("png","image/png");
+        fileType.put("gif","image/gif");
+
+        //byteTypeにaddしておけば画像以外のバイトファイルを追加しても問題ない
+        byteType.add("image");
     }
-    public boolean isChar(String uri) {
+    public boolean isRegistered(){
+        return fileType.containsKey(uri_extension);
+    }
+    public boolean isByteFile() {
         boolean result = false;
-        if(uri != null) {
-            String[] s = uri.split(UIR_DOT);
-            if (s.length == UIR_DOT_LENGTH) {
-                result = charFile.containsKey(s[1]);
+        for (String s1 : fileType.keySet()) {
+            String[] s2 = fileType.get(s1).split(EXTENSION_SLASH);
+            for (String s3 : byteType){
+                if(s3.equals(s2[0])){
+                    result = true;
+                }
             }
         }
         return result;
     }
-    public String getCharContentType(String uri){
-        String result = null;
-        if(uri != null){
-            String[] s = uri.split(UIR_DOT);
-            if (s.length == UIR_DOT_LENGTH) {
-                result = charFile.get(uri);
-            }
-
-        }
-        return result;
-    }
-    public boolean isByte(String uri) {
-        boolean result = false;
-        if(uri != null){
-            for(String s : byteFile.keySet()) {
-                result = uri.endsWith(s);
-            }
-            String[] s = uri.split(UIR_DOT);
-            if (s.length == UIR_DOT_LENGTH) {
-                result = byteFile.containsKey(s[1]);
-            }
-        }
-        return result;
-    }
-    public String getByteContentType(String uri){
-        String result = null;
-        if(uri != null){
-            String[] s = uri.split(UIR_DOT);
-            if(s.length == UIR_DOT_LENGTH){
-                result = byteFile.get(uri);
-            }
-        }
+    public String getContentType(){
+        String result = fileType.get(uri_extension);
         return result;
     }
 }

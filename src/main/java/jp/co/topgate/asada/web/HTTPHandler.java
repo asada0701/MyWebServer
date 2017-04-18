@@ -12,23 +12,30 @@ public class HTTPHandler {
     private static final String STATUS_OK = "200";
     private static final String STATUS_BAD_REQUEST = "400";
     private static final String STATUS_NOT_FOUND = "404";
-    private static ResourceFileType rft = new ResourceFileType();
+    private ResourceFileType rft = null;
+    private RequestMessage requestMessage = null;
+    private ResponseMessage responseMessage = null;
+    private File resource = null;
 
     public void requestComes(InputStream is, OutputStream os){
-        RequestMessage requestMessage = new RequestMessage();
-        ResponseMessage responseMessage = new ResponseMessage();
+        requestMessage = new RequestMessage();
+        responseMessage = new ResponseMessage();
 //        String method = null;
-        String uri = null;
-        String statusCode;
-        File resource = null;
 
+        String statusCode;
         if(requestMessage.parse(is)){
 //            method = requestMessage.getMethod();
-            uri = requestMessage.getUri();
-            resource = new File(FILE_PATH + uri);
+            resource = new File(FILE_PATH + requestMessage.getUri());
             if(resource.exists()){
                 if(resource.isFile()){
-                    statusCode = STATUS_OK;
+                    //ここでファイルの拡張子が登録されているかのチェック
+                    rft = new ResourceFileType(requestMessage.getUri());
+                    if(rft.isRegistered()){
+                        statusCode = STATUS_OK;
+                    }else{
+                        //登録されていない拡張子が要求された
+                        statusCode = null;
+                    }
                 }else{
                     //ディレクトリを指定してきた
                     statusCode = STATUS_NOT_FOUND;
@@ -58,17 +65,8 @@ public class HTTPHandler {
                 responseMessage.setStatusCode("200");
                 responseMessage.setReasonPhrase("OK");
                 responseMessage.setMessageBody(resource);
-
-                if(rft.isChar(uri)){
-                    //contentTypeがhtmlとcssで違うのを忘れてた
-                    responseMessage.addHeader("Content-Type", rft.getCharContentType(uri));
-                    responseMessage.returnResponseChar(os);
-                }else if(rft.isByte(uri)){
-                    responseMessage.addHeader("Content-Type", rft.getByteContentType(uri));
-                    responseMessage.returnResponseByte(os);
-                }else{
-                    //
-                }
+                responseMessage.addHeader("Content-Type", rft.getContentType());
+                responseMessage.returnResponse(os, rft);
                 break;
 
             case STATUS_BAD_REQUEST:
@@ -80,7 +78,9 @@ public class HTTPHandler {
                 s = "<html><head><title>400 Bad Request</title></head>" +
                         "<body><h1>Bad Request</h1>" +
                         "<p>Your browser sent a request that this server could not understand.<br /></p></body></html>";
-                responseMessage.returnResponse(s,os);
+                if(!responseMessage.returnResponse(os, s)){
+                    System.out.println("returnResponseメソッドの引数Stringがnullだった");
+                }
                 break;
 
             case STATUS_NOT_FOUND:
@@ -92,8 +92,14 @@ public class HTTPHandler {
                 s = "<html><head><title>404 Not Found</title></head>" +
                         "<body><h1>Not Found</h1>" +
                         "<p>お探しのページは見つかりませんでした。<br /></p></body></html>";
-                responseMessage.returnResponse(s,os);
+                if(!responseMessage.returnResponse(os, s)){
+                    System.out.println("returnResponseメソッドの引数Stringがnullだった");
+                }
+                responseMessage.returnResponse(os, s);
                 break;
+
+            default:
+                System.out.println("ResoureFileTypeクラスに存在しないファイルの拡張子が要求されました");
         }
     }
 }
