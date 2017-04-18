@@ -18,12 +18,14 @@ public class HTTPHandler {
         RequestMessage requestMessage = new RequestMessage();
         ResponseMessage responseMessage = new ResponseMessage();
 //        String method = null;
+        String uri = null;
         String statusCode;
         File resource = null;
 
         if(requestMessage.parse(is)){
 //            method = requestMessage.getMethod();
-            resource = new File(FILE_PATH + requestMessage.getUri());
+            uri = requestMessage.getUri();
+            resource = new File(FILE_PATH + uri);
             if(resource.exists()){
                 if(resource.isFile()){
                     statusCode = STATUS_OK;
@@ -57,11 +59,12 @@ public class HTTPHandler {
                 responseMessage.setReasonPhrase("OK");
                 responseMessage.setMessageBody(resource);
 
-                if(rft.isChar(requestMessage.getUri())){
-                    responseMessage.addHeader("Content-Type", "text/html");
+                if(rft.isChar(uri)){
+                    //contentTypeがhtmlとcssで違うのを忘れてた
+                    responseMessage.addHeader("Content-Type", rft.getCharContentType(uri));
                     responseMessage.returnResponseChar(os);
-                }else if(rft.isByte(requestMessage.getUri())){
-                    responseMessage.addHeader("Content-Type", "image/jpg");
+                }else if(rft.isByte(uri)){
+                    responseMessage.addHeader("Content-Type", rft.getByteContentType(uri));
                     responseMessage.returnResponseByte(os);
                 }else{
                     //
