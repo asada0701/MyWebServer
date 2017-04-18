@@ -173,7 +173,7 @@ public class ResponseMessageTest {
                     "    </p>" +
                     "  </div>" +
                     "  <div id=\"gazou\">" +
-                    "    <p>私の好きな猫の画像です<img src=\"./img/1.jpg\" width=\"400\" height=\"360\" alt=\"猫\"></p>" +
+                    "    <p>私の好きな猫の画像です<img src=\"./img/1.jpg\" width=\"400\" height=\"360\" alt=\"猫\" /></p>" +
                     "  </div>" +
                     "  <!--<div id=\"douga\">-->" +
                     "    <!--<p>こちらは好きな動画になります。-->" +
