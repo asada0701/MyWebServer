@@ -78,9 +78,7 @@ public class HTTPHandler {
                 s = "<html><head><title>400 Bad Request</title></head>" +
                         "<body><h1>Bad Request</h1>" +
                         "<p>Your browser sent a request that this server could not understand.<br /></p></body></html>";
-                if(responseMessage.returnResponse(os, s)){
-
-                }else{
+                if(!responseMessage.returnResponse(os, s)){
                     System.out.println("returnResponseメソッドの引数Stringがnullだった");
                 }
                 break;
@@ -95,11 +93,8 @@ public class HTTPHandler {
                         "<body><h1>Not Found</h1>" +
                         "<p>お探しのページは見つかりませんでした。<br /></p></body></html>";
                 if(!responseMessage.returnResponse(os, s)){
-
-                }else{
                     System.out.println("returnResponseメソッドの引数Stringがnullだった");
                 }
-                responseMessage.returnResponse(os, s);
                 break;
 
             default:
