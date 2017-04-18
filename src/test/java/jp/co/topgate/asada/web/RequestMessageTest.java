@@ -4,8 +4,6 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 
-import jp.co.topgate.asada.web.RequestMessage;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
