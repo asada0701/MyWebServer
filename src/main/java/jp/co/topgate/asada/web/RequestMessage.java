@@ -29,6 +29,8 @@ public class RequestMessage {
     private HashMap<String, String> messageBody = new HashMap<>();
 
     public boolean parse(InputStream is) {
+        //パースメソッドの中でmethodが正しいものかチェック
+        //間違いならbad requestに
         boolean isParseOK = true;
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
         try{

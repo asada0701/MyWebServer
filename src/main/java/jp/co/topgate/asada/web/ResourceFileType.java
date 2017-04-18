@@ -41,10 +41,10 @@ public class ResourceFileType {
     }
     public boolean isByteFile() {
         boolean result = false;
-        for (String s1 : fileType.keySet()) {
-            String[] s2 = fileType.get(s1).split(EXTENSION_SLASH);
-            for (String s3 : byteType){
-                if(s3.equals(s2[0])){
+        if(isRegistered()){
+            String[] str = fileType.get(uri_extension).split(EXTENSION_SLASH);
+            for(String s : byteType){
+                if(s.equals(str[0])){
                     result = true;
                 }
             }

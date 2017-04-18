@@ -8,7 +8,8 @@ import java.io.OutputStream;
  * Created by yusuke-pc on 2017/04/12.
  */
 public class HTTPHandler {
-    public static final String FILE_PATH = "./src/main/java/jp/co/topgate/asada/web/Documents";
+    public static final String FILE_PATH = "./src/main/resources/";
+
     private static final String STATUS_OK = "200";
     private static final String STATUS_BAD_REQUEST = "400";
     private static final String STATUS_NOT_FOUND = "404";
