@@ -25,53 +25,59 @@ public class App {
                     System.out.print("please select :");
                     choices = scan.next();
                 } while (!(choices.equals(START_NUM) || choices.equals(STOP_NUM) || choices.equals(END_NUM)));
-                switch (choices) {
-                    case START_NUM:
-                        switch (server.getState()) {
-                            case TERMINATED:
-                                server = new Server();
-                            case NEW:
-                                server.startServer();
-                                System.out.println("start up http server..");
-                                break;
-                            case RUNNABLE:
-                                System.out.println("http server is already running..");
-                            default:
-                                //調べて来ないとしてもjavaは網羅チェックをしていないので意図しているのかもしくは偶然なのか不明になる
-                                System.out.println("http server is wrong state");
-                        }
+                String msg = doSomething(server, choices);
+                System.out.println(msg);
+            } while (!choices.equals(END_NUM));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    public static String doSomething(Server server, String choices) throws IOException{
+        String msg;
+        switch (choices) {
+            case START_NUM:
+                switch (server.getState()) {
+                    case TERMINATED:
+                        server = new Server();
+                    case NEW:
+                        server.startServer();
+                        msg = "start up http server..";
                         break;
-                    case STOP_NUM:
-                        switch (server.getState()) {
-                            case NEW:
-                            case TERMINATED:
-                                System.out.println("http server is not running..");
-                                break;
-                            case RUNNABLE:
-                                if (server.stopServer()) {
-                                    System.out.println("http server stops..");
-                                } else {
-                                    System.out.println("wait a second, http server is returning a response..");
-                                }
-                                break;
-                            default:
-                                System.out.println("http server is wrong state");
-                        }
+                    case RUNNABLE:
+                        msg = "http server is already running..";
+                    default:
+                        //調べて来ないとしてもjavaは網羅チェックをしていないので意図しているのかもしくは偶然なのか不明になる
+                        msg = "http server is wrong state";
+                }
+                break;
+            case STOP_NUM:
+                switch (server.getState()) {
+                    case NEW:
+                    case TERMINATED:
+                        msg = "http server is not running..";
                         break;
-                    case END_NUM:
-                        if (server.endServer()) {
-                            System.out.println("bye..");
+                    case RUNNABLE:
+                        if (server.stopServer()) {
+                            msg = "http server stops..";
                         } else {
-                            System.out.println("wait a second, http server is returning a response..");
-                            choices = "";
+                            msg = "wait a second, http server is returning a response..";
                         }
                         break;
                     default:
-                        //エラー処理予定地
+                        msg = "http server is wrong state";
                 }
-            } while (!choices.equals(END_NUM));
-        } catch (IOException e) {
-            e.printStackTrace();
+                break;
+            case END_NUM:
+                if (server.endServer()) {
+                    msg = "bye..";
+                } else {
+                    msg = "wait a second, http server is returning a response..";
+                }
+                break;
+            default:
+                //エラー処理予定地
+                msg = "エラー";
         }
+        return msg;
     }
 }

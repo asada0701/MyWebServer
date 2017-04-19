@@ -111,14 +111,16 @@ class ResponseMessage {
         String stringMessageBody = null;
         switch (statusCode) {
             case STATUS_BAD_REQUEST:
-                stringMessageBody = "<html><head><title>400 Bad Request</title></head>" +
-                        "<body><h1>Bad Request</h1>" +
-                        "<p>Your browser sent a request that this server could not understand.<br /></p></body></html>";
+                stringMessageBody =
+                        "<html><head><title>400 Bad Request</title></head>" +
+                                "<body><h1>Bad Request</h1>" +
+                                "<p>Your browser sent a request that this server could not understand.<br /></p></body></html>";
                 break;
             case STATUS_NOT_FOUND:
-                stringMessageBody = "<html><head><title>404 Not Found</title></head>" +
-                        "<body><h1>Not Found</h1>" +
-                        "<p>お探しのページは見つかりませんでした。<br /></p></body></html>";
+                stringMessageBody =
+                        "<html><head><title>404 Not Found</title></head>" +
+                                "<body><h1>Not Found</h1>" +
+                                "<p>お探しのページは見つかりませんでした。<br /></p></body></html>";
                 break;
             default:
                 System.out.println("存在しないステータスコードが指定されました。");
@@ -126,7 +128,7 @@ class ResponseMessage {
         if (stringMessageBody != null) {
             PrintWriter pw = new PrintWriter(os, true);
             StringBuilder builder = new StringBuilder();
-            builder.append(protocolVersion + " " + statusCode + " " + reasonPhrase).append("\n");
+            builder.append(protocolVersion + " " + statusCode + " " + reasonPhrase.get(statusCode)).append("\n");
             for (String s : headerField) {
                 builder.append(s).append("\n");
             }

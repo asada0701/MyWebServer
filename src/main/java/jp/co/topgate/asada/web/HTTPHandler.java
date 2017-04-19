@@ -33,6 +33,8 @@ class HTTPHandler {
             } else {
                 statusCode = ResponseMessage.STATUS_NOT_FOUND;
             }
+        } catch (RequestParseRuntimeException e) {
+            statusCode = ResponseMessage.STATUS_BAD_REQUEST;
         } catch (IOException e) {
             statusCode = ResponseMessage.STATUS_BAD_REQUEST;
         }

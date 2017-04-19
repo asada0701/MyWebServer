@@ -1,5 +1,6 @@
 package jp.co.topgate.asada.web;
 
+import java.net.URI;
 import java.util.HashMap;
 
 /**
@@ -33,7 +34,7 @@ class ResourceFileType {
      * @param uri リクエストメッセージに含まれるURI
      * @throws NullPointerException もし引数がnullの場合吐き出す
      */
-    ResourceFileType(String uri) throws NullPointerException {
+    ResourceFileType(String uri) {
         if (uri != null) {
             String[] s = uri.split(URI_DOT);
             if (s.length == URI_DOT_NUM_ITEMS) {
@@ -50,8 +51,6 @@ class ResourceFileType {
             fileType.put("jpeg", "image/jpeg");
             fileType.put("png", "image/png");
             fileType.put("gif", "image/gif");
-        } else {
-            throw new NullPointerException();
         }
     }
 
