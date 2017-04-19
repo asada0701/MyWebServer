@@ -1,5 +1,7 @@
 package jp.co.topgate.asada.web;
 
+import jp.co.topgate.asada.web.exception.ErrorResponseRuntimeException;
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -68,9 +70,9 @@ class ResponseMessage {
     }
 
     /**
-     * リソースファイルを送りたい時のメソッド
+     * リソースファイルを送る時のメソッド
      */
-    void returnResponse(OutputStream os, int statusCode, File resource, ResourceFileType rft) {
+    void returnResponse(OutputStream os, int statusCode, File resource, ResourceFileType rft) throws IOException {
         addHeader("Content-Type", rft.getContentType());
         setMessageBody(resource);
 
@@ -91,24 +93,20 @@ class ResponseMessage {
             }
             os.flush();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw e;
         } finally {
-            try {
-                if (in != null) {
-                    in.close();
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+            if (in != null) {
+                in.close();
             }
         }
     }
 
     /**
-     * エラーメッセージを送りたい時のメソッド
+     * エラーメッセージを送る時のメソッド
      */
     void returnErrorResponse(OutputStream os, int statusCode) {
         this.addHeader("Content-Type", "text/html");
-        String stringMessageBody = null;
+        String stringMessageBody;
         switch (statusCode) {
             case STATUS_BAD_REQUEST:
                 stringMessageBody =
@@ -123,20 +121,18 @@ class ResponseMessage {
                                 "<p>お探しのページは見つかりませんでした。<br /></p></body></html>";
                 break;
             default:
-                System.out.println("存在しないステータスコードが指定されました。");
+                throw new ErrorResponseRuntimeException();
         }
-        if (stringMessageBody != null) {
-            PrintWriter pw = new PrintWriter(os, true);
-            StringBuilder builder = new StringBuilder();
-            builder.append(protocolVersion + " " + statusCode + " " + reasonPhrase.get(statusCode)).append("\n");
-            for (String s : headerField) {
-                builder.append(s).append("\n");
-            }
-            builder.append("\n");
-            builder.append(stringMessageBody);
-            pw.println(builder.toString());
-            pw.close();
+        PrintWriter pw = new PrintWriter(os, true);
+        StringBuilder builder = new StringBuilder();
+        builder.append(protocolVersion).append(" ").append(statusCode).append(" ").append(reasonPhrase.get(statusCode)).append("\n");
+        for (String s : headerField) {
+            builder.append(s).append("\n");
         }
+        builder.append("\n");
+        builder.append(stringMessageBody);
+        pw.println(builder.toString());
+        pw.close();
     }
 
     String getProtocolVersion() {

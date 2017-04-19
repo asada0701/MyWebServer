@@ -1,5 +1,7 @@
 package jp.co.topgate.asada.web;
 
+import jp.co.topgate.asada.web.exception.RequestParseRuntimeException;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -64,24 +66,28 @@ class RequestMessage {
 
     /**
      * コンストラクタ
+     *
+     * @param is サーバーソケットのリクエストメッセージ
      */
     RequestMessage(InputStream is) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
         try {
             String str = br.readLine();
-            if(str == null){
+            if (str == null) {
                 throw new RequestParseRuntimeException();
             }
             String[] requestLine = str.split(REQUEST_LINE_SPACE);
             if (requestLine.length != REQUEST_LINE_NUM_ITEMS) {
                 throw new RequestParseRuntimeException();
             }
+
             method = requestLine[0];
             uri = requestLine[1];
             if (uri.equals("/")) {
                 uri = "/index.html";
             }
             protocolVersion = requestLine[2];
+
             while ((str = br.readLine()) != null && !str.equals("")) {
                 String[] header = str.split(HEADER_FIELD_COLON);
                 if (header.length == HEADER_FIELD_NUM_ITEMS) {
@@ -94,8 +100,6 @@ class RequestMessage {
                     throw new RequestParseRuntimeException();
                 }
             }
-
-            //ここからは動的なページの対応処理
 
             if ("POST".equals(getMethod())) {
                 while ((str = br.readLine()).equals("")) {

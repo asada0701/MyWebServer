@@ -1,6 +1,7 @@
 package jp.co.topgate.asada.web;
 
-import java.net.URI;
+import jp.co.topgate.asada.web.exception.ResourceConstructorRuntimeException;
+
 import java.util.HashMap;
 
 /**
@@ -51,12 +52,14 @@ class ResourceFileType {
             fileType.put("jpeg", "image/jpeg");
             fileType.put("png", "image/png");
             fileType.put("gif", "image/gif");
+        } else {
+            throw new ResourceConstructorRuntimeException();
         }
     }
 
     /**
      * すでに登録されている種類のファイルかを返すメソッド
-     * true:登録済み
+     * @return 登録済みかどうか
      */
     boolean isRegistered() {
         return fileType.containsKey(uri_extension);

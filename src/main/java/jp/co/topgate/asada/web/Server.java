@@ -6,7 +6,8 @@ import java.net.Socket;
 import java.net.SocketException;
 
 /**
- * Created by yusuke-pc on 2017/04/12.
+ * サーバークラス
+ * @author asada
  */
 class Server extends Thread {
     private static final int portNumber = 8080;
@@ -31,8 +32,8 @@ class Server extends Thread {
         return result;
     }
 
-    boolean endServer() throws IOException {
-        return stopServer();
+    void endServer() throws IOException {
+        serverSocket.close();
     }
 
     public void run() {
