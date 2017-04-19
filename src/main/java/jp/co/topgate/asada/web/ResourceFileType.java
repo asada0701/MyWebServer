@@ -1,58 +1,86 @@
 package jp.co.topgate.asada.web;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
  * Created by yusuke-pc on 2017/04/15.
  */
-public class ResourceFileType {
+class ResourceFileType {
+
+    /**
+     * URIのドット
+     */
     private static final String URI_DOT = "\\.";
-    private static final int URI_DOT_LENGTH = 2;
-    private static final String EXTENSION_SLASH = "/";
+
+    /**
+     * URIの中にドットは一つかの確認
+     */
+    private static final int URI_DOT_NUM_ITEMS = 2;
+
+    /**
+     * ファイル拡張子とコンテンツタイプのハッシュマップ
+     */
     private HashMap<String, String> fileType = new HashMap<>();
-    private ArrayList<String> byteType = new ArrayList<>();
+
+    /**
+     * URIに含まれるファイルの拡張子
+     */
     private String uri_extension;
 
-    public ResourceFileType(String uri) {
-        if(uri != null){
+    /**
+     * コンストラクタ
+     *
+     * @param uri リクエストメッセージに含まれるURI
+     * @throws NullPointerException もし引数がnullの場合吐き出す
+     */
+    ResourceFileType(String uri) throws NullPointerException {
+        if (uri != null) {
             String[] s = uri.split(URI_DOT);
-            if(s.length == URI_DOT_LENGTH) {
+            if (s.length == URI_DOT_NUM_ITEMS) {
                 uri_extension = s[1];
             }
-            fileType.put("htm","text/html");
-            fileType.put("html","text/html");
-            fileType.put("css","text/css");
-            fileType.put("js","text/javascript");
+            fileType.put("htm", "text/html");
+            fileType.put("html", "text/html");
+            fileType.put("css", "text/css");
+            fileType.put("js", "text/javascript");
 
-            fileType.put("txt","text/plain");
+            fileType.put("txt", "text/plain");
 
-            fileType.put("jpg","image/jpg");
-            fileType.put("jpeg","image/jpeg");
-            fileType.put("png","image/png");
-            fileType.put("gif","image/gif");
-
-            //byteTypeにaddしておけば画像以外のバイトファイルを追加しても問題ない
-            byteType.add("image");
+            fileType.put("jpg", "image/jpg");
+            fileType.put("jpeg", "image/jpeg");
+            fileType.put("png", "image/png");
+            fileType.put("gif", "image/gif");
+        } else {
+            throw new NullPointerException();
         }
     }
-    public boolean isRegistered(){
+
+    /**
+     * すでに登録されている種類のファイルかを返すメソッド
+     * true:登録済み
+     */
+    boolean isRegistered() {
         return fileType.containsKey(uri_extension);
     }
-    public boolean isByteFile() {
-        boolean result = false;
-        if(isRegistered()){
-            String[] str = fileType.get(uri_extension).split(EXTENSION_SLASH);
-            for(String s : byteType){
-                if(s.equals(str[0])){
-                    result = true;
-                }
-            }
+
+    /**
+     * ファイルの拡張子、コンテンツタイプの登録メソッド
+     *
+     * @param extension   拡張子
+     * @param contentType 　コンテンツタイプ
+     */
+    void addFileType(String extension, String contentType) {
+        if (extension != null && contentType != null) {
+            fileType.put(extension, contentType);
         }
-        return result;
     }
-    public String getContentType(){
-        String result = fileType.get(uri_extension);
-        return result;
+
+    /**
+     * コンテンツタイプの取得できるメソッド
+     */
+    String getContentType() {
+        return fileType.get(uri_extension);
     }
+
+
 }
