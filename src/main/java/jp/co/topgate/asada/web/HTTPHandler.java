@@ -1,5 +1,8 @@
 package jp.co.topgate.asada.web;
 
+import jp.co.topgate.asada.web.exception.ErrorResponseRuntimeException;
+import jp.co.topgate.asada.web.exception.RequestParseRuntimeException;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,20 +31,28 @@ class HTTPHandler {
             RequestMessage requestMessage = new RequestMessage(is);
             resource = new File(FILE_PATH + requestMessage.getUri());
             rft = new ResourceFileType(requestMessage.getUri());
-            if (resource.exists() && resource.isFile() && rft.isRegistered()) {
+            if (resource.exists() && resource.isFile() && rft.isRegistered()) {     //rftの登録どうするん？
                 statusCode = ResponseMessage.STATUS_OK;
             } else {
                 statusCode = ResponseMessage.STATUS_NOT_FOUND;
             }
-        } catch (IOException e) {
+        } catch (IOException | RequestParseRuntimeException e) {
             statusCode = ResponseMessage.STATUS_BAD_REQUEST;
         }
 
         ResponseMessage responseMessage = new ResponseMessage();
         if (statusCode == ResponseMessage.STATUS_OK) {
-            responseMessage.returnResponse(os, statusCode, resource, rft);
+            try {
+                responseMessage.returnResponse(os, statusCode, resource, rft);
+            } catch (IOException e) {
+                e.printStackTrace();                                                //err処理どうする？
+            }
         } else {
-            responseMessage.returnErrorResponse(os, statusCode);
+            try {
+                responseMessage.returnErrorResponse(os, statusCode);
+            } catch (ErrorResponseRuntimeException e) {
+                e.printStackTrace();                                                //err
+            }
         }
     }
 }

@@ -1,5 +1,7 @@
 package jp.co.topgate.asada.web;
 
+import jp.co.topgate.asada.web.exception.RequestParseRuntimeException;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -64,25 +66,29 @@ class RequestMessage {
 
     /**
      * コンストラクタ
+     *
+     * @param is サーバーソケットのリクエストメッセージ
      */
-    RequestMessage(InputStream is) throws IOException{
+    RequestMessage(InputStream is) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
         try {
             String str = br.readLine();
-            String[] requestLine = str.split(REQUEST_LINE_SPACE);
-            if (requestLine.length == REQUEST_LINE_NUM_ITEMS) {
-                /*
-                str == null is always false
-                 */
-                throw new IOException();
+            if (str == null) {
+                throw new RequestParseRuntimeException();
             }
+            String[] requestLine = str.split(REQUEST_LINE_SPACE);
+            if (requestLine.length != REQUEST_LINE_NUM_ITEMS) {
+                throw new RequestParseRuntimeException();
+            }
+
             method = requestLine[0];
             uri = requestLine[1];
             if (uri.equals("/")) {
                 uri = "/index.html";
             }
             protocolVersion = requestLine[2];
-            while ((str = br.readLine()) != null && str.equals("")) {
+
+            while ((str = br.readLine()) != null && !str.equals("")) {
                 String[] header = str.split(HEADER_FIELD_COLON);
                 if (header.length == HEADER_FIELD_NUM_ITEMS) {
                     header[1] = header[1].trim();
@@ -91,30 +97,25 @@ class RequestMessage {
                     header[1] = header[1].trim();
                     headerFieldUri.put(header[0], header[1] + HEADER_FIELD_COLON + header[2]);
                 } else {
-                    throw new IOException();
+                    throw new RequestParseRuntimeException();
                 }
             }
 
-            //ここからは動的なページの対応処理
-
             if ("POST".equals(getMethod())) {
-                while ((str = br.readLine()) != null && str.equals("")) {
+                while ((str = br.readLine()).equals("")) {
                     String[] s1 = str.split(MESSAGE_BODY_AMPERSAND);
                     for (int i = 0; i < s1.length; i++) {
                         String[] s2 = s1[i].split(MESSAGE_BODY_EQUAL);
                         if (s2.length == MESSAGE_BODY_NUM_ITEMS) {
                             messageBody.put(s2[0], s2[1]);
                         } else {
-                            throw new IOException();
+                            throw new RequestParseRuntimeException();
                         }
                     }
                 }
             } else if ("GET".equals(getMethod())) {
                 String[] s1 = uri.split(URI_QUESTION_MARK);
                 uri = s1[0];
-                if (uri.equals("/")) {
-                    uri = "/index.html";
-                }
                 if (s1.length > 1) {
                     String[] s2 = s1[1].split(URI_QUERY_AMPERSAND);
                     for (int k = 0; k < s2.length; k++) {
@@ -122,7 +123,7 @@ class RequestMessage {
                         if (s3.length == URI_QUERY_NUM_ITEMS) {
                             uriQuery.put(s3[0], s3[1]);
                         } else {
-                            throw new IOException();
+                            throw new RequestParseRuntimeException();
                         }
                     }
                 }

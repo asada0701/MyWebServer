@@ -1,5 +1,7 @@
 package jp.co.topgate.asada.web;
 
+import jp.co.topgate.asada.web.exception.ResourceConstructorRuntimeException;
+
 import java.util.HashMap;
 
 /**
@@ -33,7 +35,7 @@ class ResourceFileType {
      * @param uri リクエストメッセージに含まれるURI
      * @throws NullPointerException もし引数がnullの場合吐き出す
      */
-    ResourceFileType(String uri) throws NullPointerException {
+    ResourceFileType(String uri) {
         if (uri != null) {
             String[] s = uri.split(URI_DOT);
             if (s.length == URI_DOT_NUM_ITEMS) {
@@ -51,13 +53,13 @@ class ResourceFileType {
             fileType.put("png", "image/png");
             fileType.put("gif", "image/gif");
         } else {
-            throw new NullPointerException();
+            throw new ResourceConstructorRuntimeException();
         }
     }
 
     /**
      * すでに登録されている種類のファイルかを返すメソッド
-     * true:登録済み
+     * @return 登録済みかどうか
      */
     boolean isRegistered() {
         return fileType.containsKey(uri_extension);
