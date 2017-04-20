@@ -118,7 +118,7 @@ class RequestMessage {
                     }
                 }
             } else if ("POST".equals(getMethod())) {
-                while ((str = br.readLine()).equals("")) {
+                while ((str = br.readLine()) != null && !str.equals("")) {
                     String[] s1 = str.split(MESSAGE_BODY_AMPERSAND);
                     for (String aS1 : s1) {
                         String[] s2 = aS1.split(MESSAGE_BODY_EQUAL);
