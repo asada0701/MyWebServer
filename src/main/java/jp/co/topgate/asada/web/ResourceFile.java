@@ -13,19 +13,19 @@ import java.util.HashMap;
  */
 class ResourceFile extends File {
     /**
-     * URIのドット
+     * ファイル名のドット
      */
     private static final String FILE_NAME_DOT = "\\.";
 
     /**
-     * の中にドットは一つかの確認
+     * URIの中にドットは一つかの確認
      */
-    private static final int FILE_NAME_DOT_NUM_ITEMS = 2;
+    private static final int URI_DOT_NUM_ITEMS = 3;
 
     /**
      * ファイル拡張子とコンテンツタイプのハッシュマップ
      */
-    private HashMap<String, String> fileType = new HashMap<>();
+    private static HashMap<String, String> fileType = new HashMap<>();
 
     /**
      * URIに含まれるファイルの拡張子
@@ -49,10 +49,19 @@ class ResourceFile extends File {
         }
 
         String[] s = this.getName().split(FILE_NAME_DOT);
-        if (s.length == FILE_NAME_DOT_NUM_ITEMS) {
-            uri_extension = s[1];
-        }
+        uri_extension = s[1];
 
+        setUp();
+
+        if (!isRegistered(filePath)) {
+            throw new FileNotRegisteredRuntimeException();
+        }
+    }
+
+    /**
+     * ファイル拡張子とコンテンツタイプのハッシュマップの初期設定を行う
+     */
+    private static void setUp() {
         fileType.put("htm", "text/html");
         fileType.put("html", "text/html");
         fileType.put("css", "text/css");
@@ -64,37 +73,37 @@ class ResourceFile extends File {
         fileType.put("jpeg", "image/jpeg");
         fileType.put("png", "image/png");
         fileType.put("gif", "image/gif");
-
-        if (!this.isRegistered()) {
-            throw new FileNotRegisteredRuntimeException();
-        }
     }
 
     /**
      * すでに登録されている種類のファイルかを返すメソッド
      *
-     * @return 登録済みかどうか
+     * @param filePath ファイルのパスを渡す
+     * @return 登録済みかどうかを返す
      */
-    boolean isRegistered() {
-        return fileType.containsKey(uri_extension);
+    static boolean isRegistered(String filePath) {
+        boolean result = false;
+        setUp();
+        String[] s = filePath.split(FILE_NAME_DOT);
+        if (s.length == URI_DOT_NUM_ITEMS) {
+            result = fileType.containsKey(s[2]);
+        }
+        return result;
     }
 
     /**
-     * ファイルの拡張子、コンテンツタイプの登録メソッド
-     *
-     * @param extension   拡張子
-     * @param contentType 　コンテンツタイプ
+     * ファイルの拡張子、コンテンツタイプの追加をする
      */
-    void addFileType(String extension, String contentType) {
+    static void addFileType(String extension, String contentType) {
         if (extension != null && contentType != null) {
             fileType.put(extension, contentType);
         }
     }
 
     /**
-     * コンテンツタイプの取得できるメソッド
+     * コンテンツタイプを取得できるメソッド
      *
-     * @return コンテンツタイプ
+     * @return コンテンツタイプを返す
      */
     String getContentType() {
         return fileType.get(uri_extension);

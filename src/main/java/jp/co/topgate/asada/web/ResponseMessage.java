@@ -38,7 +38,8 @@ class ResponseMessage {
 
     /**
      * コンストラクタ
-     * プロトコルバージョンとリーズンフレーズを初期設定する
+     * プロトコルバージョンの初期設定をする
+     * リーズンフレーズを用意する
      */
     ResponseMessage() {
         protocolVersion = "HTTP/1.1";
@@ -49,9 +50,7 @@ class ResponseMessage {
 
 
     /**
-     * プロトコルバージョンのセッター
-     *
-     * @param protocolVersion
+     * プロトコルバージョンの設定をする
      */
     void setProtocolVersion(String protocolVersion) {
         if (protocolVersion != null) {
@@ -61,9 +60,6 @@ class ResponseMessage {
 
     /**
      * ステータスコードとリーズンフレーズを追加する
-     *
-     * @param statusCode
-     * @param reasonPhrase
      */
     void addReasonPhrase(int statusCode, String reasonPhrase) {
         if (reasonPhrase != null) {
@@ -73,8 +69,6 @@ class ResponseMessage {
 
     /**
      * ヘッダーフィールドにヘッダ名とヘッダ値を追加する
-     * @param name
-     * @param value
      */
     void addHeader(String name, String value) {
         if (name != null && value != null) {

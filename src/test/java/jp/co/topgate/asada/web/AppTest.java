@@ -16,7 +16,7 @@ import static org.junit.Assert.assertThat;
 public class AppTest {
     public static Server server;
     @Test
-    public void テスト() throws Exception{
+    public void サーバースタートテスト() throws Exception{
         server = new Server();
         assertThat("start up http server..", is(App.controlServer(server, "1")));
         server.endServer();

@@ -32,12 +32,19 @@ class HTTPHandler {
         int statusCode;
         try {
             RequestMessage requestMessage = new RequestMessage(is);
-            rf = new ResourceFile(FILE_PATH + requestMessage.getUri());
-            statusCode = ResponseMessage.STATUS_OK;
+            if (ResourceFile.isRegistered(FILE_PATH + requestMessage.getUri())) {
+                //登録済み
+                rf = new ResourceFile(FILE_PATH + requestMessage.getUri());
+                statusCode = ResponseMessage.STATUS_OK;
+            } else {
+                //登録されていない
+                statusCode = -1;
+            }
 
         } catch (FileNotRegisteredRuntimeException e) {
-            //処理未定
-            statusCode = 0;
+            e.printStackTrace();
+            //未定
+            statusCode = -1;
 
         } catch (NullPointerException | ResourceFileRuntimeException e) {
             statusCode = ResponseMessage.STATUS_NOT_FOUND;
@@ -53,6 +60,8 @@ class HTTPHandler {
             } catch (IOException e) {
                 e.printStackTrace();                                                //err処理どうする？
             }
+        } else if (statusCode == -1) {
+
         } else {
             try {
                 responseMessage.returnErrorResponse(os, statusCode);
