@@ -7,14 +7,14 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 /**
- * Created by yusuke-pc on 2017/04/17.
+ * Created by yusuke-pc on 2017/04/20.
  */
-public class ResourceFileTypeTest {
+public class ResourceFileTest {
     @Test
     public void txtファイルを指定してみる() {
-        ResourceFileType sut = null;
+        ResourceFile sut = null;
         try{
-            sut = new ResourceFileType("src/test/java/jp/co/topgate/asada/web/Documents/empty.txt");
+            sut = new ResourceFile("src/test/java/jp/co/topgate/asada/web/Documents/empty.txt");
         }catch(NullPointerException e){
             e.printStackTrace();
         }
@@ -24,9 +24,9 @@ public class ResourceFileTypeTest {
 
     @Test
     public void 存在しないファイルを指定してみる() {
-        ResourceFileType sut = null;
+        ResourceFile sut = null;
         try{
-            sut = new ResourceFileType("/video/sample.mp4");
+            sut = new ResourceFile("/video/sample.mp4");
         }catch(NullPointerException e){
             e.printStackTrace();
         }
@@ -36,7 +36,7 @@ public class ResourceFileTypeTest {
 
     @Test
     public void 拡張子とコンテンツタイプを追加してみる() {
-        ResourceFileType sut = new ResourceFileType("/video/sample.mp4");
+        ResourceFile sut = new ResourceFile("/video/sample.mp4");
         sut.addFileType("mp4", "audio/mp4");
         assertThat(sut.isRegistered(), is(true));
         assertThat(sut.getContentType(), is("audio/mp4"));

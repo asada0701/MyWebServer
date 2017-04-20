@@ -33,6 +33,9 @@ public class App {
                 } while (!(choices.equals(START_NUM) || choices.equals(STOP_NUM) || choices.equals(END_NUM)));
                 String msg = controlServer(server, choices);
                 System.out.println(msg);
+                if(END_NUM.equals(choices) && "wait a second, http server is returning a response..".equals(msg)){
+                    choices = "";
+                }
             } while (!choices.equals(END_NUM));
         } catch (ServerStateRuntimeException e) {
             e.printStackTrace();

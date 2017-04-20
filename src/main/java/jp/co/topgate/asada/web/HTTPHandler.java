@@ -15,7 +15,7 @@ class HTTPHandler {
     /**
      * リソースファイルのパス
      */
-    private static final String FILE_PATH = "./src/main/resources/";
+    private static final String FILE_PATH = "src/main/resources";
 
     /**
      * リクエストがきた場合に呼び出すメソッド
@@ -24,14 +24,12 @@ class HTTPHandler {
      * @param os OutputStream
      */
     void requestComes(InputStream is, OutputStream os) {
-        File resource = null;
-        ResourceFileType rft = null;
+        ResourceFile rf = null;
         int statusCode;
         try {
             RequestMessage requestMessage = new RequestMessage(is);
-            resource = new File(FILE_PATH + requestMessage.getUri());
-            rft = new ResourceFileType(requestMessage.getUri());
-            if (resource.exists() && resource.isFile() && rft.isRegistered()) {     //rftの登録どうするん？
+            rf = new ResourceFile(FILE_PATH + requestMessage.getUri());
+            if (rf.exists() && rf.isFile() && rf.isRegistered()) {     //rftの登録どうするん？
                 statusCode = ResponseMessage.STATUS_OK;
             } else {
                 statusCode = ResponseMessage.STATUS_NOT_FOUND;
@@ -43,7 +41,7 @@ class HTTPHandler {
         ResponseMessage responseMessage = new ResponseMessage();
         if (statusCode == ResponseMessage.STATUS_OK) {
             try {
-                responseMessage.returnResponse(os, statusCode, resource, rft);
+                responseMessage.returnResponse(os, statusCode, rf);
             } catch (IOException e) {
                 e.printStackTrace();                                                //err処理どうする？
             }
