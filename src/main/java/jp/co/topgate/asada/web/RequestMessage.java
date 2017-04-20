@@ -9,7 +9,9 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 
 /**
- * Created by yusuke-pc on 2017/04/12.
+ * リクエストメッセージクラス
+ *
+ * @author asada
  */
 class RequestMessage {
     /**
@@ -65,7 +67,7 @@ class RequestMessage {
     private HashMap<String, String> messageBody = new HashMap<>();
 
     /**
-     * コンストラクタ
+     * コンストラクタ、リクエストメッセージのパースする
      *
      * @param is サーバーソケットのリクエストメッセージ
      */
@@ -101,27 +103,27 @@ class RequestMessage {
                 }
             }
 
-            if ("POST".equals(getMethod())) {
-                while ((str = br.readLine()).equals("")) {
-                    String[] s1 = str.split(MESSAGE_BODY_AMPERSAND);
-                    for (int i = 0; i < s1.length; i++) {
-                        String[] s2 = s1[i].split(MESSAGE_BODY_EQUAL);
-                        if (s2.length == MESSAGE_BODY_NUM_ITEMS) {
-                            messageBody.put(s2[0], s2[1]);
+            if ("GET".equals(getMethod())) {
+                String[] s1 = uri.split(URI_QUESTION_MARK);
+                uri = s1[0];
+                if (s1.length > 1) {
+                    String[] s2 = s1[1].split(URI_QUERY_AMPERSAND);
+                    for (String aS2 : s2) {
+                        String[] s3 = aS2.split(URI_QUERY_EQUAL);
+                        if (s3.length == URI_QUERY_NUM_ITEMS) {
+                            uriQuery.put(s3[0], s3[1]);
                         } else {
                             throw new RequestParseRuntimeException();
                         }
                     }
                 }
-            } else if ("GET".equals(getMethod())) {
-                String[] s1 = uri.split(URI_QUESTION_MARK);
-                uri = s1[0];
-                if (s1.length > 1) {
-                    String[] s2 = s1[1].split(URI_QUERY_AMPERSAND);
-                    for (int k = 0; k < s2.length; k++) {
-                        String[] s3 = s2[k].split(URI_QUERY_EQUAL);
-                        if (s3.length == URI_QUERY_NUM_ITEMS) {
-                            uriQuery.put(s3[0], s3[1]);
+            } else if ("POST".equals(getMethod())) {
+                while ((str = br.readLine()).equals("")) {
+                    String[] s1 = str.split(MESSAGE_BODY_AMPERSAND);
+                    for (String aS1 : s1) {
+                        String[] s2 = aS1.split(MESSAGE_BODY_EQUAL);
+                        if (s2.length == MESSAGE_BODY_NUM_ITEMS) {
+                            messageBody.put(s2[0], s2[1]);
                         } else {
                             throw new RequestParseRuntimeException();
                         }
@@ -133,14 +135,30 @@ class RequestMessage {
         }
     }
 
+    /**
+     * リクエストメッセージのメソッドを返す
+     *
+     * @return HTTPメソッドを返す
+     */
     String getMethod() {
         return method;
     }
 
+    /**
+     * リクエストメッセージのURIを返す
+     *
+     * @return URIを返す
+     */
     String getUri() {
         return uri;
     }
 
+    /**
+     * リクエストメッセージURIに含まれていたQuery名を元にQuery値を返す
+     *
+     * @param name 　探したいQuery名
+     * @return Query値を返す。URIに含まれていなかった場合はNullを返す
+     */
     String findUriQuery(String name) {
         String result = null;
         if (name != null) {
@@ -149,10 +167,21 @@ class RequestMessage {
         return result;
     }
 
+    /**
+     * リクエストメッセージのプロトコルバージョンを返す
+     *
+     * @return プロトコルバージョンを返す
+     */
     String getProtocolVersion() {
         return protocolVersion;
     }
 
+    /**
+     * ヘッダーフィールドのヘッダ名を元にヘッダ値を返す
+     *
+     * @param fieldName 探したいヘッダ名
+     * @return ヘッダ値を返す。ヘッダーフィールドに含まれていなかった場合はNullを返す
+     */
     String findHeaderByName(String fieldName) {
         String result = null;
         if (fieldName != null) {
@@ -161,6 +190,12 @@ class RequestMessage {
         return result;
     }
 
+    /**
+     * メッセージボディに含まれていたQuery名を元にQuery値を返す
+     *
+     * @param key 探したいQuery名
+     * @return Query値を返す。URIに含まれていなかった場合はNullを返す
+     */
     String findMessageBody(String key) {
         String result;
         if (key != null) {

@@ -2,10 +2,8 @@ package jp.co.topgate.asada.web;
 
 import org.junit.Test;
 
-import java.io.*;
 
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -28,17 +26,6 @@ public class ResponseMessageTest {
         sut.addHeader("Server", "mywebserver/1.0");
         assertThat(sut.getHeaderField().get(0), is("Date: Thu,13 Api 2017 18:33:23 GMT"));
         assertThat(sut.getHeaderField().get(1), is("Server: mywebserver/1.0"));
-    }
-
-    @Test
-    public void メッセージボディのテスト() throws Exception{
-        sut = new ResponseMessage();
-        File testFile = new File("./src/test/resources/responseMessage.txt");
-        OutputStream os = new FileOutputStream(testFile);
-        ResourceFile rf = new ResourceFile("./src/test/resources/requestMessage.txt");
-        sut.setMessageBody(rf);
-        assertThat(sut.getMessageBody(), is(notNullValue()));
-        sut.returnResponse(os,200, rf);
     }
 
 //    @Test

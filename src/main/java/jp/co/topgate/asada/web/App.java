@@ -10,7 +10,6 @@ import java.util.Scanner;
  * クライアントクラス
  *
  * @author asada
- * @version 1.0
  */
 public class App {
     private static final String START_NUM = "1";
@@ -33,26 +32,32 @@ public class App {
                 } while (!(choices.equals(START_NUM) || choices.equals(STOP_NUM) || choices.equals(END_NUM)));
                 String msg = controlServer(server, choices);
                 System.out.println(msg);
-                if(END_NUM.equals(choices) && "wait a second, http server is returning a response..".equals(msg)){
+                if (END_NUM.equals(choices) && "wait a second, http server is returning a response..".equals(msg)) {
                     choices = "";
                 }
             } while (!choices.equals(END_NUM));
+
         } catch (ServerStateRuntimeException e) {
             e.printStackTrace();
             System.out.println("Unexpected Server State! state = " + e.getState().toString());
+
         } catch (IOException e) {
+            System.out.println("Input/Output of Server is wrong state..");
             e.printStackTrace();
-            System.out.println("Serverクラスでのエラー");
+
+        } catch (ScanChoicesRuntimeException e) {
+            System.out.println("your selected is wrong..");
+            e.printStackTrace();
         }
     }
 
     /**
      * サーバーを操作するメソッド
      *
-     * @param server
-     * @param choices
-     * @return
-     * @throws IOException
+     * @param server  サーバーのオブジェクト
+     * @param choices 選択した文字
+     * @return サーバーの状態をメッセージで返す
+     * @throws IOException サーバークラスで発生する
      */
     static String controlServer(Server server, String choices) throws IOException {
         String msg;
@@ -99,11 +104,8 @@ public class App {
                 }
                 break;
             default:
-                switch (server.getState()){
-                    case RUNNABLE:
-                        server.endServer();
-                    default:
-                        //
+                if (Thread.State.RUNNABLE.equals(server.getState())) {
+                    server.endServer();
                 }
                 throw new ScanChoicesRuntimeException();
         }

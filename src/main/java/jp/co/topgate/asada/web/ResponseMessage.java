@@ -10,7 +10,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by yusuke-pc on 2017/04/12.
+ * レスポンスメッセージクラス
+ *
+ * @author asada
  */
 class ResponseMessage {
     /**
@@ -33,40 +35,44 @@ class ResponseMessage {
     private String protocolVersion = null;
     private Map<Integer, String> reasonPhrase = new HashMap<>();
     private List<String> headerField = new ArrayList<>();
-    private File messageBody = null;
 
     /**
      * コンストラクタ
+     * プロトコルバージョンの初期設定をする
+     * リーズンフレーズを用意する
      */
     ResponseMessage() {
         protocolVersion = "HTTP/1.1";
-
         reasonPhrase.put(STATUS_OK, "OK");
         reasonPhrase.put(STATUS_BAD_REQUEST, "Bad Request");
         reasonPhrase.put(STATUS_NOT_FOUND, "Not Found");
     }
 
+
+    /**
+     * プロトコルバージョンの設定をする
+     */
     void setProtocolVersion(String protocolVersion) {
         if (protocolVersion != null) {
             this.protocolVersion = protocolVersion;
         }
     }
 
+    /**
+     * ステータスコードとリーズンフレーズを追加する
+     */
     void addReasonPhrase(int statusCode, String reasonPhrase) {
         if (reasonPhrase != null) {
             this.reasonPhrase.put(statusCode, reasonPhrase);
         }
     }
 
+    /**
+     * ヘッダーフィールドにヘッダ名とヘッダ値を追加する
+     */
     void addHeader(String name, String value) {
         if (name != null && value != null) {
             headerField.add(name + HEADER_FIELD_COLON + value);
-        }
-    }
-
-    void setMessageBody(File messageBody) {
-        if (messageBody != null && messageBody.exists() && messageBody.isFile()) {
-            this.messageBody = messageBody;
         }
     }
 
@@ -75,8 +81,6 @@ class ResponseMessage {
      */
     void returnResponse(OutputStream os, int statusCode, ResourceFile rf) throws IOException {
         addHeader("Content-Type", rf.getContentType());
-        setMessageBody(rf);
-
         InputStream in = null;
         StringBuilder builder = new StringBuilder();
         try {
@@ -87,18 +91,16 @@ class ResponseMessage {
             }
             builder.append("\n");
             os.write(builder.toString().getBytes());
-            in = new FileInputStream(messageBody);
+            in = new FileInputStream(rf);
             int num;
             try {
                 while ((num = in.read()) != -1) {
                     os.write(num);
                 }
-            }catch(SocketException e){
+            } catch (SocketException e) {
                 //Protocol wrong type for socket (Write failed)
             }
             os.flush();
-        } catch (IOException e) {
-            throw e;
         } finally {
             if (in != null) {
                 in.close();
@@ -150,9 +152,5 @@ class ResponseMessage {
 
     List<String> getHeaderField() {
         return this.headerField;
-    }
-
-    File getMessageBody() {
-        return this.messageBody;
     }
 }
