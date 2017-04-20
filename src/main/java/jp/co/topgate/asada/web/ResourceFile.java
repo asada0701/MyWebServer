@@ -1,23 +1,26 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.exception.ResourceConstructorRuntimeException;
+import jp.co.topgate.asada.web.exception.FileNotRegisteredRuntimeException;
+import jp.co.topgate.asada.web.exception.ResourceFileRuntimeException;
 
 import java.io.File;
 import java.util.HashMap;
 
 /**
+ * リソースファイルの管理をするクラス
  *
+ * @author asada
  */
-public class ResourceFile extends File {
+class ResourceFile extends File {
     /**
      * URIのドット
      */
-    private static final String URI_DOT = "\\.";
+    private static final String FILE_NAME_DOT = "\\.";
 
     /**
-     * URIの中にドットは一つかの確認
+     * の中にドットは一つかの確認
      */
-    private static final int URI_DOT_NUM_ITEMS = 2;
+    private static final int FILE_NAME_DOT_NUM_ITEMS = 2;
 
     /**
      * ファイル拡張子とコンテンツタイプのハッシュマップ
@@ -32,34 +35,44 @@ public class ResourceFile extends File {
     /**
      * コンストラクタ
      *
-     * @param uri リクエストメッセージに含まれるURI
-     * @throws NullPointerException もし引数がnullの場合吐き出す
+     * @param filePath リクエストメッセージで指定されたファイルのパス
+     * @throws ResourceFileRuntimeException      ディレクトリを指定された場合や、存在しないファイルを指定された
+     * @throws FileNotRegisteredRuntimeException 指定されたファイルのコンテツタイプが登録されていない
      */
-    ResourceFile(String uri) {
-        super(uri);
-        if (uri != null) {
-            String[] s = uri.split(URI_DOT);
-            if (s.length == URI_DOT_NUM_ITEMS) {
-                uri_extension = s[1];
-            }
-            fileType.put("htm", "text/html");
-            fileType.put("html", "text/html");
-            fileType.put("css", "text/css");
-            fileType.put("js", "text/javascript");
+    ResourceFile(String filePath) throws ResourceFileRuntimeException, FileNotRegisteredRuntimeException {
+        super(filePath);
+        if (!this.exists()) {
+            throw new ResourceFileRuntimeException();
+        }
+        if (!this.isFile()) {
+            throw new ResourceFileRuntimeException();
+        }
 
-            fileType.put("txt", "text/plain");
+        String[] s = this.getName().split(FILE_NAME_DOT);
+        if (s.length == FILE_NAME_DOT_NUM_ITEMS) {
+            uri_extension = s[1];
+        }
 
-            fileType.put("jpg", "image/jpg");
-            fileType.put("jpeg", "image/jpeg");
-            fileType.put("png", "image/png");
-            fileType.put("gif", "image/gif");
-        } else {
-            throw new ResourceConstructorRuntimeException();
+        fileType.put("htm", "text/html");
+        fileType.put("html", "text/html");
+        fileType.put("css", "text/css");
+        fileType.put("js", "text/javascript");
+
+        fileType.put("txt", "text/plain");
+
+        fileType.put("jpg", "image/jpg");
+        fileType.put("jpeg", "image/jpeg");
+        fileType.put("png", "image/png");
+        fileType.put("gif", "image/gif");
+
+        if (!this.isRegistered()) {
+            throw new FileNotRegisteredRuntimeException();
         }
     }
 
     /**
      * すでに登録されている種類のファイルかを返すメソッド
+     *
      * @return 登録済みかどうか
      */
     boolean isRegistered() {
@@ -80,6 +93,8 @@ public class ResourceFile extends File {
 
     /**
      * コンテンツタイプの取得できるメソッド
+     *
+     * @return コンテンツタイプ
      */
     String getContentType() {
         return fileType.get(uri_extension);

@@ -7,6 +7,7 @@ import java.net.SocketException;
 
 /**
  * サーバークラス
+ *
  * @author asada
  */
 class Server extends Thread {
@@ -15,14 +16,28 @@ class Server extends Thread {
     private Socket socket = new Socket();
     private HTTPHandler httpHandler = new HTTPHandler();
 
+    /**
+     * コンストラクタ
+     *
+     * @throws IOException
+     */
     Server() throws IOException {
         serverSocket = new ServerSocket(portNumber);
     }
 
+    /**
+     * サーバーを立ち上げるメソッド
+     */
     void startServer() {
         this.start();
     }
 
+    /**
+     * サーバーを停止させるメソッド、サーバーが通信中の場合は停止できない
+     *
+     * @return サーバーの停止に成功したか返す
+     * @throws IOException
+     */
     boolean stopServer() throws IOException {
         boolean result = false;
         if (socket == null) {
@@ -32,10 +47,18 @@ class Server extends Thread {
         return result;
     }
 
+    /**
+     * サーバーの緊急停止を行うメソッド、サーバーが通信中でも停止できる
+     *
+     * @throws IOException
+     */
     void endServer() throws IOException {
         serverSocket.close();
     }
 
+    /**
+     * Threadクラスのrunメソッドのオーバーライドメソッド
+     */
     public void run() {
         try {
             while (true) {
@@ -52,7 +75,7 @@ class Server extends Thread {
             ソケット作成中(accept()メソッド)にサーバーソケットをクローズしたため発生する
             */
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 }

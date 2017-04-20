@@ -30,17 +30,6 @@ public class ResponseMessageTest {
         assertThat(sut.getHeaderField().get(1), is("Server: mywebserver/1.0"));
     }
 
-    @Test
-    public void メッセージボディのテスト() throws Exception{
-        sut = new ResponseMessage();
-        File testFile = new File("./src/test/resources/responseMessage.txt");
-        OutputStream os = new FileOutputStream(testFile);
-        ResourceFile rf = new ResourceFile("./src/test/resources/requestMessage.txt");
-        sut.setMessageBody(rf);
-        assertThat(sut.getMessageBody(), is(notNullValue()));
-        sut.returnResponse(os,200, rf);
-    }
-
 //    @Test
 //    public void レスポンスメッセージの生成テスト() throws Exception {
 //        sut = new ResponseMessage();
