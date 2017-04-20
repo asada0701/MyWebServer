@@ -22,10 +22,11 @@ class HTTPHandler {
     private static final String FILE_PATH = "./src/main/resources";
 
     /**
-     * リクエストがきた場合に呼び出すメソッド
+     * リクエストがきた時に呼び出すメソッド
+     * HTTPステータスコードをwriteResponseメソッドに渡す
      *
-     * @param is InputStream
-     * @param os OutputStream
+     * @param is ソケットの入力ストリーム
+     * @param os ソケットの出力ストリーム
      */
     void requestComes(InputStream is, OutputStream os) {
         ResourceFile rf = null;
@@ -52,7 +53,17 @@ class HTTPHandler {
         } catch (IOException | RequestParseRuntimeException e) {
             statusCode = ResponseMessage.STATUS_BAD_REQUEST;
         }
+        writeResponse(os, statusCode, rf);
+    }
 
+    /**
+     * レスポンスメッセージをソケットの出力ストリームに書き出すメソッド
+     *
+     * @param os         ソケットの出力ストリーム
+     * @param statusCode HTTPステータスコード
+     * @param rf         ResourceFileのオブジェクト
+     */
+    private void writeResponse(OutputStream os, int statusCode, ResourceFile rf) {
         ResponseMessage responseMessage = new ResponseMessage();
         if (statusCode == ResponseMessage.STATUS_OK) {
             try {

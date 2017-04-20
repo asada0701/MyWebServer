@@ -2,10 +2,8 @@ package jp.co.topgate.asada.web;
 
 import org.junit.Test;
 
-import java.io.*;
 
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 /**
