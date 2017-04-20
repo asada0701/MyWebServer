@@ -3,6 +3,7 @@ package jp.co.topgate.asada.web;
 import jp.co.topgate.asada.web.exception.ErrorResponseRuntimeException;
 
 import java.io.*;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -72,9 +73,9 @@ class ResponseMessage {
     /**
      * リソースファイルを送る時のメソッド
      */
-    void returnResponse(OutputStream os, int statusCode, File resource, ResourceFileType rft) throws IOException {
-        addHeader("Content-Type", rft.getContentType());
-        setMessageBody(resource);
+    void returnResponse(OutputStream os, int statusCode, ResourceFile rf) throws IOException {
+        addHeader("Content-Type", rf.getContentType());
+        setMessageBody(rf);
 
         InputStream in = null;
         StringBuilder builder = new StringBuilder();
@@ -88,8 +89,12 @@ class ResponseMessage {
             os.write(builder.toString().getBytes());
             in = new FileInputStream(messageBody);
             int num;
-            while ((num = in.read()) != -1) {
-                os.write(num);
+            try {
+                while ((num = in.read()) != -1) {
+                    os.write(num);
+                }
+            }catch(SocketException e){
+                //Protocol wrong type for socket (Write failed)
             }
             os.flush();
         } catch (IOException e) {
@@ -105,7 +110,7 @@ class ResponseMessage {
      * エラーメッセージを送る時のメソッド
      */
     void returnErrorResponse(OutputStream os, int statusCode) {
-        this.addHeader("Content-Type", "text/html");
+        this.addHeader("Content-Type", "text/html; charset=UTF-8");
         String stringMessageBody;
         switch (statusCode) {
             case STATUS_BAD_REQUEST:

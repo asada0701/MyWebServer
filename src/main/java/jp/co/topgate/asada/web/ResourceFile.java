@@ -2,13 +2,13 @@ package jp.co.topgate.asada.web;
 
 import jp.co.topgate.asada.web.exception.ResourceConstructorRuntimeException;
 
+import java.io.File;
 import java.util.HashMap;
 
 /**
- * Created by yusuke-pc on 2017/04/15.
+ *
  */
-class ResourceFileType {
-
+public class ResourceFile extends File {
     /**
      * URIのドット
      */
@@ -35,7 +35,8 @@ class ResourceFileType {
      * @param uri リクエストメッセージに含まれるURI
      * @throws NullPointerException もし引数がnullの場合吐き出す
      */
-    ResourceFileType(String uri) {
+    ResourceFile(String uri) {
+        super(uri);
         if (uri != null) {
             String[] s = uri.split(URI_DOT);
             if (s.length == URI_DOT_NUM_ITEMS) {
@@ -83,6 +84,4 @@ class ResourceFileType {
     String getContentType() {
         return fileType.get(uri_extension);
     }
-
-
 }
