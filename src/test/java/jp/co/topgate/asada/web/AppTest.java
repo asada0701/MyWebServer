@@ -15,19 +15,20 @@ import static org.junit.Assert.assertThat;
 
 public class AppTest {
     public static Server server;
+
     @Test
-    public void サーバースタートテスト() throws Exception{
+    public void サーバースタートテスト() throws Exception {
         server = new Server();
         assertThat("start up http server..", is(App.controlServer(server, "1")));
         server.endServer();
     }
 
     @Test
-    public void 想定していない文字が入力されたテスト () throws IOException{
+    public void 想定していない文字が入力されたテスト() throws IOException {
         server = new Server();
-        try{
+        try {
             App.controlServer(server, "4");
-        }catch(ScanChoicesRuntimeException expected) {
+        } catch (ScanChoicesRuntimeException expected) {
             assertThat(expected.getMessage(), equalTo("想定されていない文字が入力されました"));
         }
     }

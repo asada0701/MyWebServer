@@ -59,7 +59,7 @@ public class App {
      * @return サーバーの状態をメッセージで返す
      * @throws IOException サーバークラスで発生する
      */
-    static String controlServer(Server server, String choices) throws IOException {
+    public static String controlServer(Server server, String choices) throws IOException {
         String msg;
         switch (choices) {
             case START_NUM:

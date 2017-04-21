@@ -14,7 +14,7 @@ import java.util.Map;
  *
  * @author asada
  */
-class ResponseMessage {
+public class ResponseMessage {
     /**
      * ヘッダーフィールドのコロン
      */
@@ -41,7 +41,7 @@ class ResponseMessage {
      * プロトコルバージョンの初期設定をする
      * リーズンフレーズを用意する
      */
-    ResponseMessage() {
+    public ResponseMessage() {
         protocolVersion = "HTTP/1.1";
         reasonPhrase.put(STATUS_OK, "OK");
         reasonPhrase.put(STATUS_BAD_REQUEST, "Bad Request");
@@ -52,7 +52,7 @@ class ResponseMessage {
     /**
      * プロトコルバージョンの設定をする
      */
-    void setProtocolVersion(String protocolVersion) {
+    public void setProtocolVersion(String protocolVersion) {
         if (protocolVersion != null) {
             this.protocolVersion = protocolVersion;
         }
@@ -61,7 +61,7 @@ class ResponseMessage {
     /**
      * ステータスコードとリーズンフレーズを追加する
      */
-    void addReasonPhrase(int statusCode, String reasonPhrase) {
+    public void addReasonPhrase(int statusCode, String reasonPhrase) {
         if (reasonPhrase != null) {
             this.reasonPhrase.put(statusCode, reasonPhrase);
         }
@@ -70,7 +70,7 @@ class ResponseMessage {
     /**
      * ヘッダーフィールドにヘッダ名とヘッダ値を追加する
      */
-    void addHeader(String name, String value) {
+    public void addHeader(String name, String value) {
         if (name != null && value != null) {
             headerField.add(name + HEADER_FIELD_COLON + value);
         }
@@ -79,7 +79,7 @@ class ResponseMessage {
     /**
      * リソースファイルを送る時のメソッド
      */
-    void returnResponse(OutputStream os, int statusCode, ResourceFile rf) throws IOException {
+    public void returnResponse(OutputStream os, int statusCode, ResourceFile rf) throws IOException {
         addHeader("Content-Type", rf.getContentType());
         InputStream in = null;
         StringBuilder builder = new StringBuilder();
@@ -111,7 +111,7 @@ class ResponseMessage {
     /**
      * エラーメッセージを送る時のメソッド
      */
-    void returnErrorResponse(OutputStream os, int statusCode) {
+    public void returnErrorResponse(OutputStream os, int statusCode) {
         this.addHeader("Content-Type", "text/html; charset=UTF-8");
         String stringMessageBody;
         switch (statusCode) {

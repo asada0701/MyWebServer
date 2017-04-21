@@ -11,7 +11,7 @@ import java.util.HashMap;
  *
  * @author asada
  */
-class ResourceFile extends File {
+public class ResourceFile extends File {
     /**
      * ファイル名のドット
      */
@@ -39,7 +39,7 @@ class ResourceFile extends File {
      * @throws ResourceFileRuntimeException      ディレクトリを指定された場合や、存在しないファイルを指定された
      * @throws FileNotRegisteredRuntimeException 指定されたファイルのコンテツタイプが登録されていない
      */
-    ResourceFile(String filePath) throws ResourceFileRuntimeException, FileNotRegisteredRuntimeException {
+    public ResourceFile(String filePath) throws ResourceFileRuntimeException, FileNotRegisteredRuntimeException {
         super(filePath);
         if (!this.exists()) {
             throw new ResourceFileRuntimeException();
@@ -81,7 +81,7 @@ class ResourceFile extends File {
      * @param filePath ファイルのパスを渡す
      * @return 登録済みかどうかを返す
      */
-    static boolean isRegistered(String filePath) {
+    public static boolean isRegistered(String filePath) {
         boolean result = false;
         setUp();
         String[] s = filePath.split(FILE_NAME_DOT);
@@ -94,7 +94,7 @@ class ResourceFile extends File {
     /**
      * ファイルの拡張子、コンテンツタイプの追加をする
      */
-    static void addFileType(String extension, String contentType) {
+    public static void addFileType(String extension, String contentType) {
         if (extension != null && contentType != null) {
             fileType.put(extension, contentType);
         }
@@ -105,7 +105,7 @@ class ResourceFile extends File {
      *
      * @return コンテンツタイプを返す
      */
-    String getContentType() {
+    public String getContentType() {
         return fileType.get(uri_extension);
     }
 }

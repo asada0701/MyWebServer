@@ -13,7 +13,7 @@ import java.util.HashMap;
  *
  * @author asada
  */
-class RequestMessage {
+public class RequestMessage {
     /**
      * リクエストラインのスペース
      */
@@ -71,7 +71,7 @@ class RequestMessage {
      *
      * @param is サーバーソケットのリクエストメッセージ
      */
-    RequestMessage(InputStream is) throws IOException {
+    public RequestMessage(InputStream is) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(is));
         try {
             String str = br.readLine();
@@ -140,7 +140,7 @@ class RequestMessage {
      *
      * @return HTTPメソッドを返す
      */
-    String getMethod() {
+    public String getMethod() {
         return method;
     }
 
@@ -149,7 +149,7 @@ class RequestMessage {
      *
      * @return URIを返す
      */
-    String getUri() {
+    public String getUri() {
         return uri;
     }
 
@@ -159,7 +159,7 @@ class RequestMessage {
      * @param name 　探したいQuery名
      * @return Query値を返す。URIに含まれていなかった場合はNullを返す
      */
-    String findUriQuery(String name) {
+    public String findUriQuery(String name) {
         String result = null;
         if (name != null) {
             result = uriQuery.get(name);
@@ -172,7 +172,7 @@ class RequestMessage {
      *
      * @return プロトコルバージョンを返す
      */
-    String getProtocolVersion() {
+    public String getProtocolVersion() {
         return protocolVersion;
     }
 
@@ -182,7 +182,7 @@ class RequestMessage {
      * @param fieldName 探したいヘッダ名
      * @return ヘッダ値を返す。ヘッダーフィールドに含まれていなかった場合はNullを返す
      */
-    String findHeaderByName(String fieldName) {
+    public String findHeaderByName(String fieldName) {
         String result = null;
         if (fieldName != null) {
             result = headerFieldUri.get(fieldName);
@@ -196,7 +196,7 @@ class RequestMessage {
      * @param key 探したいQuery名
      * @return Query値を返す。URIに含まれていなかった場合はNullを返す
      */
-    String findMessageBody(String key) {
+    public String findMessageBody(String key) {
         String result;
         if (key != null) {
             result = messageBody.get(key);

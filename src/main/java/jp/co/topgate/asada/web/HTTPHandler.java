@@ -15,7 +15,7 @@ import java.io.OutputStream;
  *
  * @author asada
  */
-class HTTPHandler {
+public class HTTPHandler {
     /**
      * リソースファイルのパス
      */
@@ -28,7 +28,7 @@ class HTTPHandler {
      * @param is ソケットの入力ストリーム
      * @param os ソケットの出力ストリーム
      */
-    void requestComes(InputStream is, OutputStream os) {
+    public void requestComes(InputStream is, OutputStream os) {
         ResourceFile rf = null;
         int statusCode;
         try {
