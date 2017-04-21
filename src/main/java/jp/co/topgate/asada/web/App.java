@@ -1,6 +1,5 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.exception.ScanChoicesRuntimeException;
 import jp.co.topgate.asada.web.exception.ServerStateRuntimeException;
 
 import java.io.IOException;
@@ -31,9 +30,10 @@ public class App {
                     choices = scan.next();
                 } while (!(choices.equals(START_NUM) || choices.equals(STOP_NUM) || choices.equals(END_NUM)));
                 String msg = controlServer(server, choices);
-                System.out.println(msg);
-                if (END_NUM.equals(choices) && "wait a second, http server is returning a response..".equals(msg)) {
-                    choices = "";
+                if (msg != null) {
+                    System.out.println(msg);
+                } else {
+                    choices = null;
                 }
             } while (!choices.equals(END_NUM));
 
@@ -44,17 +44,12 @@ public class App {
         } catch (IOException e) {
             System.out.println("Input/Output of Server is wrong state..");
             e.printStackTrace();
-
-        } catch (ScanChoicesRuntimeException e) {
-            System.out.println("your selected is wrong..");
-            e.printStackTrace();
         }
     }
 
     /**
      * サーバーを操作するメソッド
      *
-     * @param server  サーバーのオブジェクト
      * @param choices 選択した文字
      * @return サーバーの状態をメッセージで返す
      * @throws IOException サーバークラスで発生する
@@ -107,7 +102,7 @@ public class App {
                 if (Thread.State.RUNNABLE.equals(server.getState())) {
                     server.endServer();
                 }
-                throw new ScanChoicesRuntimeException();
+                msg = null;
         }
         return msg;
     }

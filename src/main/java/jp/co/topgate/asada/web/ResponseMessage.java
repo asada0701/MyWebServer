@@ -1,9 +1,6 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.exception.ErrorResponseRuntimeException;
-
 import java.io.*;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +28,14 @@ public class ResponseMessage {
      * HTTPステータスコード:404
      */
     static final int STATUS_NOT_FOUND = 404;
+    /**
+     * HTTPステータスコード:500
+     */
+    static final int STATUS_INTERNAL_SERVER_ERROR = 500;
+    /**
+     * HTTPステータスコード:501
+     */
+    static final int STATUS_NOT_IMPLEMENTED = 501;
 
     private String protocolVersion = null;
     private Map<Integer, String> reasonPhrase = new HashMap<>();
@@ -93,12 +98,8 @@ public class ResponseMessage {
             os.write(builder.toString().getBytes());
             in = new FileInputStream(rf);
             int num;
-            try {
-                while ((num = in.read()) != -1) {
-                    os.write(num);
-                }
-            } catch (SocketException e) {
-                //Protocol wrong type for socket (Write failed)
+            while ((num = in.read()) != -1) {
+                os.write(num);
             }
             os.flush();
         } finally {
@@ -111,7 +112,7 @@ public class ResponseMessage {
     /**
      * エラーメッセージを送る時のメソッド
      */
-    public void returnErrorResponse(OutputStream os, int statusCode) {
+    public void returnErrorResponse(OutputStream os, int statusCode) throws IOException {
         this.addHeader("Content-Type", "text/html; charset=UTF-8");
         String stringMessageBody;
         switch (statusCode) {
@@ -125,10 +126,19 @@ public class ResponseMessage {
                 stringMessageBody =
                         "<html><head><title>404 Not Found</title></head>" +
                                 "<body><h1>Not Found</h1>" +
-                                "<p>お探しのページは見つかりませんでした。<br /></p></body></html>";
+                                "<p>お探しのページは見つかりませんでした。</p></body></html>";
+                break;
+            case STATUS_NOT_IMPLEMENTED:
+                stringMessageBody =
+                        "<html><head><title>501 Not Implemented</title></head>" +
+                                "<body><h1>Not Implemented</h1>" +
+                                "<p>そのファイルは開けません。</p></body></html>";
                 break;
             default:
-                throw new ErrorResponseRuntimeException();
+                stringMessageBody =
+                        "<html><head><title>500 Internal Server Error</title></head>" +
+                                "<body><h1>Internal Server Error</h1>" +
+                                "<p>サーバー内部のエラーにより表示できません。ごめんなさい。</p></body></html>";
         }
         PrintWriter pw = new PrintWriter(os, true);
         StringBuilder builder = new StringBuilder();

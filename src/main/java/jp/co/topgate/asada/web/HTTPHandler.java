@@ -1,11 +1,9 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.exception.ErrorResponseRuntimeException;
 import jp.co.topgate.asada.web.exception.FileNotRegisteredRuntimeException;
 import jp.co.topgate.asada.web.exception.RequestParseRuntimeException;
 import jp.co.topgate.asada.web.exception.ResourceFileRuntimeException;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -43,9 +41,7 @@ public class HTTPHandler {
             }
 
         } catch (FileNotRegisteredRuntimeException e) {
-            e.printStackTrace();
-            //未定
-            statusCode = -1;
+            statusCode = ResponseMessage.STATUS_NOT_IMPLEMENTED;
 
         } catch (NullPointerException | ResourceFileRuntimeException e) {
             statusCode = ResponseMessage.STATUS_NOT_FOUND;
@@ -65,20 +61,16 @@ public class HTTPHandler {
      */
     private void writeResponse(OutputStream os, int statusCode, ResourceFile rf) {
         ResponseMessage responseMessage = new ResponseMessage();
-        if (statusCode == ResponseMessage.STATUS_OK) {
-            try {
+        try {
+            if (statusCode == ResponseMessage.STATUS_OK) {
                 responseMessage.returnResponse(os, statusCode, rf);
-            } catch (IOException e) {
-                e.printStackTrace();                                                //err処理どうする？
-            }
-        } else if (statusCode == -1) {
-
-        } else {
-            try {
+            } else {
                 responseMessage.returnErrorResponse(os, statusCode);
-            } catch (ErrorResponseRuntimeException e) {
-                e.printStackTrace();                                                //err
             }
+        } catch (IOException e) {
+            //例外握り潰し！！
+            //F5連打されると潰れる。ソケットサーバーが悪！！ワシは知らん！！
         }
+
     }
 }
