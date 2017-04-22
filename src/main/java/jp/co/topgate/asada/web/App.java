@@ -55,6 +55,9 @@ public class App {
      * @throws IOException サーバークラスで発生する
      */
     public static String controlServer(Server server, String choices) throws IOException {
+        if(server == null || choices == null){
+            return null;
+        }
         String msg;
         switch (choices) {
             case START_NUM:
@@ -99,9 +102,6 @@ public class App {
                 }
                 break;
             default:
-                if (Thread.State.RUNNABLE.equals(server.getState())) {
-                    server.endServer();
-                }
                 msg = null;
         }
         return msg;
