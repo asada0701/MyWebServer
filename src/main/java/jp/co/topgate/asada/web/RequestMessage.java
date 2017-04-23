@@ -1,5 +1,7 @@
 package jp.co.topgate.asada.web;
 
+import jp.co.topgate.asada.web.exception.HttpVersionNotSupportedRuntimeException;
+import jp.co.topgate.asada.web.exception.NotImplementedRuntimeException;
 import jp.co.topgate.asada.web.exception.RequestParseRuntimeException;
 
 import java.io.BufferedReader;
@@ -67,13 +69,12 @@ public class RequestMessage {
     private HashMap<String, String> messageBody = new HashMap<>();
 
     /**
-     * コンストラクタ、リクエストメッセージのパースする
+     * コンストラクタ、リクエストメッセージのパースを行う
      *
-     * @param is サーバーソケットのリクエストメッセージ
+     * @param is サーバーソケットのInputStream
      */
-    public RequestMessage(InputStream is) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(is));
-        try {
+    public RequestMessage(InputStream is) {
+        try(BufferedReader br = new BufferedReader(new InputStreamReader(is))){
             String str = br.readLine();
             if (str == null) {
                 throw new RequestParseRuntimeException();
@@ -129,9 +130,15 @@ public class RequestMessage {
                         }
                     }
                 }
+            } else {
+                throw new NotImplementedRuntimeException();
             }
-        } catch (IOException e) {
-            throw new IOException();
+
+            if(!"HTTP".equals(getProtocolVersion())){
+                throw new HttpVersionNotSupportedRuntimeException();
+            }
+        }catch( IOException e){
+            throw new RequestParseRuntimeException();
         }
     }
 
