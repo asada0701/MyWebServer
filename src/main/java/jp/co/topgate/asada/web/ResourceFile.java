@@ -1,6 +1,6 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.exception.ResourceFileRuntimeException;
+import jp.co.topgate.asada.web.exception.ResourceFileException;
 
 import java.io.File;
 import java.util.HashMap;
@@ -22,35 +22,29 @@ public class ResourceFile extends File {
     private static HashMap<String, String> fileType = new HashMap<>();
 
     /**
-     * ファイルの拡張子
+     * 指定されたファイルの拡張子
      */
     private String extension;
 
     /**
      * コンストラクタ
+     * ファイル拡張子とコンテンツタイプのハッシュマップの初期設定を行う
      *
      * @param filePath リクエストメッセージで指定されたファイルのパス
-     * @throws ResourceFileRuntimeException ディレクトリを指定された場合や、存在しないファイルを指定された
+     * @throws ResourceFileException ディレクトリを指定された場合や、存在しないファイルを指定された
      */
-    public ResourceFile(String filePath) throws ResourceFileRuntimeException {
+    public ResourceFile(String filePath) throws RuntimeException {
         super(filePath);
         if (!this.exists()) {
-            throw new ResourceFileRuntimeException();
+            throw new ResourceFileException();
         }
         if (!this.isFile()) {
-            throw new ResourceFileRuntimeException();
+            throw new ResourceFileException();
         }
 
         String[] s = this.getName().split(FILE_NAME_DOT);
         extension = s[1];
 
-        setUp();
-    }
-
-    /**
-     * ファイル拡張子とコンテンツタイプのハッシュマップの初期設定を行う
-     */
-    private void setUp() {
         fileType.put("htm", "text/html");
         fileType.put("html", "text/html");
         fileType.put("css", "text/css");
@@ -65,12 +59,10 @@ public class ResourceFile extends File {
     }
 
     /**
-     * ファイルの拡張子、コンテンツタイプの追加をする
+     * 登録済みのファイルかの確認メソッド
      */
-    public void addFileType(String extension, String contentType) {
-        if (extension != null && contentType != null) {
-            fileType.put(extension, contentType);
-        }
+    public boolean isRegistered() {
+        return fileType.containsKey(extension);
     }
 
     /**
@@ -79,10 +71,10 @@ public class ResourceFile extends File {
      * @return コンテンツタイプを返す
      */
     public String getContentType() {
-        if (extension == null || fileType.containsKey(extension)) {
-            return "application/octet-stream";
+        if (extension == null) {
+            return null;
         } else {
-            return fileType.get(extension);
+            return fileType.getOrDefault(extension, "application/octet-stream");
         }
     }
 }

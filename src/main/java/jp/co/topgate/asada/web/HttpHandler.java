@@ -11,7 +11,7 @@ import java.io.OutputStream;
  *
  * @author asada
  */
-public class HTTPHandler {
+public class HttpHandler {
     /**
      * リソースファイルのパス
      */
@@ -32,16 +32,16 @@ public class HTTPHandler {
             rf = new ResourceFile((FILE_PATH + requestMessage.getUri()));
             statusCode = ResponseMessage.OK;
 
-        } catch (NotImplementedRuntimeException e) {
+        } catch (NotImplementedException e) {
             statusCode = ResponseMessage.NOT_IMPLEMENTED;
 
-        } catch (RequestParseRuntimeException e) {
+        } catch (RequestParseException e) {
             statusCode = ResponseMessage.BAD_REQUEST;
 
-        } catch (NullPointerException | ResourceFileRuntimeException e) {
+        } catch (NullPointerException | ResourceFileException e) {
             statusCode = ResponseMessage.NOT_FOUND;
 
-        } catch (HttpVersionNotSupportedRuntimeException e) {
+        } catch (HttpVersionNotSupportedException e) {
             statusCode = ResponseMessage.HTTP_VERSION_NOT_SUPPORTED;
         }
         writeResponse(os, statusCode, rf);

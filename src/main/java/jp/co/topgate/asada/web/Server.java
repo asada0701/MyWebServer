@@ -14,7 +14,6 @@ public class Server extends Thread {
     private static final int portNumber = 8080;
     private ServerSocket serverSocket = null;
     private Socket socket = new Socket();
-    private HTTPHandler httpHandler = new HTTPHandler();
 
     /**
      * コンストラクタ
@@ -60,6 +59,7 @@ public class Server extends Thread {
      * Threadクラスのrunメソッドのオーバーライドメソッド
      */
     public void run() {
+        HttpHandler httpHandler = new HttpHandler();
         try {
             while (true) {
                 socket = serverSocket.accept();

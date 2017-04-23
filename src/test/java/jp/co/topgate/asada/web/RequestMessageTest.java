@@ -1,6 +1,8 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.exception.RequestParseRuntimeException;
+import jp.co.topgate.asada.web.exception.HttpVersionNotSupportedException;
+import jp.co.topgate.asada.web.exception.NotImplementedException;
+import jp.co.topgate.asada.web.exception.RequestParseException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -23,38 +25,60 @@ public class RequestMessageTest {
         @Test
         public void nullチェック() throws Exception {
             File file = new File("./src/test/resources/empty.txt");
-            InputStream is = new FileInputStream(file);
-            try {
+            try (InputStream is = new FileInputStream(file)) {
                 RequestMessage sut = new RequestMessage(is);
-            }catch(RequestParseRuntimeException e){
-                assertThat(e.getMessage(), is("リクエストメッセージのパース中の例外"));
+            } catch (RequestParseException e) {
+                assertThat(e.getMessage(), is("不正なリクエストメッセージをパースしようとしました"));
+
             }
         }
 
         @Test
-        public void パースのテストをしようと思う() throws Exception {
-            InputStream is = new FileInputStream(new File("./src/test/resources/requestMessage.txt"));
-            RequestMessage sut = new RequestMessage(is);
+        public void 想定外のHTTPプロトコルバージョンのテスト() throws Exception {
+            File file = new File("./src/test/resources/HTTPVersionTest.txt");
+            try (InputStream is = new FileInputStream(file)) {
+                RequestMessage sut = new RequestMessage(is);
+            } catch (HttpVersionNotSupportedException e) {
+                assertThat(e.getMessage(), is("HTTP/1.1以外のプロトコルバージョンでリクエストされました"));
+            }
+        }
 
-            assertThat(sut.getMethod(), is("GET"));
-            assertThat(sut.getUri(), is("/index.html"));
-            assertThat(sut.getProtocolVersion(), is("HTTP/1.1"));
-            assertThat(sut.findHeaderByName("Host"), is("localhost:8080"));
-            assertThat(sut.findUriQuery("name"), is("asada"));
-            assertThat(sut.findUriQuery("like"), is("cat"));
+        @Test
+        public void 想定外のHTTPメソッドのテスト() throws Exception {
+            File file = new File("./src/test/resources/HTTPMethodTest.txt");
+            try (InputStream is = new FileInputStream(file)) {
+                RequestMessage sut = new RequestMessage(is);
+            } catch (NotImplementedException e) {
+                assertThat(e.getMessage(), is("このサーバーで実装されていないHTTPメソッドでリクエストメッセージがきました"));
+            }
+        }
+
+        @Test
+        public void パースのテスト() throws Exception {
+            try (InputStream is = new FileInputStream(new File("./src/test/resources/requestMessage.txt"))) {
+                RequestMessage sut = new RequestMessage(is);
+
+                assertThat(sut.getMethod(), is("GET"));
+                assertThat(sut.getUri(), is("/index.html"));
+                assertThat(sut.getProtocolVersion(), is("HTTP/1.1"));
+                assertThat(sut.findHeaderByName("Host"), is("localhost:8080"));
+                assertThat(sut.findUriQuery("name"), is("asada"));
+                assertThat(sut.findUriQuery("like"), is("cat"));
+            }
         }
 
         @Test
         public void POSTでメッセージボディに何か入れてみる() throws Exception {
-            InputStream is = new FileInputStream(new File("./src/test/resources/PostRequestMessage.txt"));
-            RequestMessage sut = new RequestMessage(is);
+            try (InputStream is = new FileInputStream(new File("./src/test/resources/PostRequestMessage.txt"));) {
+                RequestMessage sut = new RequestMessage(is);
 
-            assertThat(sut.getMethod(), is("POST"));
-            assertThat(sut.getUri(), is("/index.html"));
-            assertThat(sut.getProtocolVersion(), is("HTTP/1.1"));
-            assertThat(sut.findHeaderByName("Host"), is("localhost:8080"));
-            assertThat(sut.findMessageBody("name"), is("asada"));
-            assertThat(sut.findMessageBody("like"), is("cat"));
+                assertThat(sut.getMethod(), is("POST"));
+                assertThat(sut.getUri(), is("/index.html"));
+                assertThat(sut.getProtocolVersion(), is("HTTP/1.1"));
+                assertThat(sut.findHeaderByName("Host"), is("localhost:8080"));
+                assertThat(sut.findMessageBody("name"), is("asada"));
+                assertThat(sut.findMessageBody("like"), is("cat"));
+            }
         }
     }
 

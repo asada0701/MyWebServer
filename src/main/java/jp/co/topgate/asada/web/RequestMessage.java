@@ -1,17 +1,19 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.exception.HttpVersionNotSupportedRuntimeException;
-import jp.co.topgate.asada.web.exception.NotImplementedRuntimeException;
-import jp.co.topgate.asada.web.exception.RequestParseRuntimeException;
+import jp.co.topgate.asada.web.exception.HttpVersionNotSupportedException;
+import jp.co.topgate.asada.web.exception.NotImplementedException;
+import jp.co.topgate.asada.web.exception.RequestParseException;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * リクエストメッセージクラス
+ * HTTP/1.1対応
  *
  * @author asada
  */
@@ -20,42 +22,52 @@ public class RequestMessage {
      * リクエストラインのスペース
      */
     private static final String REQUEST_LINE_SPACE = " ";
+
     /**
      * リクエスト行の項目数
      */
     private static final int REQUEST_LINE_NUM_ITEMS = 3;
+
     /**
      * URIのクエリー前のクエスチョンマーク
      */
     private static final String URI_QUESTION_MARK = "\\?";
+
     /**
      * URIのクエリー内のアンパサンド
      */
     private static final String URI_QUERY_AMPERSAND = "&";
+
     /**
      * URIのクエリーの中のイコール
      */
     private static final String URI_QUERY_EQUAL = "=";
+
     /**
      * URIのクエリーの項目数
      */
     private static final int URI_QUERY_NUM_ITEMS = 2;
+
     /**
      * リヘッダーフィールドのコロン（その後のスペースは自由のため注意）
      */
     private static final String HEADER_FIELD_COLON = ":";
+
     /**
      * ヘッダーフィールドの項目数
      */
     private static final int HEADER_FIELD_NUM_ITEMS = 2;
+
     /**
      * メッセージボディのアンパサンド
      */
     private static final String MESSAGE_BODY_AMPERSAND = "&";
+
     /**
      * メッセージボディのイコール
      */
     private static final String MESSAGE_BODY_EQUAL = "=";
+
     /**
      * メッセージボディの項目数
      */
@@ -63,10 +75,10 @@ public class RequestMessage {
 
     private String method = null;
     private String uri = null;
-    private HashMap<String, String> uriQuery = new HashMap<>();
+    private Map<String, String> uriQuery = new HashMap<>();
     private String protocolVersion = null;
-    private HashMap<String, String> headerFieldUri = new HashMap<>();
-    private HashMap<String, String> messageBody = new HashMap<>();
+    private Map<String, String> headerFieldUri = new HashMap<>();
+    private Map<String, String> messageBody = new HashMap<>();
 
     /**
      * コンストラクタ、リクエストメッセージのパースを行う
@@ -74,14 +86,15 @@ public class RequestMessage {
      * @param is サーバーソケットのInputStream
      */
     public RequestMessage(InputStream is) {
-        try(BufferedReader br = new BufferedReader(new InputStreamReader(is))){
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(is));
             String str = br.readLine();
             if (str == null) {
-                throw new RequestParseRuntimeException();
+                throw new RequestParseException();
             }
             String[] requestLine = str.split(REQUEST_LINE_SPACE);
             if (requestLine.length != REQUEST_LINE_NUM_ITEMS) {
-                throw new RequestParseRuntimeException();
+                throw new RequestParseException();
             }
 
             method = requestLine[0];
@@ -90,6 +103,10 @@ public class RequestMessage {
                 uri = "/index.html";
             }
             protocolVersion = requestLine[2];
+
+            if (!"HTTP/1.1".equals(protocolVersion)) {
+                throw new HttpVersionNotSupportedException();
+            }
 
             while ((str = br.readLine()) != null && !str.equals("")) {
                 String[] header = str.split(HEADER_FIELD_COLON);
@@ -100,11 +117,11 @@ public class RequestMessage {
                     header[1] = header[1].trim();
                     headerFieldUri.put(header[0], header[1] + HEADER_FIELD_COLON + header[2]);
                 } else {
-                    throw new RequestParseRuntimeException();
+                    throw new RequestParseException();
                 }
             }
 
-            if ("GET".equals(getMethod())) {
+            if ("GET".equals(method)) {
                 String[] s1 = uri.split(URI_QUESTION_MARK);
                 uri = s1[0];
                 if (s1.length > 1) {
@@ -114,11 +131,11 @@ public class RequestMessage {
                         if (s3.length == URI_QUERY_NUM_ITEMS) {
                             uriQuery.put(s3[0], s3[1]);
                         } else {
-                            throw new RequestParseRuntimeException();
+                            throw new RequestParseException();
                         }
                     }
                 }
-            } else if ("POST".equals(getMethod())) {
+            } else if ("POST".equals(method)) {
                 while ((str = br.readLine()) != null && !str.equals("")) {
                     String[] s1 = str.split(MESSAGE_BODY_AMPERSAND);
                     for (String aS1 : s1) {
@@ -126,19 +143,15 @@ public class RequestMessage {
                         if (s2.length == MESSAGE_BODY_NUM_ITEMS) {
                             messageBody.put(s2[0], s2[1]);
                         } else {
-                            throw new RequestParseRuntimeException();
+                            throw new RequestParseException();
                         }
                     }
                 }
             } else {
-                throw new NotImplementedRuntimeException();
+                throw new NotImplementedException();
             }
-
-            if(!"HTTP".equals(getProtocolVersion())){
-                throw new HttpVersionNotSupportedRuntimeException();
-            }
-        }catch( IOException e){
-            throw new RequestParseRuntimeException();
+        } catch (IOException e) {
+            throw new RequestParseException();
         }
     }
 
@@ -167,11 +180,11 @@ public class RequestMessage {
      * @return Query値を返す。URIに含まれていなかった場合はNullを返す
      */
     public String findUriQuery(String name) {
-        String result = null;
         if (name != null) {
-            result = uriQuery.get(name);
+            return uriQuery.get(name);
+        } else {
+            return null;
         }
-        return result;
     }
 
     /**
@@ -190,11 +203,11 @@ public class RequestMessage {
      * @return ヘッダ値を返す。ヘッダーフィールドに含まれていなかった場合はNullを返す
      */
     public String findHeaderByName(String fieldName) {
-        String result = null;
         if (fieldName != null) {
-            result = headerFieldUri.get(fieldName);
+            return headerFieldUri.get(fieldName);
+        } else {
+            return null;
         }
-        return result;
     }
 
     /**
@@ -204,13 +217,11 @@ public class RequestMessage {
      * @return Query値を返す。URIに含まれていなかった場合はNullを返す
      */
     public String findMessageBody(String key) {
-        String result;
         if (key != null) {
-            result = messageBody.get(key);
+            return messageBody.get(key);
         } else {
-            result = null;
+            return null;
         }
-        return result;
     }
 
     void setMethod(String method) {
