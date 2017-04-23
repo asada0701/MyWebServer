@@ -1,6 +1,5 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.exception.FileNotRegisteredRuntimeException;
 import jp.co.topgate.asada.web.exception.ResourceFileRuntimeException;
 
 import java.io.File;
@@ -18,28 +17,22 @@ public class ResourceFile extends File {
     private static final String FILE_NAME_DOT = "\\.";
 
     /**
-     * URIの中にドットは一つかの確認
-     */
-    private static final int URI_DOT_NUM_ITEMS = 3;
-
-    /**
      * ファイル拡張子とコンテンツタイプのハッシュマップ
      */
     private static HashMap<String, String> fileType = new HashMap<>();
 
     /**
-     * URIに含まれるファイルの拡張子
+     * ファイルの拡張子
      */
-    private String uri_extension;
+    private String extension;
 
     /**
      * コンストラクタ
      *
      * @param filePath リクエストメッセージで指定されたファイルのパス
-     * @throws ResourceFileRuntimeException      ディレクトリを指定された場合や、存在しないファイルを指定された
-     * @throws FileNotRegisteredRuntimeException 指定されたファイルのコンテツタイプが登録されていない
+     * @throws ResourceFileRuntimeException ディレクトリを指定された場合や、存在しないファイルを指定された
      */
-    public ResourceFile(String filePath) throws ResourceFileRuntimeException, FileNotRegisteredRuntimeException {
+    public ResourceFile(String filePath) throws ResourceFileRuntimeException {
         super(filePath);
         if (!this.exists()) {
             throw new ResourceFileRuntimeException();
@@ -49,19 +42,15 @@ public class ResourceFile extends File {
         }
 
         String[] s = this.getName().split(FILE_NAME_DOT);
-        uri_extension = s[1];
+        extension = s[1];
 
         setUp();
-
-        if (!isRegistered(filePath)) {
-            throw new FileNotRegisteredRuntimeException();
-        }
     }
 
     /**
      * ファイル拡張子とコンテンツタイプのハッシュマップの初期設定を行う
      */
-    private static void setUp() {
+    private void setUp() {
         fileType.put("htm", "text/html");
         fileType.put("html", "text/html");
         fileType.put("css", "text/css");
@@ -76,25 +65,9 @@ public class ResourceFile extends File {
     }
 
     /**
-     * すでに登録されている種類のファイルかを返すメソッド
-     *
-     * @param filePath ファイルのパスを渡す
-     * @return 登録済みかどうかを返す
-     */
-    public static boolean isRegistered(String filePath) {
-        boolean result = false;
-        setUp();
-        String[] s = filePath.split(FILE_NAME_DOT);
-        if (s.length == URI_DOT_NUM_ITEMS) {
-            result = fileType.containsKey(s[2]);
-        }
-        return result;
-    }
-
-    /**
      * ファイルの拡張子、コンテンツタイプの追加をする
      */
-    public static void addFileType(String extension, String contentType) {
+    public void addFileType(String extension, String contentType) {
         if (extension != null && contentType != null) {
             fileType.put(extension, contentType);
         }
@@ -106,6 +79,10 @@ public class ResourceFile extends File {
      * @return コンテンツタイプを返す
      */
     public String getContentType() {
-        return fileType.get(uri_extension);
+        if (extension == null || fileType.containsKey(extension)) {
+            return "application/octet-stream";
+        } else {
+            return fileType.get(extension);
+        }
     }
 }

@@ -1,6 +1,5 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.exception.FileNotRegisteredRuntimeException;
 import jp.co.topgate.asada.web.exception.ResourceFileRuntimeException;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -19,25 +18,13 @@ public class ResourceFileTest {
         public void 拡張子とコンテンツタイプを追加してみる() {
             ResourceFile sut;
             String path = "./src/main/resources/music/sample.mp3";
-            if (!ResourceFile.isRegistered(path)) {
-                ResourceFile.addFileType("mp3", "audio/mp3");
-                assertThat(ResourceFile.isRegistered(path), is(true));
-            }
+            ResourceFile.addFileType("mp3", "audio/mp3");
             sut = new ResourceFile(path);
             assertThat(sut.getContentType(), is("audio/mp3"));
         }
     }
 
     public static class コンストラクタのテスト {
-        @Test
-        public void 登録されていない拡張子のファイルを指定してみる() {
-            try {
-                ResourceFile sut = new ResourceFile("./src/main/resources/music/sample.mp3");
-            } catch (FileNotRegisteredRuntimeException e) {
-                assertThat(e.getMessage(), is("ResourceFileクラスに登録されていない拡張子のファイルです"));
-            }
-        }
-
         @Test
         public void 存在しないファイルを指定してみる() {
             try {

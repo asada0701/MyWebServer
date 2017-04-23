@@ -1,8 +1,6 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.exception.FileNotRegisteredRuntimeException;
-import jp.co.topgate.asada.web.exception.RequestParseRuntimeException;
-import jp.co.topgate.asada.web.exception.ResourceFileRuntimeException;
+import jp.co.topgate.asada.web.exception.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,23 +29,20 @@ public class HTTPHandler {
         int statusCode;
         try {
             RequestMessage requestMessage = new RequestMessage(is);
-            if (ResourceFile.isRegistered(FILE_PATH + requestMessage.getUri())) {
-                //登録済み
-                rf = new ResourceFile(FILE_PATH + requestMessage.getUri());
-                statusCode = ResponseMessage.STATUS_OK;
-            } else {
-                //登録されていない
-                statusCode = -1;
-            }
+            rf = new ResourceFile((FILE_PATH + requestMessage.getUri()));
+            statusCode = ResponseMessage.OK;
 
-        } catch (FileNotRegisteredRuntimeException e) {
-            statusCode = ResponseMessage.STATUS_NOT_IMPLEMENTED;
+        } catch (NotImplementedRuntimeException e) {
+            statusCode = ResponseMessage.NOT_IMPLEMENTED;
+
+        } catch (RequestParseRuntimeException e) {
+            statusCode = ResponseMessage.BAD_REQUEST;
 
         } catch (NullPointerException | ResourceFileRuntimeException e) {
-            statusCode = ResponseMessage.STATUS_NOT_FOUND;
+            statusCode = ResponseMessage.NOT_FOUND;
 
-        } catch (IOException | RequestParseRuntimeException e) {
-            statusCode = ResponseMessage.STATUS_BAD_REQUEST;
+        } catch (HttpVersionNotSupportedRuntimeException e) {
+            statusCode = ResponseMessage.HTTP_VERSION_NOT_SUPPORTED;
         }
         writeResponse(os, statusCode, rf);
     }
@@ -62,7 +57,7 @@ public class HTTPHandler {
     private void writeResponse(OutputStream os, int statusCode, ResourceFile rf) {
         ResponseMessage responseMessage = new ResponseMessage();
         try {
-            if (statusCode == ResponseMessage.STATUS_OK) {
+            if (statusCode == ResponseMessage.OK) {
                 responseMessage.returnResponse(os, statusCode, rf);
             } else {
                 responseMessage.returnErrorResponse(os, statusCode);
