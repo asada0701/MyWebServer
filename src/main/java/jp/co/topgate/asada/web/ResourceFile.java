@@ -4,6 +4,7 @@ import jp.co.topgate.asada.web.exception.ResourceFileException;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * リソースファイルの管理をするクラス
@@ -19,7 +20,7 @@ public class ResourceFile extends File {
     /**
      * ファイル拡張子とコンテンツタイプのハッシュマップ
      */
-    private static HashMap<String, String> fileType = new HashMap<>();
+    private static Map<String, String> fileType = new HashMap<>();
 
     /**
      * 指定されたファイルの拡張子

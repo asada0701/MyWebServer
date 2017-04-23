@@ -32,14 +32,14 @@ public class HttpHandler {
             rf = new ResourceFile((FILE_PATH + requestMessage.getUri()));
             statusCode = ResponseMessage.OK;
 
-        } catch (NotImplementedException e) {
-            statusCode = ResponseMessage.NOT_IMPLEMENTED;
-
         } catch (RequestParseException e) {
             statusCode = ResponseMessage.BAD_REQUEST;
 
         } catch (NullPointerException | ResourceFileException e) {
             statusCode = ResponseMessage.NOT_FOUND;
+            
+        } catch (NotImplementedException e) {
+            statusCode = ResponseMessage.NOT_IMPLEMENTED;
 
         } catch (HttpVersionNotSupportedException e) {
             statusCode = ResponseMessage.HTTP_VERSION_NOT_SUPPORTED;

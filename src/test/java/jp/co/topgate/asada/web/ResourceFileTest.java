@@ -16,9 +16,9 @@ public class ResourceFileTest {
     public static class コンストラクタのテスト {
         @Test
         public void nullチェック() {
-            try{
+            try {
                 ResourceFile sut = new ResourceFile(null);
-            }catch(NullPointerException e){
+            } catch (NullPointerException e) {
                 e.printStackTrace();
             }
         }
@@ -63,6 +63,12 @@ public class ResourceFileTest {
     }
 
     public static class getContentTypeメソッドのテスト {
+        @Test
+        public void 登録されていないファイルを指定してみる() {
+            ResourceFile sut = new ResourceFile("./src/main/resources/music/sample.mp3");
+            assertThat(sut.getContentType(), is("application/octet-stream"));
+        }
+
         @Test
         public void txtファイルを指定してみる() {
             ResourceFile sut = new ResourceFile("./src/test/resources/empty.txt");
