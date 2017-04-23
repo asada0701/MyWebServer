@@ -1,6 +1,6 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.exception.ServerStateRuntimeException;
+import jp.co.topgate.asada.web.exception.ServerStateException;
 
 import java.io.IOException;
 import java.util.Scanner;
@@ -15,6 +15,11 @@ public class App {
     private static final String STOP_NUM = "2";
     private static final String END_NUM = "3";
 
+    /**
+     * メインメソッド
+     *
+     * @param args
+     */
     public static void main(String[] args) {
         try {
             Server server = new Server();
@@ -33,12 +38,11 @@ public class App {
                 if (msg != null) {
                     System.out.println(msg);
                 } else {
-                    choices = null;
+                    choices = "";
                 }
             } while (!choices.equals(END_NUM));
 
-        } catch (ServerStateRuntimeException e) {
-            e.printStackTrace();
+        } catch (ServerStateException e) {
             System.out.println("Unexpected Server State! state = " + e.getState().toString());
 
         } catch (IOException e) {
@@ -55,7 +59,7 @@ public class App {
      * @throws IOException サーバークラスで発生する
      */
     public static String controlServer(Server server, String choices) throws IOException {
-        if(server == null || choices == null){
+        if (server == null || choices == null) {
             return null;
         }
         String msg;
@@ -73,7 +77,7 @@ public class App {
                         break;
                     default:
                         server.endServer();
-                        throw new ServerStateRuntimeException(server.getState());
+                        throw new ServerStateException(server.getState());
                 }
                 break;
             case STOP_NUM:
@@ -91,7 +95,7 @@ public class App {
                         break;
                     default:
                         server.endServer();
-                        throw new ServerStateRuntimeException(server.getState());
+                        throw new ServerStateException(server.getState());
                 }
                 break;
             case END_NUM:

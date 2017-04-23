@@ -17,7 +17,7 @@ public class HTTPHandlerTest {
         File file = new File("./src/text/resources/responseMessage.txt");
         file.delete();
 
-        HTTPHandler httpHandler = new HTTPHandler();
+        HttpHandler httpHandler = new HttpHandler();
         InputStream is = null;
         OutputStream os = null;
         try {
