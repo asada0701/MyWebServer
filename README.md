@@ -1,11 +1,16 @@
+HTTPServerをJavaで書いて見る
+======================
+TG社の課題
 
-TG社の課題、HTTPServerをJavaで書いて見る
+使い方
+------
+./gradlew runで実行後、
 
-gradle runで実行後、
+1:サーバーを立ち上げます。
 
-1:Server Start
-2:Server Stop
-3:Server End
+2:サーバーを停止します。
+
+3:プログラムを終了します。
 
 1,2,3のいずれかの数字を入力してください。
 
