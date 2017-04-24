@@ -13,19 +13,27 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 public class AppTest {
-    public static Server server;
 
     @Test
     public void サーバースタートテスト() throws Exception {
-        server = new Server();
+        Server server = new Server();
         assertThat(App.controlServer(server, "1"), is("start up http server.."));
         server.endServer();
     }
 
     @Test
     public void 想定していない文字が入力されたテスト() throws IOException {
-        server = new Server();
+        Server server = new Server();
         assertThat(App.controlServer(server, "4"), is(nullValue()));
+        server.endServer();
+    }
+
+    @Test
+    public void controlServerメソッドのnullチェック() throws IOException {
+        Server server = new Server();
+        assertThat(App.controlServer(null, null), is(nullValue()));
+        assertThat(App.controlServer(null, "1"), is(nullValue()));
+        assertThat(App.controlServer(server, null), is(nullValue()));
         server.endServer();
     }
 }

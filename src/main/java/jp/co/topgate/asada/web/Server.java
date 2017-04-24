@@ -34,7 +34,7 @@ public class Server extends Thread {
     /**
      * サーバーを停止させるメソッド、サーバーが通信中の場合は停止できない
      *
-     * @return サーバーの停止に成功したか返す
+     * @return trueの場合、サーバーの停止に成功
      * @throws IOException
      */
     public boolean stopServer() throws IOException {
@@ -57,18 +57,16 @@ public class Server extends Thread {
 
     /**
      * Threadクラスのrunメソッドのオーバーライドメソッド
-     * SocketExceptionはserverSocket.accept中にserverSocket.closeメソッドを呼び出すと発生する
+     * SocketExceptionはserverSocket.accept中にserverSocket.closeメソッドを呼び出すと発生するのでここで消す
      *
-     * @throws BindException    ポートが使用中であるが、ローカル要求されたアドレスの割り当てに失敗しました。
-     * @throws ConnectException ソケットをリモート・アドレスとポートに接続しようとした際にエラーが発生しました。
-     * @throws IOException      ソケットの入出力でエラーが発生しました。
+     * @throws BindException ポートが使用中であるが、要求されたローカル・アドレスの割り当てに失敗しました
+     * @throws IOException   ソケットの入出力でエラーが発生しました
      */
     public void run() {
-        HttpHandler httpHandler = new HttpHandler();
         try {
             while (true) {
                 socket = serverSocket.accept();
-                httpHandler.requestComes(socket.getInputStream(), socket.getOutputStream());
+                new HttpHandler(socket.getInputStream(), socket.getOutputStream());
                 socket.close();
                 socket = null;
             }

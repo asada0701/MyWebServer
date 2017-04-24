@@ -59,7 +59,7 @@ public class App {
      *
      * @param choices 選択した文字
      * @return サーバーの状態をメッセージで返す
-     * @throws IOException サーバークラスで発生する
+     * @throws IOException サーバークラスで発生した入出力エラー
      */
     public static String controlServer(Server server, String choices) throws IOException {
         if (server == null || choices == null) {
@@ -106,7 +106,7 @@ public class App {
                 msg = "bye..";
                 break;
             default:
-                msg = null;
+                return null;
         }
         return msg;
     }

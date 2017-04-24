@@ -18,12 +18,13 @@ public class HttpHandler {
     private static final String FILE_PATH = "./src/main/resources";
 
     /**
-     * リクエストがきた時に呼び出すメソッド
+     * コンストラクタ
+     * レスポンス生成中に発生したエラーはここで消す
      *
      * @param is ソケットの入力ストリーム
      * @param os ソケットの出力ストリーム
      */
-    public void requestComes(InputStream is, OutputStream os) {
+    public HttpHandler(InputStream is, OutputStream os) {
         ResourceFile rf = null;
         int statusCode;
         try {
@@ -52,7 +53,6 @@ public class HttpHandler {
                 responseMessage.returnErrorResponse(os, statusCode);
             }
         } catch (IOException e) {
-
         }
     }
 }

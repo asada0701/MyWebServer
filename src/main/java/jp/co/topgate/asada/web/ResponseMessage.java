@@ -162,6 +162,7 @@ public class ResponseMessage {
         builder.append("\n");
         builder.append(stringMessageBody);
         os.write(builder.toString().getBytes());
+        os.flush();
     }
 
     String getProtocolVersion() {
