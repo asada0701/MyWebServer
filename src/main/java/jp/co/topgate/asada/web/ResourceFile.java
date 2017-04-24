@@ -56,10 +56,6 @@ public class ResourceFile extends File {
      * @return コンテンツタイプを返す
      */
     public String getContentType() {
-        if (extension == null) {
-            return null;
-        } else {
-            return fileType.getOrDefault(extension, "application/octet-stream");
-        }
+        return fileType.getOrDefault(extension, "application/octet-stream");
     }
 }

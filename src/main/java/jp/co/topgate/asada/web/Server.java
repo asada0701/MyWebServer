@@ -75,7 +75,6 @@ public class Server extends Thread {
 
         } catch (SocketException e) {
 
-
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

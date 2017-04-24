@@ -35,6 +35,7 @@ public class HttpHandler {
             if (!"GET".equals(requestMessage.getMethod()) && !"POST".equals(requestMessage.getMethod())) {
                 statusCode = ResponseMessage.NOT_IMPLEMENTED;
             }
+
             if (!"HTTP/1.1".equals(requestMessage.getProtocolVersion())) {
                 statusCode = ResponseMessage.HTTP_VERSION_NOT_SUPPORTED;
             }
