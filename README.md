@@ -14,4 +14,6 @@ TG社の課題
 
 1,2,3のいずれかの数字を入力してください。
 
+サーバーのポート番号は8080です。
+
 [![CircleCI](https://circleci.com/gh/asada0701/MyWebServer.svg?style=svg)](https://circleci.com/gh/asada0701/MyWebServer)
