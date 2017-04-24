@@ -13,9 +13,10 @@ import static org.junit.Assert.assertThat;
 @RunWith(Enclosed.class)
 public class ResourceFileTest {
     public static class コンストラクタのテスト {
-        @Test(expected = NullPointerException.class)
+        @Test
         public void nullチェック() {
             ResourceFile sut = new ResourceFile(null);
+            assertThat(sut.getContentType(), is("application/octet-stream"));
         }
 
         @Test
