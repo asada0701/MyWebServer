@@ -39,7 +39,7 @@ public class Server extends Thread {
      */
     public boolean stopServer() throws IOException {
         boolean result = false;
-        if (socket == null) {
+        if (socket == null || socket.isClosed()) {
             serverSocket.close();
             result = true;
         }
@@ -68,13 +68,12 @@ public class Server extends Thread {
                 socket = serverSocket.accept();
                 new HttpHandler(socket.getInputStream(), socket.getOutputStream());
                 socket.close();
-                socket = null;
             }
         } catch (BindException e) {
             throw new BindRuntimeException();
 
         } catch (SocketException e) {
-
+            
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
