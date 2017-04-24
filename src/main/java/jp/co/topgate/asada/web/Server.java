@@ -1,9 +1,9 @@
 package jp.co.topgate.asada.web;
 
+import jp.co.topgate.asada.web.exception.BindRuntimeException;
+
 import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketException;
+import java.net.*;
 
 /**
  * サーバークラス
@@ -57,6 +57,11 @@ public class Server extends Thread {
 
     /**
      * Threadクラスのrunメソッドのオーバーライドメソッド
+     * SocketExceptionはserverSocket.accept中にserverSocket.closeメソッドを呼び出すと発生する
+     *
+     * @throws BindException    ポートが使用中であるが、ローカル要求されたアドレスの割り当てに失敗しました。
+     * @throws ConnectException ソケットをリモート・アドレスとポートに接続しようとした際にエラーが発生しました。
+     * @throws IOException      ソケットの入出力でエラーが発生しました。
      */
     public void run() {
         HttpHandler httpHandler = new HttpHandler();
@@ -67,13 +72,12 @@ public class Server extends Thread {
                 socket.close();
                 socket = null;
             }
+        } catch (BindException e) {
+            throw new BindRuntimeException();
+
         } catch (SocketException e) {
-            /*
-            ソケットが発生する前なので、socket.close()ができないため、例外をだして終了する
-            java.net.SocketException: Socket is closed
-            at java.net.ServerSocket.accept(ServerSocket.java:509)
-            ソケット作成中(accept()メソッド)にサーバーソケットをクローズしたため発生する
-            */
+
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

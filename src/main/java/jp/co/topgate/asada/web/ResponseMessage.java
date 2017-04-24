@@ -16,26 +16,32 @@ public class ResponseMessage {
      * ヘッダーフィールドのコロン
      */
     private static final String HEADER_FIELD_COLON = ": ";
+
     /**
      * HTTPステータスコード:200
      */
     static final int OK = 200;
+
     /**
      * HTTPステータスコード:400
      */
     static final int BAD_REQUEST = 400;
+
     /**
      * HTTPステータスコード:404
      */
     static final int NOT_FOUND = 404;
+
     /**
      * HTTPステータスコード:500
      */
     static final int INTERNAL_SERVER_ERROR = 500;
+
     /**
      * HTTPステータスコード:501
      */
     static final int NOT_IMPLEMENTED = 501;
+
     /**
      * HTTPステータスコード:505
      */
@@ -52,6 +58,7 @@ public class ResponseMessage {
      */
     public ResponseMessage() {
         protocolVersion = "HTTP/1.1";
+
         reasonPhrase.put(OK, "OK");
         reasonPhrase.put(BAD_REQUEST, "Bad Request");
         reasonPhrase.put(NOT_FOUND, "Not Found");
@@ -60,9 +67,8 @@ public class ResponseMessage {
         reasonPhrase.put(HTTP_VERSION_NOT_SUPPORTED, "HTTP Version Not Supported");
     }
 
-
     /**
-     * プロトコルバージョンの設定をする
+     * プロトコルバージョンの設定をするメソッド
      */
     public void setProtocolVersion(String protocolVersion) {
         if (protocolVersion != null) {
@@ -71,16 +77,7 @@ public class ResponseMessage {
     }
 
     /**
-     * ステータスコードとリーズンフレーズを追加する
-     */
-    public void addReasonPhrase(int statusCode, String reasonPhrase) {
-        if (reasonPhrase != null) {
-            this.reasonPhrase.put(statusCode, reasonPhrase);
-        }
-    }
-
-    /**
-     * ヘッダーフィールドにヘッダ名とヘッダ値を追加する
+     * ヘッダーフィールドにヘッダ名とヘッダ値を追加するメソッド
      */
     public void addHeader(String name, String value) {
         if (name != null && value != null) {
@@ -142,7 +139,7 @@ public class ResponseMessage {
                 stringMessageBody =
                         "<html><head><title>501 Not Implemented</title></head>" +
                                 "<body><h1>Not Implemented</h1>" +
-                                "<p>そのファイルは開けません。</p></body></html>";
+                                "<p>Webサーバーでメソッドが実装されていません。</p></body></html>";
                 break;
 
             case HTTP_VERSION_NOT_SUPPORTED:
@@ -157,7 +154,6 @@ public class ResponseMessage {
                                 "<body><h1>Internal Server Error</h1>" +
                                 "<p>サーバー内部のエラーにより表示できません。ごめんなさい。</p></body></html>";
         }
-        PrintWriter pw = new PrintWriter(os, true);
         StringBuilder builder = new StringBuilder();
         builder.append(protocolVersion).append(" ").append(statusCode).append(" ").append(reasonPhrase.get(statusCode)).append("\n");
         for (String s : headerField) {
@@ -165,16 +161,11 @@ public class ResponseMessage {
         }
         builder.append("\n");
         builder.append(stringMessageBody);
-        pw.println(builder.toString());
-        pw.close();
+        os.write(builder.toString().getBytes());
     }
 
     String getProtocolVersion() {
         return this.protocolVersion;
-    }
-
-    String findReasonPhraseByStatusCode(int statusCode) {
-        return reasonPhrase.get(statusCode);
     }
 
     List<String> getHeaderField() {

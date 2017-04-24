@@ -60,13 +60,6 @@ public class ResourceFile extends File {
     }
 
     /**
-     * 登録済みのファイルかの確認メソッド
-     */
-    public boolean isRegistered() {
-        return fileType.containsKey(extension);
-    }
-
-    /**
      * コンテンツタイプを取得できるメソッド
      *
      * @return コンテンツタイプを返す

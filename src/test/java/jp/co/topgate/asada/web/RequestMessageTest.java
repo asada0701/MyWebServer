@@ -29,7 +29,6 @@ public class RequestMessageTest {
                 RequestMessage sut = new RequestMessage(is);
             } catch (RequestParseException e) {
                 assertThat(e.getMessage(), is("不正なリクエストメッセージをパースしようとしました"));
-
             }
         }
 
@@ -83,33 +82,19 @@ public class RequestMessageTest {
     }
 
     public static class methodのテスト {
-        RequestMessage sut;
-
-        @Before
-        public void setUp() throws Exception {
-            InputStream is = new FileInputStream(new File("./src/test/resources/requestMessage.txt"));
-            sut = new RequestMessage(is);
-        }
-
         @Test
-        public void 正しく値を得られるか() {
-            sut.setMethod("GET");
+        public void 正しく値を得られるか() throws Exception {
+            InputStream is = new FileInputStream(new File("./src/test/resources/requestMessage.txt"));
+            RequestMessage sut = new RequestMessage(is);
             assertThat(sut.getMethod(), is("GET"));
         }
     }
 
     public static class URIのテスト {
-        RequestMessage sut;
-
-        @Before
-        public void setUp() throws Exception {
-            InputStream is = new FileInputStream(new File("./src/test/resources/requestMessage.txt"));
-            sut = new RequestMessage(is);
-        }
-
         @Test
-        public void 正しく値を得られるか() {
-            sut.setUri("/index.html");
+        public void 正しく値を得られるか() throws Exception {
+            InputStream is = new FileInputStream(new File("./src/test/resources/requestMessage.txt"));
+            RequestMessage sut = new RequestMessage(is);
             assertThat(sut.getUri(), is("/index.html"));
         }
     }
@@ -119,7 +104,6 @@ public class RequestMessageTest {
 
         @Before
         public void setUp() throws Exception {
-
             InputStream is = new FileInputStream(new File("./src/test/resources/requestMessage.txt"));
             sut = new RequestMessage(is);
         }
@@ -131,12 +115,20 @@ public class RequestMessageTest {
 
         @Test
         public void 正しく値を得られるか() {
-            sut.setUriQuery("person", "人");
-            assertThat(sut.findUriQuery("person"), is("人"));
+            assertThat(sut.findUriQuery("name"), is("asada"));
         }
     }
 
     public static class プロトコルバージョンのテスト {
+        @Test
+        public void 正しく値を得られるか() throws Exception {
+            InputStream is = new FileInputStream(new File("./src/test/resources/requestMessage.txt"));
+            RequestMessage sut = new RequestMessage(is);
+            assertThat(sut.getProtocolVersion(), is("HTTP/1.1"));
+        }
+    }
+
+    public static class ヘッダーフィルードのテスト {
         RequestMessage sut;
 
         @Before
@@ -146,43 +138,33 @@ public class RequestMessageTest {
         }
 
         @Test
-        public void 正しく値を得られるか() {
-            sut.setProtocolVersion("HTTP/1.1");
-            assertThat(sut.getProtocolVersion(), is("HTTP/1.1"));
-        }
-    }
-
-    public static class ヘッダーフィルードのテスト {
-        @Test
         public void nullチェック() throws Exception {
-            InputStream is = new FileInputStream(new File("./src/test/resources/requestMessage.txt"));
-            RequestMessage sut = new RequestMessage(is);
             assertThat(sut.findHeaderByName(null), is(nullValue()));
         }
 
         @Test
         public void 正しく値を得られるか() throws Exception {
-            InputStream is = new FileInputStream(new File("./src/test/resources/requestMessage.txt"));
-            RequestMessage sut = new RequestMessage(is);
-            sut.setHeaderFieldUri("person", "人");
-            assertThat(sut.findHeaderByName("person"), is("人"));
+            assertThat(sut.findHeaderByName("Host"), is("localhost:8080"));
         }
     }
 
     public static class メッセージボディのテスト {
+        RequestMessage sut;
+
+        @Before
+        public void setUp() throws Exception {
+            InputStream is = new FileInputStream(new File("./src/test/resources/PostRequestMessage.txt"));
+            sut = new RequestMessage(is);
+        }
+
         @Test
         public void nullチェック() throws Exception {
-            InputStream is = new FileInputStream(new File("./src/test/resources/requestMessage.txt"));
-            RequestMessage sut = new RequestMessage(is);
             assertThat(sut.findMessageBody(null), is(nullValue()));
         }
 
         @Test
         public void 正しく値を得られるか() throws Exception {
-            InputStream is = new FileInputStream(new File("./src/test/resources/requestMessage.txt"));
-            RequestMessage sut = new RequestMessage(is);
-            sut.setMessageBody("person", "人");
-            assertThat(sut.findMessageBody("person"), is("人"));
+            assertThat(sut.findMessageBody("like"), is("cat"));
         }
     }
 }

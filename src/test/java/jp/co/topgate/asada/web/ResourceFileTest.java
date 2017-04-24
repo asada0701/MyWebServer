@@ -14,51 +14,25 @@ import static org.junit.Assert.assertThat;
 @RunWith(Enclosed.class)
 public class ResourceFileTest {
     public static class コンストラクタのテスト {
-        @Test
+        @Test(expected = NullPointerException.class)
         public void nullチェック() {
-            try {
-                ResourceFile sut = new ResourceFile(null);
-            } catch (NullPointerException e) {
-                e.printStackTrace();
-            }
+            ResourceFile sut = new ResourceFile(null);
         }
 
-        @Test
+        @Test(expected = ResourceFileException.class)
         public void 存在しないファイルを指定してみる() {
-            try {
-                ResourceFile sut = new ResourceFile("./video/sample.mp4");
-            } catch (ResourceFileException e) {
-                assertThat(e.getMessage(), is("存在しないファイルかもしくはディレクトリを指定されました"));
-            }
+            ResourceFile sut = new ResourceFile("./video/sample.mp4");
         }
 
-        @Test
+        @Test(expected = ResourceFileException.class)
         public void ディレクトリを指定してみる() {
-            try {
-                ResourceFile sut = new ResourceFile("./video");
-            } catch (ResourceFileException e) {
-                assertThat(e.getMessage(), is("存在しないファイルかもしくはディレクトリを指定されました"));
-            }
+            ResourceFile sut = new ResourceFile("./video");
         }
 
         @Test
         public void 正しく動作するかテスト() {
             ResourceFile sut = new ResourceFile("./src/test/resources/requestMessage.txt");
             assertThat(sut.getContentType(), is("text/plain"));
-        }
-    }
-
-    public static class isRegisteredメソッドのテスト {
-        @Test
-        public void 登録されていない拡張子のファイルのテスト() {
-            ResourceFile sut = new ResourceFile("./src/main/resources/music/sample.mp3");
-            assertThat(sut.isRegistered(), is(false));
-        }
-
-        @Test
-        public void 登録済みの拡張子のファイルのテスト() {
-            ResourceFile sut = new ResourceFile("./src/test/resources/requestMessage.txt");
-            assertThat(sut.isRegistered(), is(true));
         }
     }
 

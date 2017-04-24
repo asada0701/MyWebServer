@@ -11,7 +11,12 @@ public class ServerStateException extends RuntimeException {
         this.state = state;
     }
 
-    public Thread.State getState() {
-        return state;
+    @Override
+    public String getMessage() {
+        if (state != null) {
+            return "Unexpected Server State! state = " + state.toString();
+        } else {
+            return null;
+        }
     }
 }
