@@ -18,7 +18,7 @@ public class Server extends Thread {
     /**
      * コンストラクタ
      *
-     * @throws IOException
+     * @throws IOException サーバーソケットでエラーが発生しました
      */
     public Server() throws IOException {
         serverSocket = new ServerSocket(portNumber);
@@ -35,7 +35,7 @@ public class Server extends Thread {
      * サーバーを停止させるメソッド、サーバーが通信中の場合は停止できない
      *
      * @return trueの場合、サーバーの停止に成功
-     * @throws IOException
+     * @throws IOException サーバーソケットでエラーが発生しました
      */
     public boolean stopServer() throws IOException {
         boolean result = false;
@@ -49,7 +49,7 @@ public class Server extends Thread {
     /**
      * サーバーの緊急停止を行うメソッド、サーバーが通信中でも停止できる
      *
-     * @throws IOException
+     * @throws IOException サーバーソケットでエラーが発生しました
      */
     public void endServer() throws IOException {
         serverSocket.close();
@@ -59,8 +59,8 @@ public class Server extends Thread {
      * Threadクラスのrunメソッドのオーバーライドメソッド
      * SocketExceptionはserverSocket.accept中にserverSocket.closeメソッドを呼び出すと発生するのでここで消す
      *
-     * @throws BindException ポートが使用中であるが、要求されたローカル・アドレスの割り当てに失敗しました
-     * @throws IOException   ソケットの入出力でエラーが発生しました
+     * @throws BindRuntimeException ポートが使用中であるが、要求されたローカル・アドレスの割り当てに失敗しました
+     * @throws RuntimeException     ソケットの入出力でエラーが発生しました
      */
     public void run() {
         try {
@@ -74,7 +74,6 @@ public class Server extends Thread {
             throw new BindRuntimeException();
 
         } catch (SocketException e) {
-
 
         } catch (IOException e) {
             throw new RuntimeException(e);

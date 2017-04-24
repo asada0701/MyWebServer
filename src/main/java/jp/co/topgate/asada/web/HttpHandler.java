@@ -24,30 +24,40 @@ public class HttpHandler {
      * @param is ソケットの入力ストリーム
      * @param os ソケットの出力ストリーム
      */
-    public HttpHandler(InputStream is, OutputStream os) {
+    public HttpHandler(InputStream is, OutputStream os) throws IOException {
+        if (is == null || os == null) {
+            throw new IOException();
+        }
         ResourceFile rf = null;
-        int statusCode;
-        try {
-            RequestMessage requestMessage = new RequestMessage(is);
-            rf = new ResourceFile((FILE_PATH + requestMessage.getUri()));
-            statusCode = ResponseMessage.OK;
+        RequestMessage requestMessage;
 
+        int statusCode = -1;
+        try {
+            requestMessage = new RequestMessage(is);
+
+            if (!"GET".equals(requestMessage.getMethod()) && !"POST".equals(requestMessage.getMethod())) {
+                statusCode = ResponseMessage.NOT_IMPLEMENTED;
+            }
+
+            if (!"HTTP/1.1".equals(requestMessage.getProtocolVersion())) {
+                statusCode = ResponseMessage.HTTP_VERSION_NOT_SUPPORTED;
+            }
+
+            rf = new ResourceFile((FILE_PATH + requestMessage.getUri()));
+            if (!rf.exists() || !rf.isFile()) {
+                statusCode = ResponseMessage.NOT_FOUND;
+            }
+
+            if (statusCode == -1) {
+                statusCode = ResponseMessage.OK;
+            }
         } catch (RequestParseException e) {
             statusCode = ResponseMessage.BAD_REQUEST;
-
-        } catch (NullPointerException | ResourceFileException e) {
-            statusCode = ResponseMessage.NOT_FOUND;
-
-        } catch (NotImplementedException e) {
-            statusCode = ResponseMessage.NOT_IMPLEMENTED;
-
-        } catch (HttpVersionNotSupportedException e) {
-            statusCode = ResponseMessage.HTTP_VERSION_NOT_SUPPORTED;
         }
 
         try {
             ResponseMessage responseMessage = new ResponseMessage();
-            if (statusCode == ResponseMessage.OK) {
+            if (rf != null && statusCode == ResponseMessage.OK) {
                 responseMessage.returnResponse(os, statusCode, rf);
             } else {
                 responseMessage.returnErrorResponse(os, statusCode);

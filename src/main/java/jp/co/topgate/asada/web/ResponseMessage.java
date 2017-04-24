@@ -8,6 +8,7 @@ import java.util.Map;
 
 /**
  * レスポンスメッセージクラス
+ * サーバーのレスポンスを作成する
  *
  * @author asada
  */
@@ -89,6 +90,9 @@ public class ResponseMessage {
      * リソースファイルを送る時のメソッド
      */
     public void returnResponse(OutputStream os, int statusCode, ResourceFile rf) throws IOException {
+        if (os == null || rf == null) {
+            throw new IOException();
+        }
         addHeader("Content-Type", rf.getContentType());
         InputStream in = null;
         StringBuilder builder = new StringBuilder();
@@ -117,6 +121,9 @@ public class ResponseMessage {
      * エラーメッセージを送る時のメソッド
      */
     public void returnErrorResponse(OutputStream os, int statusCode) throws IOException {
+        if (os == null) {
+            throw new IOException();
+        }
         this.addHeader("Content-Type", "text/html; charset=UTF-8");
         String stringMessageBody;
 

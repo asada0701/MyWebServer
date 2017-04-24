@@ -1,6 +1,5 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.exception.ResourceFileException;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -17,16 +16,6 @@ public class ResourceFileTest {
         @Test(expected = NullPointerException.class)
         public void nullチェック() {
             ResourceFile sut = new ResourceFile(null);
-        }
-
-        @Test(expected = ResourceFileException.class)
-        public void 存在しないファイルを指定してみる() {
-            ResourceFile sut = new ResourceFile("./video/sample.mp4");
-        }
-
-        @Test(expected = ResourceFileException.class)
-        public void ディレクトリを指定してみる() {
-            ResourceFile sut = new ResourceFile("./video");
         }
 
         @Test

@@ -1,7 +1,5 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.exception.HttpVersionNotSupportedException;
-import jp.co.topgate.asada.web.exception.NotImplementedException;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 
 import java.io.BufferedReader;
@@ -14,6 +12,7 @@ import java.util.Map;
 /**
  * リクエストメッセージクラス
  * HTTP/1.1対応
+ * サーバーが受け取ったリクエストをパースして、必要な情報を返す
  *
  * @author asada
  */
@@ -84,8 +83,12 @@ public class RequestMessage {
      * コンストラクタ、リクエストメッセージのパースを行う
      *
      * @param is サーバーソケットのInputStream
+     * @throws RequestParseException パースに失敗した場合に投げられる
      */
-    public RequestMessage(InputStream is) {
+    public RequestMessage(InputStream is) throws RequestParseException {
+        if (is == null) {
+            throw new RequestParseException();
+        }
         try {
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             String str = br.readLine();
@@ -103,10 +106,6 @@ public class RequestMessage {
                 uri = "/index.html";
             }
             protocolVersion = requestLine[2];
-
-            if (!"HTTP/1.1".equals(protocolVersion)) {
-                throw new HttpVersionNotSupportedException();
-            }
 
             while ((str = br.readLine()) != null && !str.equals("")) {
                 String[] header = str.split(HEADER_FIELD_COLON);
@@ -147,8 +146,6 @@ public class RequestMessage {
                         }
                     }
                 }
-            } else {
-                throw new NotImplementedException();
             }
         } catch (IOException e) {
             throw new RequestParseException();

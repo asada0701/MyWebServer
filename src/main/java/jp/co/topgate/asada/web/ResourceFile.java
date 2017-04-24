@@ -1,13 +1,11 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.exception.ResourceFileException;
-
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * リソースファイルの管理をするクラス
+ * コンテンツタイプの管理を行うクラス
  *
  * @author asada
  */
@@ -32,16 +30,9 @@ public class ResourceFile extends File {
      * ファイル拡張子とコンテンツタイプのハッシュマップの初期設定を行う
      *
      * @param filePath リクエストメッセージで指定されたファイルのパス
-     * @throws ResourceFileException ディレクトリを指定された場合や、存在しないファイルを指定された
      */
-    public ResourceFile(String filePath) throws RuntimeException {
+    public ResourceFile(String filePath) {
         super(filePath);
-        if (!this.exists()) {
-            throw new ResourceFileException();
-        }
-        if (!this.isFile()) {
-            throw new ResourceFileException();
-        }
 
         String[] s = this.getName().split(FILE_NAME_DOT);
         extension = s[1];
@@ -65,10 +56,6 @@ public class ResourceFile extends File {
      * @return コンテンツタイプを返す
      */
     public String getContentType() {
-        if (extension == null) {
-            return null;
-        } else {
-            return fileType.getOrDefault(extension, "application/octet-stream");
-        }
+        return fileType.getOrDefault(extension, "application/octet-stream");
     }
 }
