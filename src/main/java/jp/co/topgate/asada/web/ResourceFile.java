@@ -11,9 +11,19 @@ import java.util.Map;
  */
 public class ResourceFile extends File {
     /**
+     * リソースファイルのパス
+     */
+    private static final String FILE_PATH = "./src/main/resources";
+
+    /**
      * ファイル名のドット
      */
     private static final String FILE_NAME_DOT = "\\.";
+
+    /**
+     * ファイル名
+     */
+    private static final int FILE_NAME_NUM_ITEMS = 2;
 
     /**
      * ファイル拡張子とコンテンツタイプのハッシュマップ
@@ -32,10 +42,12 @@ public class ResourceFile extends File {
      * @param filePath リクエストメッセージで指定されたファイルのパス
      */
     public ResourceFile(String filePath) {
-        super(filePath);
+        super(FILE_PATH + filePath);
 
         String[] s = this.getName().split(FILE_NAME_DOT);
-        extension = s[1];
+        if (s.length == FILE_NAME_NUM_ITEMS) {
+            extension = s[1];
+        }
 
         fileType.put("htm", "text/html");
         fileType.put("html", "text/html");
