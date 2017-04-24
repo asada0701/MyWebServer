@@ -1,7 +1,10 @@
+HTTPServerをJavaで書いて見る
+======================
+TG社の課題
 
-TG社の課題、HTTPServerをJavaで書いて見る
-
-gradle runで実行後、
+使い方
+------
+./gradlew runで実行後、
 
 1:サーバーを立ち上げます。
 
