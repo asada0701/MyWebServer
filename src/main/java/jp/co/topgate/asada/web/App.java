@@ -29,10 +29,12 @@ public class App {
                 System.out.println(START_NUM + ": START");
                 System.out.println(STOP_NUM + ": STOP");
                 System.out.println(END_NUM + ": END");
+
                 do {
                     System.out.print("please select :");
                     choices = scan.next();
-                } while (!(choices.equals(START_NUM) || choices.equals(STOP_NUM) || choices.equals(END_NUM)));
+                } while (isaBoolean(choices));
+
                 String msg = controlServer(server, choices);
                 if (msg != null) {
                     System.out.println(msg);
@@ -52,6 +54,10 @@ public class App {
         }
     }
 
+    private static boolean isaBoolean(String choices) {
+        return !(choices.equals(START_NUM) || choices.equals(STOP_NUM) || choices.equals(END_NUM));
+    }
+
     /**
      * サーバーを操作するメソッド
      *
@@ -67,28 +73,35 @@ public class App {
         }
         String msg;
         switch (choices) {
+
             case START_NUM:
                 switch (server.getState()) {
                     case TERMINATED:
                         server = new Server();
+
                     case NEW:
                         server.startServer();
                         msg = "start up http server..";
                         break;
+
                     case RUNNABLE:
                         msg = "http server is already running..";
                         break;
+
                     default:
                         server.endServer();
                         throw new ServerStateException(server.getState());
                 }
                 break;
+
             case STOP_NUM:
                 switch (server.getState()) {
                     case NEW:
+
                     case TERMINATED:
                         msg = "http server is not running..";
                         break;
+
                     case RUNNABLE:
                         if (server.stopServer()) {
                             msg = "http server stops..";
@@ -96,15 +109,18 @@ public class App {
                             msg = "wait a second, http server is returning a response..";
                         }
                         break;
+
                     default:
                         server.endServer();
                         throw new ServerStateException(server.getState());
                 }
                 break;
+
             case END_NUM:
                 server.endServer();
                 msg = "bye..";
                 break;
+
             default:
                 return null;
         }
