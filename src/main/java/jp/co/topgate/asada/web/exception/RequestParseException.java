@@ -1,7 +1,10 @@
 package jp.co.topgate.asada.web.exception;
 
 /**
- * Created by yusuke-pc on 2017/04/19.
+ * リクエストメッセージの例外
+ * リクエストメッセージのパースに失敗した場合に発生する
+ *
+ * @author asada
  */
 public class RequestParseException extends RuntimeException {
     @Override

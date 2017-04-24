@@ -1,7 +1,10 @@
 package jp.co.topgate.asada.web.exception;
 
 /**
- * Created by yusuke-pc on 2017/04/19.
+ * ServerStateの例外
+ * Threadを継承したServerクラスのThread.Stateが予期しない状態の場合、発生する
+ *
+ * @author asada
  */
 public class ServerStateException extends RuntimeException {
 
