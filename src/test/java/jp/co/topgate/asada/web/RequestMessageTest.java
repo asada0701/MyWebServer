@@ -1,7 +1,5 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.exception.HttpVersionNotSupportedException;
-import jp.co.topgate.asada.web.exception.NotImplementedException;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,26 +27,6 @@ public class RequestMessageTest {
                 RequestMessage sut = new RequestMessage(is);
             } catch (RequestParseException e) {
                 assertThat(e.getMessage(), is("不正なリクエストメッセージをパースしようとしました"));
-            }
-        }
-
-        @Test
-        public void 想定外のHTTPプロトコルバージョンのテスト() throws Exception {
-            File file = new File("./src/test/resources/HTTPVersionTest.txt");
-            try (InputStream is = new FileInputStream(file)) {
-                RequestMessage sut = new RequestMessage(is);
-            } catch (HttpVersionNotSupportedException e) {
-                assertThat(e.getMessage(), is("HTTP/1.1以外のプロトコルバージョンでリクエストされました"));
-            }
-        }
-
-        @Test
-        public void 想定外のHTTPメソッドのテスト() throws Exception {
-            File file = new File("./src/test/resources/HTTPMethodTest.txt");
-            try (InputStream is = new FileInputStream(file)) {
-                RequestMessage sut = new RequestMessage(is);
-            } catch (NotImplementedException e) {
-                assertThat(e.getMessage(), is("このサーバーで実装されていないHTTPメソッドでリクエストメッセージがきました"));
             }
         }
 
