@@ -1,7 +1,10 @@
 package jp.co.topgate.asada.web.exception;
 
 /**
- * Created by yusuke-pc on 2017/04/24.
+ * BindExceptionが発生した時に発生させる例外
+ * BindExceptionをオーバーライドしたrunメソッド内で渡すため、Runtimeを継承したこの例外でラップ
+ *
+ * @author asada
  */
 public class BindRuntimeException extends RuntimeException {
     @Override
