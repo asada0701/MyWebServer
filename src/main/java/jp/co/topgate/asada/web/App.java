@@ -1,5 +1,6 @@
 package jp.co.topgate.asada.web;
 
+import jp.co.topgate.asada.web.exception.BindRuntimeException;
 import jp.co.topgate.asada.web.exception.ServerStateException;
 
 import java.io.IOException;
@@ -42,11 +43,13 @@ public class App {
                 }
             } while (!choices.equals(END_NUM));
 
+        } catch (BindRuntimeException e) {
+            System.out.println(e.getMessage());
+
         } catch (ServerStateException e) {
-            System.out.println("Unexpected Server State! state = " + e.getState().toString());
+            System.out.println(e.getMessage());
 
         } catch (IOException e) {
-            System.out.println("Input/Output of Server is wrong state..");
             e.printStackTrace();
         }
     }
@@ -56,7 +59,7 @@ public class App {
      *
      * @param choices 選択した文字
      * @return サーバーの状態をメッセージで返す
-     * @throws IOException サーバークラスで発生する
+     * @throws IOException サーバークラスで発生した入出力エラー
      */
     public static String controlServer(Server server, String choices) throws IOException {
         if (server == null || choices == null) {
@@ -99,14 +102,11 @@ public class App {
                 }
                 break;
             case END_NUM:
-                if (server.stopServer()) {
-                    msg = "bye..";
-                } else {
-                    msg = "wait a second, http server is returning a response..";
-                }
+                server.endServer();
+                msg = "bye..";
                 break;
             default:
-                msg = null;
+                return null;
         }
         return msg;
     }

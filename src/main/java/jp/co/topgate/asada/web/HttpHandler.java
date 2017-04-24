@@ -18,13 +18,13 @@ public class HttpHandler {
     private static final String FILE_PATH = "./src/main/resources";
 
     /**
-     * リクエストがきた時に呼び出すメソッド
-     * HTTPステータスコードをwriteResponseメソッドに渡す
+     * コンストラクタ
+     * レスポンス生成中に発生したエラーはここで消す
      *
      * @param is ソケットの入力ストリーム
      * @param os ソケットの出力ストリーム
      */
-    public void requestComes(InputStream is, OutputStream os) {
+    public HttpHandler(InputStream is, OutputStream os) {
         ResourceFile rf = null;
         int statusCode;
         try {
@@ -37,35 +37,22 @@ public class HttpHandler {
 
         } catch (NullPointerException | ResourceFileException e) {
             statusCode = ResponseMessage.NOT_FOUND;
-            
+
         } catch (NotImplementedException e) {
             statusCode = ResponseMessage.NOT_IMPLEMENTED;
 
         } catch (HttpVersionNotSupportedException e) {
             statusCode = ResponseMessage.HTTP_VERSION_NOT_SUPPORTED;
         }
-        writeResponse(os, statusCode, rf);
-    }
 
-    /**
-     * レスポンスメッセージをソケットの出力ストリームに書き出すメソッド
-     *
-     * @param os         ソケットの出力ストリーム
-     * @param statusCode HTTPステータスコード
-     * @param rf         ResourceFileのオブジェクト
-     */
-    private void writeResponse(OutputStream os, int statusCode, ResourceFile rf) {
-        ResponseMessage responseMessage = new ResponseMessage();
         try {
+            ResponseMessage responseMessage = new ResponseMessage();
             if (statusCode == ResponseMessage.OK) {
                 responseMessage.returnResponse(os, statusCode, rf);
             } else {
                 responseMessage.returnErrorResponse(os, statusCode);
             }
         } catch (IOException e) {
-            //例外握り潰し！！
-            //F5連打されると潰れる。ソケットサーバーが悪！！ワシは知らん！！
         }
-
     }
 }

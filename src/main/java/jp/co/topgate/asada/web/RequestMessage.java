@@ -223,28 +223,4 @@ public class RequestMessage {
             return null;
         }
     }
-
-    void setMethod(String method) {
-        this.method = method;
-    }
-
-    void setUri(String uri) {
-        this.uri = uri;
-    }
-
-    void setUriQuery(String key, String value) {
-        this.uriQuery.put(key, value);
-    }
-
-    void setProtocolVersion(String protocolVersion) {
-        this.protocolVersion = protocolVersion;
-    }
-
-    void setHeaderFieldUri(String key, String value) {
-        this.headerFieldUri.put(key, value);
-    }
-
-    void setMessageBody(String key, String value) {
-        this.messageBody.put(key, value);
-    }
 }

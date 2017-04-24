@@ -12,26 +12,26 @@ import static org.junit.Assert.assertThat;
  */
 public class HTTPHandlerTest {
     @Test
-    public void requestComesのテスト() throws Exception{
+    public void requestComesのテスト() throws Exception {
         //Set Up
         File file = new File("./src/text/resources/responseMessage.txt");
         file.delete();
 
-        HttpHandler httpHandler = new HttpHandler();
+
         InputStream is = null;
         OutputStream os = null;
         try {
             is = new FileInputStream(new File("./src/test/resources/requestMessage.txt"));
             os = new FileOutputStream(new File("./src/test/resources/responseMessage.txt"));
 
-        //Exercise
-            httpHandler.requestComes(is, os);
+            //Exercise
+            HttpHandler httpHandler = new HttpHandler(is, os);
 
         } finally {
-            if(is != null){
+            if (is != null) {
                 is.close();
             }
-            if(os != null){
+            if (os != null) {
                 os.close();
             }
         }
@@ -45,7 +45,7 @@ public class HTTPHandlerTest {
             assertThat(br.readLine(), is(""));
             assertThat(br.readLine(), is("<!DOCTYPE html>"));
         } finally {
-            if(is != null){
+            if (is != null) {
                 is.close();
             }
         }

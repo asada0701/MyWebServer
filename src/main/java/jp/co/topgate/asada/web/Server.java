@@ -1,9 +1,9 @@
 package jp.co.topgate.asada.web;
 
+import jp.co.topgate.asada.web.exception.BindRuntimeException;
+
 import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketException;
+import java.net.*;
 
 /**
  * サーバークラス
@@ -34,7 +34,7 @@ public class Server extends Thread {
     /**
      * サーバーを停止させるメソッド、サーバーが通信中の場合は停止できない
      *
-     * @return サーバーの停止に成功したか返す
+     * @return trueの場合、サーバーの停止に成功
      * @throws IOException
      */
     public boolean stopServer() throws IOException {
@@ -57,23 +57,25 @@ public class Server extends Thread {
 
     /**
      * Threadクラスのrunメソッドのオーバーライドメソッド
+     * SocketExceptionはserverSocket.accept中にserverSocket.closeメソッドを呼び出すと発生するのでここで消す
+     *
+     * @throws BindException ポートが使用中であるが、要求されたローカル・アドレスの割り当てに失敗しました
+     * @throws IOException   ソケットの入出力でエラーが発生しました
      */
     public void run() {
-        HttpHandler httpHandler = new HttpHandler();
         try {
             while (true) {
                 socket = serverSocket.accept();
-                httpHandler.requestComes(socket.getInputStream(), socket.getOutputStream());
+                new HttpHandler(socket.getInputStream(), socket.getOutputStream());
                 socket.close();
                 socket = null;
             }
+        } catch (BindException e) {
+            throw new BindRuntimeException();
+
         } catch (SocketException e) {
-            /*
-            ソケットが発生する前なので、socket.close()ができないため、例外をだして終了する
-            java.net.SocketException: Socket is closed
-            at java.net.ServerSocket.accept(ServerSocket.java:509)
-            ソケット作成中(accept()メソッド)にサーバーソケットをクローズしたため発生する
-            */
+
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
