@@ -59,9 +59,11 @@ public class App {
      *
      * @param choices 選択した文字
      * @return サーバーの状態をメッセージで返す
-     * @throws IOException サーバークラスで発生した入出力エラー
+     * @throws IOException          サーバークラスで発生した入出力エラー
+     * @throws BindRuntimeException サーバークラスで発生したバインド例外
+     * @throws ServerStateException サーバークラスの状態が予期しないものになった場合に発生する
      */
-    public static String controlServer(Server server, String choices) throws IOException {
+    public static String controlServer(Server server, String choices) throws IOException, BindRuntimeException, ServerStateException {
         if (server == null || choices == null) {
             return null;
         }
