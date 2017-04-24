@@ -24,7 +24,10 @@ public class HttpHandler {
      * @param is ソケットの入力ストリーム
      * @param os ソケットの出力ストリーム
      */
-    public HttpHandler(InputStream is, OutputStream os) {
+    public HttpHandler(InputStream is, OutputStream os) throws IOException {
+        if (is == null || os == null) {
+            throw new IOException();
+        }
         ResourceFile rf = null;
         RequestMessage requestMessage;
 

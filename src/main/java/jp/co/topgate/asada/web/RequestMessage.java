@@ -12,6 +12,7 @@ import java.util.Map;
 /**
  * リクエストメッセージクラス
  * HTTP/1.1対応
+ * サーバーが受け取ったリクエストをパースして、必要な情報を返す
  *
  * @author asada
  */
@@ -85,6 +86,9 @@ public class RequestMessage {
      * @throws RequestParseException パースに失敗した場合に投げられる
      */
     public RequestMessage(InputStream is) throws RequestParseException {
+        if (is == null) {
+            throw new RequestParseException();
+        }
         try {
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             String str = br.readLine();

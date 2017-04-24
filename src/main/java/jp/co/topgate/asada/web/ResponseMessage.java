@@ -8,6 +8,7 @@ import java.util.Map;
 
 /**
  * レスポンスメッセージクラス
+ * サーバーのレスポンスを作成する
  *
  * @author asada
  */

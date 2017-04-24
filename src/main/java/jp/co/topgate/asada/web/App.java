@@ -18,8 +18,6 @@ public class App {
 
     /**
      * メインメソッド
-     *
-     * @param args
      */
     public static void main(String[] args) {
         try {

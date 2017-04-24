@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * リソースファイルの管理をするクラス
+ * コンテンツタイプの管理を行うクラス
  *
  * @author asada
  */
