@@ -22,4 +22,6 @@ URIで「/」と指定することでディレクトリ内のindex.htmlが呼ば
 
 リクエストを同時に処理はできません。先にきたリクエストのレスポンスを返し終わると、次のリクエストの処理へ移ります。
 
+文字コードはUTF-8を使用してください。
+
 [![CircleCI](https://circleci.com/gh/asada0701/MyWebServer.svg?style=svg)](https://circleci.com/gh/asada0701/MyWebServer)
