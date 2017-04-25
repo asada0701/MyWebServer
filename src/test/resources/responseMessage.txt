@@ -1,29 +1,3 @@
 HTTP/1.1 200 OK
-Content-Type: text/html
+Content-Type: text/html; charset=UTF-8
 
-<!DOCTYPE html>
-<html>
-<head>
-  <meta http-equiv="content-type" content="text/html; charset=utf-8">
-  <link rel="stylesheet" type="text/css" href="./css/style.css">
-  <script type="text/javascript" src="./js/myjs.js"></script>
-</head>
-<body>
-  <div id="header">
-    <h1>こんにちは</h1>
-    <p>
-      <script>
-        koshin();
-      </script>
-    </p>
-  </div>
-  <div id="gazou">
-    <p>私の好きな猫の画像です<img src="./img/1.jpg" width="400" height="360" alt="猫" /></p>
-  </div>
-  <!--<div id="douga">-->
-    <!--<p>こちらは好きな動画になります。-->
-    <!--<video src="./video/cat.mp3" controls>-->
-    <!--</video>-->
-  <!--</div>-->
-</body>
-</html>

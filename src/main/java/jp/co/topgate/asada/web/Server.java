@@ -70,10 +70,10 @@ public class Server extends Thread {
                 socket.close();
             }
         } catch (BindException e) {
-            throw new BindRuntimeException();
+            throw new BindRuntimeException(e.toString());
 
         } catch (SocketException e) {
-            
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -6,6 +6,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,9 +20,9 @@ import java.util.Map;
  */
 public class RequestMessage {
     /**
-     * リクエストラインのスペース
+     * リクエストラインを分割する
      */
-    private static final String REQUEST_LINE_SPACE = " ";
+    private static final String REQUEST_LINE_DIVISION = " ";
 
     /**
      * リクエスト行の項目数
@@ -28,19 +30,19 @@ public class RequestMessage {
     private static final int REQUEST_LINE_NUM_ITEMS = 3;
 
     /**
-     * URIのクエリー前のクエスチョンマーク
+     * URIとクエリーを分割する
      */
-    private static final String URI_QUESTION_MARK = "\\?";
+    private static final String URI_QUERY_DIVIDSION = "\\?";
 
     /**
-     * URIのクエリー内のアンパサンド
+     * URIのクエリーをクエリー毎に分割する
      */
-    private static final String URI_QUERY_AMPERSAND = "&";
+    private static final String URI_EACH_QUERY_DIVISION = "&";
 
     /**
-     * URIのクエリーの中のイコール
+     * クエリー名とクエリー値を分割する
      */
-    private static final String URI_QUERY_EQUAL = "=";
+    private static final String URI_QUERY_NAME_VALUE_DIVISION = "=";
 
     /**
      * URIのクエリーの項目数
@@ -48,9 +50,9 @@ public class RequestMessage {
     private static final int URI_QUERY_NUM_ITEMS = 2;
 
     /**
-     * リヘッダーフィールドのコロン（その後のスペースは自由のため注意）
+     * ヘッダーフィールドのフィールド名とフィールド値を分割する（その後のスペースは自由のため注意）
      */
-    private static final String HEADER_FIELD_COLON = ":";
+    private static final String HEADER_FIELD_NAME_VALUE_DIVISION = ":";
 
     /**
      * ヘッダーフィールドの項目数
@@ -58,14 +60,14 @@ public class RequestMessage {
     private static final int HEADER_FIELD_NUM_ITEMS = 2;
 
     /**
-     * メッセージボディのアンパサンド
+     * メッセージボディのクエリーをクエリー毎に分割する
      */
-    private static final String MESSAGE_BODY_AMPERSAND = "&";
+    private static final String MESSAGE_BODY_EACH_QUERY_DIVISION = "&";
 
     /**
      * メッセージボディのイコール
      */
-    private static final String MESSAGE_BODY_EQUAL = "=";
+    private static final String MESSAGE_BODY_NAME_VALUE_DIVISION = "=";
 
     /**
      * メッセージボディの項目数
@@ -87,68 +89,73 @@ public class RequestMessage {
      */
     public RequestMessage(InputStream is) throws RequestParseException {
         if (is == null) {
-            throw new RequestParseException();
+            throw new RequestParseException("引数であるInputStreamがnullだった");
         }
         try {
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
             String str = br.readLine();
             if (str == null) {
-                throw new RequestParseException();
+                throw new RequestParseException("BufferedReaderのreadLineメソッドの戻り値がnullだった");
             }
-            String[] requestLine = str.split(REQUEST_LINE_SPACE);
+            String[] requestLine = str.split(REQUEST_LINE_DIVISION);
             if (requestLine.length != REQUEST_LINE_NUM_ITEMS) {
-                throw new RequestParseException();
+                throw new RequestParseException("リクエストラインが不正なものだった:" + str);
             }
 
             method = requestLine[0];
             uri = requestLine[1];
-            if (uri.equals("/")) {
-                uri = "/index.html";
+            if (uri.endsWith("/")) {
+                uri = uri + "index.html";
             }
             protocolVersion = requestLine[2];
 
             while ((str = br.readLine()) != null && !str.equals("")) {
-                String[] header = str.split(HEADER_FIELD_COLON);
+                String[] header = str.split(HEADER_FIELD_NAME_VALUE_DIVISION);
                 if (header.length == HEADER_FIELD_NUM_ITEMS) {
                     header[1] = header[1].trim();
                     headerFieldUri.put(header[0], header[1]);
                 } else if (header.length > HEADER_FIELD_NUM_ITEMS) {
                     header[1] = header[1].trim();
-                    headerFieldUri.put(header[0], header[1] + HEADER_FIELD_COLON + header[2]);
+                    headerFieldUri.put(header[0], header[1] + HEADER_FIELD_NAME_VALUE_DIVISION + header[2]);
                 } else {
-                    throw new RequestParseException();
+                    throw new RequestParseException("ヘッダーフィールドが不正なものだった:" + str);
                 }
             }
 
             if ("GET".equals(method)) {
-                String[] s1 = uri.split(URI_QUESTION_MARK);
+                String[] s1 = uri.split(URI_QUERY_DIVIDSION);
                 uri = s1[0];
                 if (s1.length > 1) {
-                    String[] s2 = s1[1].split(URI_QUERY_AMPERSAND);
+                    String[] s2 = s1[1].split(URI_EACH_QUERY_DIVISION);
                     for (String aS2 : s2) {
-                        String[] s3 = aS2.split(URI_QUERY_EQUAL);
+                        String[] s3 = aS2.split(URI_QUERY_NAME_VALUE_DIVISION);
                         if (s3.length == URI_QUERY_NUM_ITEMS) {
                             uriQuery.put(s3[0], s3[1]);
                         } else {
-                            throw new RequestParseException();
+                            throw new RequestParseException("URIのクエリーが不正なものだった:" + str);
                         }
                     }
                 }
             } else if ("POST".equals(method)) {
                 while ((str = br.readLine()) != null && !str.equals("")) {
-                    String[] s1 = str.split(MESSAGE_BODY_AMPERSAND);
+                    String[] s1 = str.split(MESSAGE_BODY_EACH_QUERY_DIVISION);
                     for (String aS1 : s1) {
-                        String[] s2 = aS1.split(MESSAGE_BODY_EQUAL);
+                        String[] s2 = aS1.split(MESSAGE_BODY_NAME_VALUE_DIVISION);
                         if (s2.length == MESSAGE_BODY_NUM_ITEMS) {
                             messageBody.put(s2[0], s2[1]);
                         } else {
-                            throw new RequestParseException();
+                            throw new RequestParseException("リクエストのメッセージボディが不正なものだった:" + str);
                         }
                     }
                 }
             }
+            URI u = new URI(uri);
+            uri = u.getPath();
         } catch (IOException e) {
-            throw new RequestParseException();
+            throw new RequestParseException("BufferedReaderで発生した例外:" + e.toString());
+
+        } catch (URISyntaxException e) {
+            throw new RequestParseException("リクエストメッセージのURIの解析に失敗:" + e.toString());
         }
     }
 

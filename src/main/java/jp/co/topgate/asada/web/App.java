@@ -20,6 +20,7 @@ public class App {
      * メインメソッド
      */
     public static void main(String[] args) {
+        System.out.println("this server's port number is 8080..");
         try {
             Server server = new Server();
             String choices;
@@ -45,9 +46,11 @@ public class App {
 
         } catch (BindRuntimeException e) {
             System.out.println(e.getMessage());
+            System.exit(1);
 
         } catch (ServerStateException e) {
             System.out.println(e.getMessage());
+            System.exit(1);
 
         } catch (IOException e) {
             e.printStackTrace();

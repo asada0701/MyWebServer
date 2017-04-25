@@ -41,7 +41,7 @@ public class HTTPHandlerTest {
             is = new FileInputStream(new File("./src/test/resources/responseMessage.txt"));
             BufferedReader br = new BufferedReader(new InputStreamReader(is));
             assertThat(br.readLine(), is("HTTP/1.1 200 OK"));
-            assertThat(br.readLine(), is("Content-Type: text/html"));
+            assertThat(br.readLine(), is("Content-Type: text/html; charset=UTF-8"));
             assertThat(br.readLine(), is(""));
             assertThat(br.readLine(), is("<!DOCTYPE html>"));
         } finally {

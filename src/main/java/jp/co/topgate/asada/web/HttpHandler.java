@@ -12,10 +12,7 @@ import java.io.OutputStream;
  * @author asada
  */
 public class HttpHandler {
-    /**
-     * リソースファイルのパス
-     */
-    private static final String FILE_PATH = "./src/main/resources";
+
 
     /**
      * コンストラクタ
@@ -26,36 +23,40 @@ public class HttpHandler {
      */
     public HttpHandler(InputStream is, OutputStream os) throws IOException {
         if (is == null || os == null) {
-            throw new IOException();
+            throw new IOException("引数のどちらかがnullだった");
         }
         ResourceFile rf = null;
         RequestMessage requestMessage;
 
-        int statusCode = -1;
+        int statusCode;
         try {
             requestMessage = new RequestMessage(is);
 
-            if (!"GET".equals(requestMessage.getMethod()) && !"POST".equals(requestMessage.getMethod())) {
-                statusCode = ResponseMessage.NOT_IMPLEMENTED;
-            }
+            String method = requestMessage.getMethod();
+            String uri = requestMessage.getUri();
+            String protocolVersion = requestMessage.getProtocolVersion();
 
-            if (!"HTTP/1.1".equals(requestMessage.getProtocolVersion())) {
+            if (!"HTTP/1.1".equals(protocolVersion)) {
                 statusCode = ResponseMessage.HTTP_VERSION_NOT_SUPPORTED;
+
+            } else if (!"GET".equals(method) && !"POST".equals(method)) {
+                statusCode = ResponseMessage.NOT_IMPLEMENTED;
+
+            } else {
+                rf = new ResourceFile(uri);
+                if (!rf.exists() || !rf.isFile()) {
+                    statusCode = ResponseMessage.NOT_FOUND;
+                } else {
+                    statusCode = ResponseMessage.OK;
+                }
             }
 
-            rf = new ResourceFile((FILE_PATH + requestMessage.getUri()));
-            if (!rf.exists() || !rf.isFile()) {
-                statusCode = ResponseMessage.NOT_FOUND;
-            }
-
-            if (statusCode == -1) {
-                statusCode = ResponseMessage.OK;
-            }
         } catch (RequestParseException e) {
             statusCode = ResponseMessage.BAD_REQUEST;
         }
 
         try {
+            //returnResponseメソッドの共通化、メソッドが共通だと、ミスにも早く気づける
             ResponseMessage responseMessage = new ResponseMessage();
             if (rf != null && statusCode == ResponseMessage.OK) {
                 responseMessage.returnResponse(os, statusCode, rf);
