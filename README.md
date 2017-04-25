@@ -20,4 +20,6 @@ TG社の課題
 
 URIで「/」と指定することでディレクトリ内のindex.htmlが呼ばれます。
 
+リクエストを同時に処理はできません。先にきたリクエストのレスポンスを返し終わると、次のリクエストの処理へ移ります。
+
 [![CircleCI](https://circleci.com/gh/asada0701/MyWebServer.svg?style=svg)](https://circleci.com/gh/asada0701/MyWebServer)

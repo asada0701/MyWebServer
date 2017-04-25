@@ -13,7 +13,6 @@ import java.io.OutputStream;
  */
 public class HttpHandler {
 
-
     /**
      * コンストラクタ
      * レスポンス生成中に発生したエラーはここで消す
