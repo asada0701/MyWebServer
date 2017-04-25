@@ -104,9 +104,6 @@ public class RequestMessage {
 
             method = requestLine[0];
             uri = requestLine[1];
-            if (uri.endsWith("/")) {
-                uri = uri + "index.html";
-            }
             protocolVersion = requestLine[2];
 
             while ((str = br.readLine()) != null && !str.equals("")) {
@@ -149,8 +146,13 @@ public class RequestMessage {
                     }
                 }
             }
+
+            if (uri.endsWith("/")) {
+                uri = uri + "index.html";
+            }
             URI u = new URI(uri);
             uri = u.getPath();
+
         } catch (IOException e) {
             throw new RequestParseException("BufferedReaderで発生した例外:" + e.toString());
 
