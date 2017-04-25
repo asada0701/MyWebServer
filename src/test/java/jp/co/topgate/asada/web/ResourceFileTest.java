@@ -42,7 +42,7 @@ public class ResourceFileTest {
         @Test
         public void htmlファイルを指定してみる() {
             ResourceFile sut = new ResourceFile("./src/test/resources/empty.html");
-            assertThat(sut.getContentType(), is("text/html"));
+            assertThat(sut.getContentType(), is("text/html; charset=UTF-8"));
         }
     }
 }

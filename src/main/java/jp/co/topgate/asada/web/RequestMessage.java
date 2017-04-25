@@ -103,8 +103,7 @@ public class RequestMessage {
             }
 
             method = requestLine[0];
-            URI u = new URI(requestLine[1]);
-            uri = u.getPath();
+            uri = requestLine[1];
             if (uri.endsWith("/")) {
                 uri = uri + "index.html";
             }
@@ -150,6 +149,8 @@ public class RequestMessage {
                     }
                 }
             }
+            URI u = new URI(uri);
+            uri = u.getPath();
         } catch (IOException e) {
             throw new RequestParseException("BufferedReaderで発生した例外:" + e.toString());
 
