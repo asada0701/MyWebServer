@@ -49,8 +49,8 @@ public class ResourceFile extends File {
             extension = s[1];
         }
 
-        fileType.put("htm", "text/html");
-        fileType.put("html", "text/html");
+        fileType.put("htm", "text/html; charset=UTF-8");
+        fileType.put("html", "text/html; charset=UTF-8");
         fileType.put("css", "text/css");
         fileType.put("js", "text/javascript");
 

@@ -6,6 +6,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -87,21 +89,22 @@ public class RequestMessage {
      */
     public RequestMessage(InputStream is) throws RequestParseException {
         if (is == null) {
-            throw new RequestParseException();
+            throw new RequestParseException("引数であるInputStreamがnullだった");
         }
         try {
-            BufferedReader br = new BufferedReader(new InputStreamReader(is));
+            BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
             String str = br.readLine();
             if (str == null) {
-                throw new RequestParseException();
+                throw new RequestParseException("BufferedReaderのreadLineメソッドの戻り値がnullだった");
             }
             String[] requestLine = str.split(REQUEST_LINE_DIVISION);
             if (requestLine.length != REQUEST_LINE_NUM_ITEMS) {
-                throw new RequestParseException();
+                throw new RequestParseException("リクエストラインが不正なものだった:" + str);
             }
 
             method = requestLine[0];
-            uri = requestLine[1];
+            URI u = new URI(requestLine[1]);
+            uri = u.getPath();
             if (uri.endsWith("/")) {
                 uri = uri + "index.html";
             }
@@ -116,7 +119,7 @@ public class RequestMessage {
                     header[1] = header[1].trim();
                     headerFieldUri.put(header[0], header[1] + HEADER_FIELD_NAME_VALUE_DIVISION + header[2]);
                 } else {
-                    throw new RequestParseException();
+                    throw new RequestParseException("ヘッダーフィールドが不正なものだった:" + str);
                 }
             }
 
@@ -130,7 +133,7 @@ public class RequestMessage {
                         if (s3.length == URI_QUERY_NUM_ITEMS) {
                             uriQuery.put(s3[0], s3[1]);
                         } else {
-                            throw new RequestParseException();
+                            throw new RequestParseException("URIのクエリーが不正なものだった:" + str);
                         }
                     }
                 }
@@ -142,13 +145,16 @@ public class RequestMessage {
                         if (s2.length == MESSAGE_BODY_NUM_ITEMS) {
                             messageBody.put(s2[0], s2[1]);
                         } else {
-                            throw new RequestParseException();
+                            throw new RequestParseException("リクエストのメッセージボディが不正なものだった:" + str);
                         }
                     }
                 }
             }
         } catch (IOException e) {
-            throw new RequestParseException();
+            throw new RequestParseException("BufferedReaderで発生した例外:" + e.toString());
+
+        } catch (URISyntaxException e) {
+            throw new RequestParseException("リクエストメッセージのURIの解析に失敗:" + e.toString());
         }
     }
 

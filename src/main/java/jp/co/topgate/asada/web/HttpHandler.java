@@ -23,7 +23,7 @@ public class HttpHandler {
      */
     public HttpHandler(InputStream is, OutputStream os) throws IOException {
         if (is == null || os == null) {
-            throw new IOException();
+            throw new IOException("引数のどちらかがnullだった");
         }
         ResourceFile rf = null;
         RequestMessage requestMessage;
@@ -56,6 +56,7 @@ public class HttpHandler {
         }
 
         try {
+            //returnResponseメソッドの共通化、メソッドが共通だと、ミスにも早く気づける
             ResponseMessage responseMessage = new ResponseMessage();
             if (rf != null && statusCode == ResponseMessage.OK) {
                 responseMessage.returnResponse(os, statusCode, rf);

@@ -7,6 +7,10 @@ package jp.co.topgate.asada.web.exception;
  * @author asada
  */
 public class RequestParseException extends RuntimeException {
+    public RequestParseException(String msg) {
+        super(msg);
+    }
+
     @Override
     public String getMessage() {
         return "不正なリクエストメッセージをパースしようとしました";

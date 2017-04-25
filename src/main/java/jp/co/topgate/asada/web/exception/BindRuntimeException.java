@@ -7,6 +7,10 @@ package jp.co.topgate.asada.web.exception;
  * @author asada
  */
 public class BindRuntimeException extends RuntimeException {
+    public BindRuntimeException(String msg) {
+        super(msg);
+    }
+
     @Override
     public String getMessage() {
         return "the bind error occurred..";
