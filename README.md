@@ -18,6 +18,6 @@ TG社の課題
 -----
 サーバーのポート番号は8080です。
 
-「/」と指定することでディレクトリ内のindex.htmlが呼ばれます。
+URIで「/」と指定することでディレクトリ内のindex.htmlが呼ばれます。
 
 [![CircleCI](https://circleci.com/gh/asada0701/MyWebServer.svg?style=svg)](https://circleci.com/gh/asada0701/MyWebServer)
