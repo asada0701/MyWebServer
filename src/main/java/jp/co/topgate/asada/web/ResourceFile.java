@@ -21,7 +21,7 @@ public class ResourceFile extends File {
     private static final String FILE_NAME_DOT = "\\.";
 
     /**
-     * ファイル名
+     * ファイル名のドットの数
      */
     private static final int FILE_NAME_NUM_ITEMS = 2;
 
@@ -44,11 +44,6 @@ public class ResourceFile extends File {
     public ResourceFile(String filePath) {
         super(FILE_PATH + filePath);
 
-        String[] s = this.getName().split(FILE_NAME_DOT);
-        if (s.length == FILE_NAME_NUM_ITEMS) {
-            extension = s[1];
-        }
-
         fileType.put("htm", "text/html; charset=UTF-8");
         fileType.put("html", "text/html; charset=UTF-8");
         fileType.put("css", "text/css");
@@ -60,6 +55,14 @@ public class ResourceFile extends File {
         fileType.put("jpeg", "image/jpeg");
         fileType.put("png", "image/png");
         fileType.put("gif", "image/gif");
+
+        if (filePath != null) {
+            for (String key : fileType.keySet()) {
+                if (filePath.endsWith(key)) {
+                    extension = key;
+                }
+            }
+        }
     }
 
     /**
