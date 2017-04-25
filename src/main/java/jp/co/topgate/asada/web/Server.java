@@ -52,6 +52,9 @@ public class Server extends Thread {
      * @throws IOException サーバーソケットでエラーが発生しました
      */
     public void endServer() throws IOException {
+        if (socket != null) {
+            socket.close();
+        }
         serverSocket.close();
     }
 
