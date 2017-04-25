@@ -105,7 +105,7 @@ public class RequestMessage {
             method = requestLine[0];
             uri = requestLine[1];
             if (uri.endsWith("/")) {
-                uri = uri + "index.html";
+                uri = uri + "/index.html";
             }
             protocolVersion = requestLine[2];
 
