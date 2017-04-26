@@ -52,6 +52,10 @@ public class HttpHandler {
 
         } catch (RequestParseException e) {
             statusCode = ResponseMessage.BAD_REQUEST;
+        } finally {
+            if (rf == null) {
+                rf = new ResourceFile("");
+            }
         }
 
         try {

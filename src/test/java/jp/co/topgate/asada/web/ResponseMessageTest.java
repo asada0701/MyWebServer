@@ -17,61 +17,74 @@ import static org.junit.Assert.assertThat;
 @RunWith(Enclosed.class)
 public class ResponseMessageTest {
 
-    public static class プロトコルバージョンのテスト {
-        ResponseMessage sut;
+//    public static class プロトコルバージョンのテスト {
+//        ResponseMessage sut;
+//
+//        @Before
+//        public void setUp() throws Exception {
+//            File file = new File("./src/test/resources/responseMessage.txt");
+//            if (file.exists()) {
+//                file.delete();
+//            }
+//            FileOutputStream fos = new FileOutputStream(file);
+//            ResourceFile rf = new ResourceFile("./src/main/resources/index.html");
+//
+//            sut = new ResponseMessage(fos, 200, rf);
+//        }
+//
+//        @Test
+//        public void 初期設定の確認() {
+//            assertThat(sut.getProtocolVersion(), is("HTTP/1.1"));
+//        }
+//
+//        @Test
+//        public void nullチェック() {
+//            sut.setProtocolVersion(null);
+//            assertThat(sut.getProtocolVersion(), is("HTTP/1.1"));
+//        }
+//
+//        @Test
+//        public void プロトコルバージョンを設定してみる() {
+//            sut.setProtocolVersion("HTTP/2");
+//            assertThat(sut.getProtocolVersion(), is("HTTP/2"));
+//        }
+//    }
 
-        @Before
-        public void setUp() {
-            sut = new ResponseMessage();
-        }
-
-        @Test
-        public void 初期設定の確認() {
-            assertThat(sut.getProtocolVersion(), is("HTTP/1.1"));
-        }
-
-        @Test
-        public void nullチェック() {
-            sut.setProtocolVersion(null);
-            assertThat(sut.getProtocolVersion(), is("HTTP/1.1"));
-        }
-
-        @Test
-        public void プロトコルバージョンを設定してみる() {
-            sut.setProtocolVersion("HTTP/2");
-            assertThat(sut.getProtocolVersion(), is("HTTP/2"));
-        }
-    }
-
-    public static class ヘッダーフィールドのテスト {
-        ResponseMessage sut;
-
-        @Before
-        public void setUp() {
-            sut = new ResponseMessage();
-        }
-
-        @Test
-        public void nullチェック() {
-            sut.addHeader(null, null);
-            sut.addHeader("Date", null);
-            sut.addHeader(null, "Thu,13 Api 2017 18:33:23 GMT");
-            assertThat(sut.getHeaderField().size(), is(0));
-        }
-
-        @Test
-        public void ヘッダーフィールドに追加してみる() {
-            sut.addHeader("Date", "Thu,13 Api 2017 18:33:23 GMT");
-            sut.addHeader("Server", "mywebserver/1.0");
-            assertThat(sut.getHeaderField().get(0), is("Date: Thu,13 Api 2017 18:33:23 GMT"));
-            assertThat(sut.getHeaderField().get(1), is("Server: mywebserver/1.0"));
-        }
-    }
+//    public static class ヘッダーフィールドのテスト {
+//        ResponseMessage sut;
+//
+//        @Before
+//        public void setUp() throws Exception {
+//            File file = new File("./src/test/resources/responseMessage.txt");
+//            if (file.exists()) {
+//                file.delete();
+//            }
+//            FileOutputStream fos = new FileOutputStream(file);
+//            ResourceFile rf = new ResourceFile("./src/main/resources/index.html");
+//
+//            sut = new ResponseMessage(fos, 200, rf);
+//        }
+//
+//        @Test
+//        public void nullチェック() {
+//            sut.addHeader(null, null);
+//            sut.addHeader("Date", null);
+//            sut.addHeader(null, "Thu,13 Api 2017 18:33:23 GMT");
+//            assertThat(sut.getHeaderField().size(), is(0));
+//        }
+//
+//        @Test
+//        public void ヘッダーフィールドに追加してみる() {
+//            sut.addHeader("Date", "Thu,13 Api 2017 18:33:23 GMT");
+//            sut.addHeader("Server", "mywebserver/1.0");
+//            assertThat(sut.getHeaderField().get(0), is("Date: Thu,13 Api 2017 18:33:23 GMT"));
+//            assertThat(sut.getHeaderField().get(1), is("Server: mywebserver/1.0"));
+//        }
+//    }
 
     public static class returnResponseメソッドのテスト {
         @Test
         public void レスポンスメッセージの生成テスト() {
-            ResponseMessage sut = new ResponseMessage();
             File file = new File("./src/test/resources/responseMessage.txt");
             if (file.exists()) {
                 file.delete();
@@ -82,7 +95,7 @@ public class ResponseMessageTest {
             try {
                 fos = new FileOutputStream(file);
                 ResourceFile rf = new ResourceFile("./src/main/resources/index.html");
-                sut.returnResponse(fos, 200, rf);
+                new ResponseMessage(fos, 200, rf);
 
                 is = new FileInputStream(file);
                 br = new BufferedReader(new InputStreamReader(is));
@@ -123,7 +136,6 @@ public class ResponseMessageTest {
     public static class returnErrorResponseメソッドのテスト {
         @Test
         public void バッドリクエストのテスト() {
-            ResponseMessage sut = new ResponseMessage();
             File file = new File("./src/test/resources/responseMessage.txt");
             if (file.exists()) {
                 file.delete();
@@ -133,7 +145,8 @@ public class ResponseMessageTest {
             BufferedReader br = null;
             try {
                 fos = new FileOutputStream(file);
-                sut.returnErrorResponse(fos, 400);
+                ResourceFile rf = new ResourceFile(null);
+                new ResponseMessage(fos, 400, rf);
 
                 is = new FileInputStream(file);
                 br = new BufferedReader(new InputStreamReader(is));
