@@ -1,0 +1,23 @@
+@charset "UTF-8";
+
+h1
+{
+  color: red;
+}
+
+#form
+{
+  width: 550px;
+  height: 280px;
+  border: solid#808000;
+}
+
+#log
+{
+    margin-top: 20px;
+}
+
+#log table
+{
+  border : solid#808000;
+}

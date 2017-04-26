@@ -1,0 +1,18 @@
+@charset "UTF-8";
+
+h1
+{
+  color: red;
+}
+
+#form
+{
+  width: 550px;
+  height: 150px;
+  border: solid#808000;
+}
+
+#back
+{
+    margin-top: 20px;
+}
