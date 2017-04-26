@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=utf-8">
+  <link rel="stylesheet" type="text/css" href="./css/style.css">
+</head>
+
+<body>
+  <center>
+    <div id="header">
+      <h1>掲示板-LightBoard</h1>
+    </div>
+    <div id="form">
+      <form action="/program/board" method="post">
+        <p>
+          名前<input type="text" name="name" size="40" required>
+        </p>
+        <p>
+          メールアドレス<input type="email" name="mail" size="40" required>
+        </p>
+        <p>
+          タイトル<input type="text" name="title" size="40" required>
+        </p>
+        <p>
+          メッセージ<br>
+          <textarea name="message" rows="4" cols="40"></textarea>
+        </p>
+        <input type="submit" value="投稿">
+      </form>
+    </div>
+    <div id="log">
+      <table border="1">
+        <tr>
+          <th>ナンバー</th>
+          <th>タイトル</th>
+          <th>本文</th>
+          <th>ユーザー名</th>
+          <th>日付</th>
+          <th></th>
+        </tr>
+        <tr>
+          <td>No.1</td>
+          <td>テスト</td>
+          <td>テスト投稿です。</td>
+          <td>管理者</td>
+          <td>2017-04-26 12:28</td>
+          <td>
+            <form action="delete.html" method="post">
+              <input type="submit" value="このコメントを削除する">
+            </form>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </center>
+</body>
+
+</html>
