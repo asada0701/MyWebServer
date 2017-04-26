@@ -56,8 +56,17 @@ public class ResponseMessage {
      * コンストラクタ
      * プロトコルバージョンの初期設定をする
      * リーズンフレーズを用意する
+     * returnResponseメソッドを呼び出し、レスポンスメッセージを書き出す
+     *
+     * @param os         ソケットの出力ストリーム
+     * @param statusCode レスポンスメッセージのステータスコード
+     * @param rf         リソースファイルのオブジェクト
      */
-    public ResponseMessage() {
+    public ResponseMessage(OutputStream os, int statusCode, ResourceFile rf) throws IOException {
+        if (os == null || rf == null) {
+            throw new IOException();
+        }
+
         protocolVersion = "HTTP/1.1";
 
         reasonPhrase.put(OK, "OK");
@@ -66,6 +75,100 @@ public class ResponseMessage {
         reasonPhrase.put(INTERNAL_SERVER_ERROR, "Internal Server Error");
         reasonPhrase.put(NOT_IMPLEMENTED, "Not Implemented");
         reasonPhrase.put(HTTP_VERSION_NOT_SUPPORTED, "HTTP Version Not Supported");
+
+        returnResponse(os, statusCode, rf);
+    }
+
+    /**
+     * レスポンスメッセージを出力ストリームに書き出すメソッド
+     *
+     * @param os         ソケットの出力ストリーム
+     * @param statusCode レスポンスメッセージのステータスコード
+     * @param rf         リソースファイルのオブジェクト
+     */
+    private void returnResponse(OutputStream os, int statusCode, ResourceFile rf) throws IOException {
+        if (os == null || rf == null) {
+            throw new IOException();
+        }
+
+        if (statusCode == OK) {
+            addHeader("Content-Type", rf.getContentType());
+            InputStream in = null;
+            StringBuilder builder = new StringBuilder();
+            try {
+                builder.append(protocolVersion).append(" ").append(statusCode).append(" ").append(reasonPhrase.get(statusCode));
+                builder.append("\n");
+                for (String s : headerField) {
+                    builder.append(s).append("\n");
+                }
+                builder.append("\n");
+                os.write(builder.toString().getBytes());
+                in = new FileInputStream(rf);
+                int num;
+                while ((num = in.read()) != -1) {
+                    os.write(num);
+                }
+                os.flush();
+            } finally {
+                if (in != null) {
+                    in.close();
+                }
+            }
+        } else {
+            this.addHeader("Content-Type", "text/html; charset=UTF-8");
+            String stringMessageBody = getErrorMessageBody(statusCode);
+
+            StringBuilder builder = new StringBuilder();
+            builder.append(protocolVersion).append(" ").append(statusCode).append(" ").append(reasonPhrase.get(statusCode)).append("\n");
+            for (String s : headerField) {
+                builder.append(s).append("\n");
+            }
+            builder.append("\n");
+            builder.append(stringMessageBody);
+            os.write(builder.toString().getBytes());
+            os.flush();
+        }
+    }
+
+
+    /**
+     * エラーメッセージを保持しているメソッド
+     *
+     * @param statusCode
+     * @return エラーの場合のレスポンスメッセージの内容
+     */
+    private String getErrorMessageBody(int statusCode) {
+        String s;
+        switch (statusCode) {
+            case BAD_REQUEST:
+                s = "<html><head><title>400 Bad Request</title></head>" +
+                        "<body><h1>Bad Request</h1>" +
+                        "<p>Your browser sent a request that this server could not understand.<br /></p></body></html>";
+                break;
+
+            case NOT_FOUND:
+                s = "<html><head><title>404 Not Found</title></head>" +
+                        "<body><h1>Not Found</h1>" +
+                        "<p>お探しのページは見つかりませんでした。</p></body></html>";
+                break;
+
+            case NOT_IMPLEMENTED:
+                s = "<html><head><title>501 Not Implemented</title></head>" +
+                        "<body><h1>Not Implemented</h1>" +
+                        "<p>Webサーバーでメソッドが実装されていません。</p></body></html>";
+                break;
+
+            case HTTP_VERSION_NOT_SUPPORTED:
+                s = "<html><head><title>505 HTTP Version Not Supported</title></head>" +
+                        "<body><h1>HTTP Version Not Supported</h1></body></html>";
+                break;
+
+            default:
+                s = "<html><head><title>500 Internal Server Error</title></head>" +
+                        "<body><h1>Internal Server Error</h1>" +
+                        "<p>サーバー内部のエラーにより表示できません。ごめんなさい。</p></body></html>";
+        }
+        return s;
     }
 
     /**
@@ -84,92 +187,6 @@ public class ResponseMessage {
         if (name != null && value != null) {
             headerField.add(name + HEADER_FIELD_COLON + value);
         }
-    }
-
-    /**
-     * リソースファイルを送る時のメソッド
-     */
-    public void returnResponse(OutputStream os, int statusCode, ResourceFile rf) throws IOException {
-        if (os == null || rf == null) {
-            throw new IOException();
-        }
-        addHeader("Content-Type", rf.getContentType());
-        InputStream in = null;
-        StringBuilder builder = new StringBuilder();
-        try {
-            builder.append(protocolVersion).append(" ").append(statusCode).append(" ").append(reasonPhrase.get(statusCode));
-            builder.append("\n");
-            for (String s : headerField) {
-                builder.append(s).append("\n");
-            }
-            builder.append("\n");
-            os.write(builder.toString().getBytes());
-            in = new FileInputStream(rf);
-            int num;
-            while ((num = in.read()) != -1) {
-                os.write(num);
-            }
-            os.flush();
-        } finally {
-            if (in != null) {
-                in.close();
-            }
-        }
-    }
-
-    /**
-     * エラーメッセージを送る時のメソッド
-     */
-    public void returnErrorResponse(OutputStream os, int statusCode) throws IOException {
-        if (os == null) {
-            throw new IOException();
-        }
-        this.addHeader("Content-Type", "text/html; charset=UTF-8");
-        String stringMessageBody;
-
-        switch (statusCode) {
-            case BAD_REQUEST:
-                stringMessageBody =
-                        "<html><head><title>400 Bad Request</title></head>" +
-                                "<body><h1>Bad Request</h1>" +
-                                "<p>Your browser sent a request that this server could not understand.<br /></p></body></html>";
-                break;
-
-            case NOT_FOUND:
-                stringMessageBody =
-                        "<html><head><title>404 Not Found</title></head>" +
-                                "<body><h1>Not Found</h1>" +
-                                "<p>お探しのページは見つかりませんでした。</p></body></html>";
-                break;
-
-            case NOT_IMPLEMENTED:
-                stringMessageBody =
-                        "<html><head><title>501 Not Implemented</title></head>" +
-                                "<body><h1>Not Implemented</h1>" +
-                                "<p>Webサーバーでメソッドが実装されていません。</p></body></html>";
-                break;
-
-            case HTTP_VERSION_NOT_SUPPORTED:
-                stringMessageBody =
-                        "<html><head><title>505 HTTP Version Not Supported</title></head>" +
-                                "<body><h1>HTTP Version Not Supported</h1></body></html>";
-                break;
-
-            default:
-                stringMessageBody =
-                        "<html><head><title>500 Internal Server Error</title></head>" +
-                                "<body><h1>Internal Server Error</h1>" +
-                                "<p>サーバー内部のエラーにより表示できません。ごめんなさい。</p></body></html>";
-        }
-        StringBuilder builder = new StringBuilder();
-        builder.append(protocolVersion).append(" ").append(statusCode).append(" ").append(reasonPhrase.get(statusCode)).append("\n");
-        for (String s : headerField) {
-            builder.append(s).append("\n");
-        }
-        builder.append("\n");
-        builder.append(stringMessageBody);
-        os.write(builder.toString().getBytes());
-        os.flush();
     }
 
     String getProtocolVersion() {

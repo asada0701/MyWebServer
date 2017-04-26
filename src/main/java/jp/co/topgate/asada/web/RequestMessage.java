@@ -8,6 +8,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,7 +33,7 @@ public class RequestMessage {
     /**
      * URIとクエリーを分割する
      */
-    private static final String URI_QUERY_DIVIDSION = "\\?";
+    private static final String URI_QUERY_DIVISION = "\\?";
 
     /**
      * URIのクエリーをクエリー毎に分割する
@@ -103,7 +104,7 @@ public class RequestMessage {
             }
 
             method = requestLine[0];
-            uri = requestLine[1];
+            uri = URLDecoder.decode(requestLine[1], "UTF-8");
             protocolVersion = requestLine[2];
 
             while ((str = br.readLine()) != null && !str.equals("")) {
@@ -120,7 +121,7 @@ public class RequestMessage {
             }
 
             if ("GET".equals(method)) {
-                String[] s1 = uri.split(URI_QUERY_DIVIDSION);
+                String[] s1 = uri.split(URI_QUERY_DIVISION);
                 uri = s1[0];
                 if (s1.length > 1) {
                     String[] s2 = s1[1].split(URI_EACH_QUERY_DIVISION);
@@ -150,14 +151,10 @@ public class RequestMessage {
             if (uri.endsWith("/")) {
                 uri = uri + "index.html";
             }
-            URI u = new URI(uri);
-            uri = u.getPath();
 
         } catch (IOException e) {
             throw new RequestParseException("BufferedReaderで発生した例外:" + e.toString());
 
-        } catch (URISyntaxException e) {
-            throw new RequestParseException("リクエストメッセージのURIの解析に失敗:" + e.toString());
         }
     }
 
