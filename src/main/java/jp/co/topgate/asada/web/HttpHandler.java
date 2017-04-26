@@ -52,17 +52,16 @@ public class HttpHandler {
 
         } catch (RequestParseException e) {
             statusCode = ResponseMessage.BAD_REQUEST;
+        } finally {
+            if (rf == null) {
+                rf = new ResourceFile("");
+            }
         }
 
         try {
-            //returnResponseメソッドの共通化、メソッドが共通だと、ミスにも早く気づける
-            ResponseMessage responseMessage = new ResponseMessage();
-            if (rf != null && statusCode == ResponseMessage.OK) {
-                responseMessage.returnResponse(os, statusCode, rf);
-            } else {
-                responseMessage.returnErrorResponse(os, statusCode);
-            }
+            new ResponseMessage(os, statusCode, rf);
         } catch (IOException e) {
+
         }
     }
 }

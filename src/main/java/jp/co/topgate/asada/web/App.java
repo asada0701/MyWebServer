@@ -34,7 +34,7 @@ public class App {
                 do {
                     System.out.print("please select :");
                     choices = scan.next();
-                } while (isaBoolean(choices));
+                } while (isSelect(choices));
 
                 String msg = controlServer(server, choices);
                 if (msg != null) {
@@ -57,7 +57,7 @@ public class App {
         }
     }
 
-    private static boolean isaBoolean(String choices) {
+    private static boolean isSelect(String choices) {
         return !(choices.equals(START_NUM) || choices.equals(STOP_NUM) || choices.equals(END_NUM));
     }
 
@@ -70,7 +70,7 @@ public class App {
      * @throws BindRuntimeException サーバークラスで発生したバインド例外
      * @throws ServerStateException サーバークラスの状態が予期しないものになった場合に発生する
      */
-    public static String controlServer(Server server, String choices) throws IOException, BindRuntimeException, ServerStateException {
+    static String controlServer(Server server, String choices) throws IOException, BindRuntimeException, ServerStateException {
         if (server == null || choices == null) {
             return null;
         }
