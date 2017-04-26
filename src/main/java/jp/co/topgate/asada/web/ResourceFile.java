@@ -16,16 +16,6 @@ public class ResourceFile extends File {
     private static final String FILE_PATH = "./src/main/resources";
 
     /**
-     * ファイル名のドット
-     */
-    private static final String FILE_NAME_DOT = "\\.";
-
-    /**
-     * ファイル名のドットの数
-     */
-    private static final int FILE_NAME_NUM_ITEMS = 2;
-
-    /**
      * ファイル拡張子とコンテンツタイプのハッシュマップ
      */
     private static Map<String, String> fileType = new HashMap<>();
