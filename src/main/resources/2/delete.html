@@ -13,15 +13,17 @@
     </div>
     <div id="form">
       <p>投稿した時に入力したメールアドレスを入力してください。</p>
-      <form action="/program/board" method="post">
+      <form action="/program/board/" method="post">
         <p>
           メールアドレス<input type="email" name="mail" size="40" required>
         </p>
+        <input type="hidden" vlaue="">
         <input type="submit" value="削除する">
       </form>
     </div>
     <div id="back">
-      <form action="index.html" method="post">
+      <form action="/program/board/" method="post">
+        <input type="hidden" vlaue="">
         <input type="submit" value="戻る">
       </form>
     </div>
