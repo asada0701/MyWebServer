@@ -13,11 +13,7 @@ public class HttpHandlerFactory {
     }
 
     public static HttpHandler getHttpHandler(String uri){
-        switch (uri){
-            case urlPattern:
-                break;
-            default:
-                return new StaticHttpHandler();
-        }
+        String key = urlPattern.getOrDefault(uri, "");
+        return new HttpHandler();
     }
 }
