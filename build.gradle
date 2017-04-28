@@ -29,6 +29,10 @@ dependencies {
     testCompile 'org.hamcrest:hamcrest-all:1.3'
 }
 
+dependencies {
+    compile 'org.jsoup:jsoup:1.7.3'
+}
+
 run {
     standardInput = System.in
 }

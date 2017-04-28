@@ -64,4 +64,8 @@ public class HttpHandler {
 
         }
     }
+
+    public void comesRequest(InputStream is, RequestLine rl){
+
+    }
 }
