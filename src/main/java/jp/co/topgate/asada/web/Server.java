@@ -69,7 +69,9 @@ public class Server extends Thread {
         try {
             while (true) {
                 socket = serverSocket.accept();
-                new HttpHandler(socket.getInputStream(), socket.getOutputStream());
+                HttpHandler h = new HttpHandler();
+                h.comesRequest(socket.getInputStream(), null);
+                h.returnResponse(socket.getOutputStream(), 0);
                 socket.close();
             }
         } catch (BindException e) {

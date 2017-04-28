@@ -14,7 +14,7 @@ import static org.junit.Assert.assertThat;
 /**
  * Created by yusuke-pc on 2017/04/13.
  */
-@RunWith(Enclosed.class)
+//@RunWith(Enclosed.class)
 public class ResponseMessageTest {
 
 //    public static class プロトコルバージョンのテスト {

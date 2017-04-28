@@ -10,39 +10,39 @@ import static org.junit.Assert.assertThat;
 /**
  * Created by yusuke-pc on 2017/04/20.
  */
-@RunWith(Enclosed.class)
+//@RunWith(Enclosed.class)
 public class ResourceFileTest {
-    public static class コンストラクタのテスト {
-        @Test
-        public void nullチェック() {
-            ResourceFile sut = new ResourceFile(null);
-            assertThat(sut.getContentType(), is("application/octet-stream"));
-        }
-
-        @Test
-        public void 正しく動作するかテスト() {
-            ResourceFile sut = new ResourceFile("./src/test/resources/requestMessage.txt");
-            assertThat(sut.getContentType(), is("text/plain"));
-        }
-    }
-
-    public static class getContentTypeメソッドのテスト {
-        @Test
-        public void 登録されていないファイルを指定してみる() {
-            ResourceFile sut = new ResourceFile("./src/main/resources/music/sample.mp3");
-            assertThat(sut.getContentType(), is("application/octet-stream"));
-        }
-
-        @Test
-        public void txtファイルを指定してみる() {
-            ResourceFile sut = new ResourceFile("./src/test/resources/empty.txt");
-            assertThat(sut.getContentType(), is("text/plain"));
-        }
-
-        @Test
-        public void htmlファイルを指定してみる() {
-            ResourceFile sut = new ResourceFile("./src/test/resources/empty.html");
-            assertThat(sut.getContentType(), is("text/html; charset=UTF-8"));
-        }
-    }
+//    public static class コンストラクタのテスト {
+//        @Test
+//        public void nullチェック() {
+//            ResourceFile sut = new ResourceFile(null);
+//            assertThat(sut.getContentType(), is("application/octet-stream"));
+//        }
+//
+//        @Test
+//        public void 正しく動作するかテスト() {
+//            ResourceFile sut = new ResourceFile("./src/test/resources/requestMessage.txt");
+//            assertThat(sut.getContentType(), is("text/plain"));
+//        }
+//    }
+//
+//    public static class getContentTypeメソッドのテスト {
+//        @Test
+//        public void 登録されていないファイルを指定してみる() {
+//            ResourceFile sut = new ResourceFile("./src/main/resources/music/sample.mp3");
+//            assertThat(sut.getContentType(), is("application/octet-stream"));
+//        }
+//
+//        @Test
+//        public void txtファイルを指定してみる() {
+//            ResourceFile sut = new ResourceFile("./src/test/resources/empty.txt");
+//            assertThat(sut.getContentType(), is("text/plain"));
+//        }
+//
+//        @Test
+//        public void htmlファイルを指定してみる() {
+//            ResourceFile sut = new ResourceFile("./src/test/resources/empty.html");
+//            assertThat(sut.getContentType(), is("text/html; charset=UTF-8"));
+//        }
+//    }
 }

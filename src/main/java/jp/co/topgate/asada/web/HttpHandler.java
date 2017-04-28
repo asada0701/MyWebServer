@@ -14,14 +14,12 @@ import java.io.OutputStream;
 public class HttpHandler {
 
     /**
-     * コンストラクタ
-     * レスポンス生成中に発生したエラーはここで消す
+     * リクエスト処理メソッド
      *
      * @param is ソケットの入力ストリーム
-     * @param os ソケットの出力ストリーム
      */
-    public HttpHandler(InputStream is, OutputStream os) throws IOException {
-        if (is == null || os == null) {
+    public void comesRequest(InputStream is, RequestLine rl) throws IOException {
+        if (is == null) {
             throw new IOException("引数のどちらかがnullだった");
         }
         ResourceFile rf = null;
@@ -57,9 +55,11 @@ public class HttpHandler {
                 rf = new ResourceFile("");
             }
         }
+    }
 
+    public void returnResponse(OutputStream os, int statusCode) {
         try {
-            new ResponseMessage(os, statusCode, rf);
+            new ResponseMessage(os, statusCode, null);
         } catch (IOException e) {
 
         }
