@@ -1,23 +1,23 @@
 package jp.co.topgate.asada.web;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by yusuke-pc on 2017/04/28.
  */
 public class HttpHandlerFactory {
-    public static Map<String, String> urlPattern = new HashMap<>();
+    public static List<String> urlPattern = new ArrayList<>();
     static {
-        urlPattern.put("/program/board/", "");
+        urlPattern.add("/program/board");
     }
 
     public static HttpHandler getHttpHandler(String uri){
-        switch (uri){
-            case urlPattern:
-                break;
-            default:
-                return new StaticHttpHandler();
+        for(String s : urlPattern){
+            if(s.equals(uri)){
+                return new WebAppHandler();
+            }
         }
+        return new StaticHttpHandler();
     }
 }

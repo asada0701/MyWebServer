@@ -1,6 +1,7 @@
 package jp.co.topgate.asada.web;
 
 import jp.co.topgate.asada.web.exception.BindRuntimeException;
+import jp.co.topgate.asada.web.exception.RequestParseException;
 
 import java.io.IOException;
 import java.net.*;
@@ -69,7 +70,14 @@ public class Server extends Thread {
         try {
             while (true) {
                 socket = serverSocket.accept();
-                new HttpHandler(socket.getInputStream(), socket.getOutputStream());
+                try {
+                    //リクエストメッセージの問題がなかった処理
+                    RequestMessage requestMessage = new RequestMessage(socket.getInputStream());
+                    HttpHandlerFactory.getHttpHandler(requestMessage.getUri());
+                } catch (RequestParseException e) {
+                    //リクエストメッセージに問題があった=400
+                    HttpHandlerFactory.getHttpHandler("");
+                }
                 socket.close();
             }
         } catch (BindException e) {

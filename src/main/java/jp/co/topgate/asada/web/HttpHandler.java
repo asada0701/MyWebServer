@@ -11,7 +11,7 @@ import java.io.OutputStream;
  *
  * @author asada
  */
-public class HttpHandler {
+public abstract class HttpHandler {
 
     /**
      * コンストラクタ
@@ -24,7 +24,7 @@ public class HttpHandler {
         if (is == null || os == null) {
             throw new IOException("引数のどちらかがnullだった");
         }
-        ResourceFile rf = null;
+        ContentType ct = null;
         RequestMessage requestMessage;
 
         int statusCode;
@@ -42,8 +42,8 @@ public class HttpHandler {
                 statusCode = ResponseMessage.NOT_IMPLEMENTED;
 
             } else {
-                rf = new ResourceFile(uri);
-                if (!rf.exists() || !rf.isFile()) {
+                ct = new ContentType(uri);
+                if (!ct.exists() || !ct.isFile()) {
                     statusCode = ResponseMessage.NOT_FOUND;
                 } else {
                     statusCode = ResponseMessage.OK;
@@ -53,19 +53,19 @@ public class HttpHandler {
         } catch (RequestParseException e) {
             statusCode = ResponseMessage.BAD_REQUEST;
         } finally {
-            if (rf == null) {
-                rf = new ResourceFile("");
+            if (ct == null) {
+                ct = new ContentType("");
             }
         }
 
+
+    }
+
+    public void comesRequest(InputStream is) {
         try {
-            new ResponseMessage(os, statusCode, rf);
+            new ResponseMessage(os, statusCode);
         } catch (IOException e) {
 
         }
-    }
-
-    public void comesRequest(InputStream is, RequestLine rl){
-
     }
 }
