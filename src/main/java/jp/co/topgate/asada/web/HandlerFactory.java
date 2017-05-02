@@ -16,7 +16,7 @@ public class HandlerFactory {
     private static final String FILE_PATH = "./src/main/resources";
 
     /**
-     * URI,実際のパス
+     * URIと実際のパスのハッシュマップ
      */
     private static Map<String, String> urlPattern = new HashMap<>();
 
@@ -59,33 +59,25 @@ public class HandlerFactory {
         return handler;
     }
 
-    public static String getUrlPattern(String key) {
-        for (String s : urlPattern.keySet()) {
-            if (key.startsWith(s)) {
-                return urlPattern.get(s);
-            }
-        }
-        return null;
-    }
-
+    /**
+     * URIを元に実際のファイルパスを返すメソッド
+     *
+     * @param uri リクエストラインクラスのURI
+     * @retur リクエストされたファイルのパス
+     */
     public static String getFilePath(String uri) {
-        for (String s : urlPattern.keySet()) {
-            //URIが何から始まっているか確認
-            if (uri.startsWith(s)) {
-                //今回/program/board/の部分が/2/となるメソッド、こんなに長い意味あるのかな、、、てかヌルポが怖い、、、
-
-                String path = urlPattern.get(s);
-
-                String[] str = uri.split("/");
-                StringBuilder builder = new StringBuilder();
-
-                builder.append(str[3]);
-
-                for (int i = 4; i < str.length; i++) {
-                    builder.append("/").append(str[i]);
-                }
-                return FILE_PATH + path + builder.toString();
-            }
+        if (uri == null) {
+            return null;
+        }
+        String[] s = uri.split("/");
+        int slashNum = s.length;
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < slashNum - 1; i++) {
+            builder.append(s[i]).append("/");
+        }
+        String str = builder.toString();
+        if (urlPattern.containsKey(str)) {
+            return FILE_PATH + urlPattern.get(str) + s[slashNum - 1];
         }
         return FILE_PATH + uri;
     }

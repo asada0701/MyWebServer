@@ -5,7 +5,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by yusuke-pc on 2017/04/28.
+ * コンテンツタイプクラス
+ *
+ * @author asada
  */
 public class ContentType extends File {
     /**

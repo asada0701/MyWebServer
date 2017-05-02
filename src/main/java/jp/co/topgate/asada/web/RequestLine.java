@@ -11,7 +11,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by yusuke-pc on 2017/05/01.
+ * リクエストラインクラス
+ *
+ * @author asada
  */
 public class RequestLine {
     /**
@@ -146,9 +148,5 @@ public class RequestLine {
      */
     public String getProtocolVersion() {
         return protocolVersion;
-    }
-
-    public void setUri(String uri) {
-        this.uri = uri;
     }
 }

@@ -53,19 +53,7 @@ public class WebAppHandler extends Handler {
 
     public void returnResponse(OutputStream os) {
         try {
-            String[] s = requestLine.getUri().split("/");
-
-            //少しややこしいがやりたいことは、/program/board/の部分を/2/にしたい
-            StringBuilder builder = new StringBuilder();
-            for (int i = 3; i < s.length; i++) {
-                if (i > 3) {
-                    //2回目以降
-                    builder.append("/");
-                }
-                builder.append(s[i]);
-            }
-
-            String path = HandlerFactory.getUrlPattern(requestLine.getUri()) + builder.toString();
+            String path = HandlerFactory.getFilePath(requestLine.getUri());
             new ResponseMessage(os, statusCode, path);
 
         } catch (IOException e) {
