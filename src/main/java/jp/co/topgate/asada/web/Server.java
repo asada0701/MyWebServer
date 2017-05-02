@@ -73,6 +73,7 @@ public class Server extends Thread {
         try {
             while (true) {
                 socket = serverSocket.accept();
+<<<<<<< HEAD
 
                 //BufferedInputStreamのマークをしておいてファクトリーに渡す。
                 BufferedInputStream bis = new BufferedInputStream(socket.getInputStream());
@@ -88,6 +89,11 @@ public class Server extends Thread {
                 //ハンドラーにレスポンスさせる
                 handler.returnResponse(socket.getOutputStream());
 
+=======
+                HttpHandler h = new HttpHandler();
+                h.comesRequest(socket.getInputStream(), null);
+                h.returnResponse(socket.getOutputStream(), 0);
+>>>>>>> 48cc52fdbc637b655136817a262dfa9079a58ff7
                 socket.close();
                 socket = null;
             }
