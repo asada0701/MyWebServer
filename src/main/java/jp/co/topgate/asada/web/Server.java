@@ -1,13 +1,13 @@
 package jp.co.topgate.asada.web;
 
 import jp.co.topgate.asada.web.exception.BindRuntimeException;
-import jp.co.topgate.asada.web.exception.RequestParseException;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.*;
-import java.util.ArrayList;
+import java.net.BindException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketException;
 
 /**
  * サーバークラス
@@ -73,22 +73,20 @@ public class Server extends Thread {
         try {
             while (true) {
                 socket = serverSocket.accept();
-//                try {
-//                    //リクエストメッセージの問題がなかった処理
-//                    RequestMessage requestMessage = new RequestMessage(socket.getInputStream());
-//                    HttpHandlerFactory.getHttpHandler(requestMessage.getUri());
-//                } catch (RequestParseException e) {
-//                    //リクエストメッセージに問題があった=400
-//                    HttpHandlerFactory.getHttpHandler("");
-//                }
-                InputStreamReader reader = new InputStreamReader(socket.getInputStream());
-                StringBuilder builder = new StringBuilder();
-                char[] buf = new char[1024];
-                int numRead;
-                while (0 <= (numRead = reader.read(buf))) {
-                    builder.append(buf, 0, numRead);
-                }
-                System.out.println(builder.toString());
+
+                //BufferedInputStreamのマークをしておいてファクトリーに渡す。
+                BufferedInputStream bis = new BufferedInputStream(socket.getInputStream());
+                bis.mark(bis.available());
+                Handler handler = HandlerFactory.getHandler(bis);
+
+                //リセットを行う
+                bis.reset();
+
+                //リクエストカムズをオーバーライドすれば処理の内容が変わっても問題ない
+                handler.requestComes(bis);
+
+                //ハンドラーにレスポンスさせる
+                handler.returnResponse(socket.getOutputStream());
 
                 socket.close();
                 socket = null;
