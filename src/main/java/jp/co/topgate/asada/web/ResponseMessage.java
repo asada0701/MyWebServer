@@ -1,16 +1,16 @@
 package jp.co.topgate.asada.web;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * レスポンスメッセージクラス
- * サーバーのレスポンスを作成する
- *
- * @author asada
+ * Created by yusuke-pc on 2017/05/01.
  */
 public class ResponseMessage {
     /**
@@ -60,10 +60,9 @@ public class ResponseMessage {
      *
      * @param os         ソケットの出力ストリーム
      * @param statusCode レスポンスメッセージのステータスコード
-     * @param rf         リソースファイルのオブジェクト
      */
-    public ResponseMessage(OutputStream os, int statusCode, ResourceFile rf) throws IOException {
-        if (os == null || rf == null) {
+    public ResponseMessage(OutputStream os, int statusCode, String uri) throws IOException {
+        if (os == null || uri == null) {
             throw new IOException();
         }
 
@@ -76,7 +75,7 @@ public class ResponseMessage {
         reasonPhrase.put(NOT_IMPLEMENTED, "Not Implemented");
         reasonPhrase.put(HTTP_VERSION_NOT_SUPPORTED, "HTTP Version Not Supported");
 
-        returnResponse(os, statusCode, rf);
+        returnResponse(os, statusCode, uri);
     }
 
     /**
@@ -84,15 +83,16 @@ public class ResponseMessage {
      *
      * @param os         ソケットの出力ストリーム
      * @param statusCode レスポンスメッセージのステータスコード
-     * @param rf         リソースファイルのオブジェクト
      */
-    private void returnResponse(OutputStream os, int statusCode, ResourceFile rf) throws IOException {
-        if (os == null || rf == null) {
+    private void returnResponse(OutputStream os, int statusCode, String uri) throws IOException {
+        if (os == null || uri == null) {
             throw new IOException();
         }
 
+        ContentType ct = new ContentType(uri);
+
         if (statusCode == OK) {
-            addHeader("Content-Type", rf.getContentType());
+            addHeader("Content-Type", ct.getContentType());
             InputStream in = null;
             StringBuilder builder = new StringBuilder();
             try {
@@ -103,7 +103,7 @@ public class ResponseMessage {
                 }
                 builder.append("\n");
                 os.write(builder.toString().getBytes());
-                in = new FileInputStream(rf);
+                in = new FileInputStream(ct);
                 int num;
                 while ((num = in.read()) != -1) {
                     os.write(num);

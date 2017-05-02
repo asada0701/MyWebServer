@@ -2,8 +2,12 @@ package jp.co.topgate.asada.web;
 
 import jp.co.topgate.asada.web.exception.BindRuntimeException;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.net.*;
+import java.net.BindException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketException;
 
 /**
  * サーバークラス
@@ -69,10 +73,29 @@ public class Server extends Thread {
         try {
             while (true) {
                 socket = serverSocket.accept();
+<<<<<<< HEAD
+
+                //BufferedInputStreamのマークをしておいてファクトリーに渡す。
+                BufferedInputStream bis = new BufferedInputStream(socket.getInputStream());
+                bis.mark(bis.available());
+                Handler handler = HandlerFactory.getHandler(bis);
+
+                //リセットを行う
+                bis.reset();
+
+                //リクエストカムズをオーバーライドすれば処理の内容が変わっても問題ない
+                handler.requestComes(bis);
+
+                //ハンドラーにレスポンスさせる
+                handler.returnResponse(socket.getOutputStream());
+
+=======
                 HttpHandler h = new HttpHandler();
                 h.comesRequest(socket.getInputStream(), null);
                 h.returnResponse(socket.getOutputStream(), 0);
+>>>>>>> 48cc52fdbc637b655136817a262dfa9079a58ff7
                 socket.close();
+                socket = null;
             }
         } catch (BindException e) {
             throw new BindRuntimeException(e.toString());
