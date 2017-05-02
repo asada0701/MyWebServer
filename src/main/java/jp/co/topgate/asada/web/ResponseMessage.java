@@ -62,8 +62,8 @@ public class ResponseMessage {
      * @param statusCode レスポンスメッセージのステータスコード
      * @param rf         リソースファイルのオブジェクト
      */
-    public ResponseMessage(OutputStream os, int statusCode, ResourceFile rf) throws IOException {
-        if (os == null || rf == null) {
+    public ResponseMessage(OutputStream os, int statusCode) throws IOException {
+        if (os == null) {
             throw new IOException();
         }
 
@@ -86,8 +86,8 @@ public class ResponseMessage {
      * @param statusCode レスポンスメッセージのステータスコード
      * @param rf         リソースファイルのオブジェクト
      */
-    private void returnResponse(OutputStream os, int statusCode, ResourceFile rf) throws IOException {
-        if (os == null || rf == null) {
+    private void returnResponse(OutputStream os, int statusCode) throws IOException {
+        if (os == null) {
             throw new IOException();
         }
 

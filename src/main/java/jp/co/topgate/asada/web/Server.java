@@ -4,7 +4,10 @@ import jp.co.topgate.asada.web.exception.BindRuntimeException;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.*;
+import java.util.ArrayList;
 
 /**
  * サーバークラス
@@ -70,15 +73,25 @@ public class Server extends Thread {
         try {
             while (true) {
                 socket = serverSocket.accept();
-                try {
-                    //リクエストメッセージの問題がなかった処理
-                    RequestMessage requestMessage = new RequestMessage(socket.getInputStream());
-                    HttpHandlerFactory.getHttpHandler(requestMessage.getUri());
-                } catch (RequestParseException e) {
-                    //リクエストメッセージに問題があった=400
-                    HttpHandlerFactory.getHttpHandler("");
+//                try {
+//                    //リクエストメッセージの問題がなかった処理
+//                    RequestMessage requestMessage = new RequestMessage(socket.getInputStream());
+//                    HttpHandlerFactory.getHttpHandler(requestMessage.getUri());
+//                } catch (RequestParseException e) {
+//                    //リクエストメッセージに問題があった=400
+//                    HttpHandlerFactory.getHttpHandler("");
+//                }
+                InputStreamReader reader = new InputStreamReader(socket.getInputStream());
+                StringBuilder builder = new StringBuilder();
+                char[] buf = new char[1024];
+                int numRead;
+                while (0 <= (numRead = reader.read(buf))) {
+                    builder.append(buf, 0, numRead);
                 }
+                System.out.println(builder.toString());
+
                 socket.close();
+                socket = null;
             }
         } catch (BindException e) {
             throw new BindRuntimeException(e.toString());
