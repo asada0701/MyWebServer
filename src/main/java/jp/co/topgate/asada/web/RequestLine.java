@@ -77,18 +77,10 @@ public class RequestLine {
             protocolVersion = requestLine[2];
 
             if ("GET".equals(method)) {
-                String[] s1 = uri.split(URI_QUERY_DIVISION);
-                uri = s1[0];
-                if (s1.length > 1) {
-                    String[] s2 = s1[1].split(URI_EACH_QUERY_DIVISION);
-                    for (String aS2 : s2) {
-                        String[] s3 = aS2.split(URI_QUERY_NAME_VALUE_DIVISION);
-                        if (s3.length == URI_QUERY_NUM_ITEMS) {
-                            uriQuery.put(s3[0], s3[1]);
-                        } else {
-                            throw new RequestParseException("URIのクエリーが不正なものだった:" + str);
-                        }
-                    }
+                try {
+                    uriQueryParse();
+                } catch (RequestParseException e) {
+                    throw e;
                 }
             }
 
@@ -99,6 +91,27 @@ public class RequestLine {
         } catch (IOException e) {
             throw new RequestParseException("BufferedReaderで発生した例外:" + e.toString());
 
+        }
+    }
+
+    /**
+     * URIのクエリーのパースを行うメソッド
+     *
+     * @throws RequestParseException クエリーに問題があった場合発生する
+     */
+    private void uriQueryParse() throws RequestParseException {
+        String[] s1 = uri.split(URI_QUERY_DIVISION);
+        uri = s1[0];
+        if (s1.length > 1) {
+            String[] s2 = s1[1].split(URI_EACH_QUERY_DIVISION);
+            for (String aS2 : s2) {
+                String[] s3 = aS2.split(URI_QUERY_NAME_VALUE_DIVISION);
+                if (s3.length == URI_QUERY_NUM_ITEMS) {
+                    uriQuery.put(s3[0], s3[1]);
+                } else {
+                    throw new RequestParseException("URIのクエリーが不正なものだった");
+                }
+            }
         }
     }
 

@@ -46,8 +46,6 @@ public class RequestMessage {
     private Map<String, String> headerFieldUri = new HashMap<>();
     private Map<String, String> messageBody = new HashMap<>();
 
-    RequestLine requestLine;
-
     /**
      * コンストラクタ、リクエストメッセージのパースを行う
      *
@@ -58,7 +56,6 @@ public class RequestMessage {
         if (bis == null || rl == null) {
             throw new RequestParseException("引数のどちらかがnullだった");
         }
-        this.requestLine = rl;
 
         try {
             BufferedReader br = new BufferedReader(new InputStreamReader(bis, "UTF-8"));
@@ -83,26 +80,52 @@ public class RequestMessage {
 
             //POSTの場合のみ、メッセージボディの処理
             if ("POST".equals(rl.getMethod())) {
-                int contentLength = Integer.parseInt(findHeaderByName("Content-Length"));
-                if (0 < contentLength) { // ★Content-Length 分取得
-                    char[] c = new char[contentLength];
-                    br.read(c);
-                    str = new String(c);
-                }
-                str = URLDecoder.decode(str, "UTF-8");
-                String[] s1 = str.split(MESSAGE_BODY_EACH_QUERY_DIVISION);
-                for (String aS1 : s1) {
-                    String[] s2 = aS1.split(MESSAGE_BODY_NAME_VALUE_DIVISION);
-                    if (s2.length == MESSAGE_BODY_NUM_ITEMS) {
-                        messageBody.put(s2[0], s2[1]);
-                    } else {
-                        throw new RequestParseException("リクエストのメッセージボディが不正なものだった:" + str);
-                    }
+                try {
+                    messageBodyParse(br);
+                } catch (RequestParseException e) {
+                    throw e;
                 }
             }
         } catch (IOException e) {
             throw new RequestParseException("BufferedReaderで発生した例外:" + e.toString());
 
+        }
+    }
+
+    /**
+     * メッセージボディをパースするメソッド
+     *
+     * @param br コンストラクタで作成したBufferedReaderのオブジェクト
+     * @throws IOException           BufferedReaderから発生した例外
+     * @throws RequestParseException リクエストになんらかの異常があった
+     */
+    private void messageBodyParse(BufferedReader br) throws IOException, RequestParseException {
+        if (br == null) {
+            throw new RequestParseException("引数BufferedReaderがnullだった");
+        }
+        String str = null;
+        String contentLengthS = findHeaderByName("Content-Length");
+        if (contentLengthS != null) {
+            //Content-Lengthが含まれている
+            int contentLength = Integer.parseInt(contentLengthS);
+            if (0 < contentLength) {
+                char[] c = new char[contentLength];
+                br.read(c);
+                str = new String(c);
+            }
+            if (str == null) {
+                throw new RequestParseException("POSTなのにメッセージボディが空だった");
+            }
+            str = URLDecoder.decode(str, "UTF-8");
+            String[] s1 = str.split(MESSAGE_BODY_EACH_QUERY_DIVISION);
+            for (String aS1 : s1) {
+                String[] s2 = aS1.split(MESSAGE_BODY_NAME_VALUE_DIVISION);
+                if (s2.length == MESSAGE_BODY_NUM_ITEMS) {
+                    messageBody.put(s2[0], s2[1]);
+                } else {
+                    throw new RequestParseException("リクエストのメッセージボディが不正なものだった:" + str);
+                }
+            }
         }
     }
 
