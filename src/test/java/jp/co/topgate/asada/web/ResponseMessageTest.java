@@ -42,17 +42,17 @@ public class ResponseMessageTest {
             assertThat(sut.getProtocolVersion(), is("HTTP/1.1"));
         }
 
-//        @Test
-//        public void プロトコルバージョンを設定してみる() throws Exception{
-//            File file = new File("./src/test/resources/responseMessage.txt");
-//            if (file.exists()) {
-//                file.delete();
-//            }
-//            FileOutputStream fos = new FileOutputStream(file);
-//            ResponseMessage sut2 = new ResponseMessage(fos, 200, "./src/main/resources/index.html");
-//            sut2.setProtocolVersion("HTTP/2");
-//            assertThat(sut2.getProtocolVersion(), is("HTTP/2"));
-//        }
+        @Test
+        public void プロトコルバージョンを設定してみる() throws Exception{
+            File file = new File("./src/test/resources/responseMessage.txt");
+            if (file.exists()) {
+                file.delete();
+            }
+            FileOutputStream fos = new FileOutputStream(file);
+            ResponseMessage sut2 = new ResponseMessage(fos, 200, "./src/main/resources/index.html");
+            sut2.setProtocolVersion("HTTP/2");
+            assertThat(sut2.getProtocolVersion(), is("HTTP/2"));
+        }
     }
 
     public static class ヘッダーフィールドのテスト {

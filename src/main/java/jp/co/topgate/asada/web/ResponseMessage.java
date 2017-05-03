@@ -48,7 +48,7 @@ public class ResponseMessage {
     /**
      * プロトコルバージョン
      */
-    private static String protocolVersion = "HTTP/1.1";
+    private String protocolVersion = "HTTP/1.1";
 
 
     /**
