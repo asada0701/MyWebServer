@@ -11,7 +11,8 @@ public class StaticHandler extends Handler {
     @Override
     public void returnResponse(OutputStream os) {
         try {
-            new ResponseMessage(os, statusCode, requestLine.getUri());
+            String path = HandlerFactory.getFilePath(requestLine.getUri());
+            new ResponseMessage(os, statusCode, path);
         } catch (IOException e) {
 
         }

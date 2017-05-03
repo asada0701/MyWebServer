@@ -7,7 +7,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by yusuke-pc on 2017/05/01.
+ * ハンドラファクトリークラス
+ *
+ * @author asada
  */
 public class HandlerFactory {
     /**
