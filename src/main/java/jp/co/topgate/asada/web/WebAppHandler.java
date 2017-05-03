@@ -37,7 +37,6 @@ public class WebAppHandler extends Handler {
                     if ("POST".equals(requestLine.getMethod())) {
                         //POSTの時のみHTMLを編集する
                         try {
-                            System.out.println("editHtmlメソッドを呼び出すところまではできてる");
                             editHtml(requestMessage);
                         } catch (IOException e) {
                             e.printStackTrace();

@@ -6,6 +6,7 @@ import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,73 +46,6 @@ public class RequestMessage {
     private Map<String, String> headerFieldUri = new HashMap<>();
     private Map<String, String> messageBody = new HashMap<>();
 
-//    public RequestMessage(BufferedInputStream bis, RequestLine rl) throws RequestParseException {
-//        if (bis == null) {
-//            throw new RequestParseException("引数であるInputStreamがnullだった");
-//        }
-//        try {
-//            System.out.println("リクエストメッセージのパース開始");
-//
-//            BufferedReader br = new BufferedReader(new InputStreamReader(bis, "UTF-8"));
-//
-//            int[] num = new int[1];
-//            num[0] = br.read();
-//
-//
-//
-//            System.out.println("リクエストライン" + str);
-//
-//            if (str == null) {
-//                throw new RequestParseException("BufferedReaderのreadLineメソッドの戻り値がnullだった");
-//            }
-//
-//            while ((str = br.readLine()) != null && !str.equals("")) {
-//                System.out.println("リクエストヘッダーフィールド" + str);
-//
-//                String[] header = str.split(HEADER_FIELD_NAME_VALUE_DIVISION);
-//                if (header.length == HEADER_FIELD_NUM_ITEMS) {
-//                    header[1] = header[1].trim();
-//                    headerFieldUri.put(header[0], header[1]);
-//                } else if (header.length > HEADER_FIELD_NUM_ITEMS) {
-//                    header[1] = header[1].trim();
-//                    headerFieldUri.put(header[0], header[1] + HEADER_FIELD_NAME_VALUE_DIVISION + header[2]);
-//                } else {
-//                    throw new RequestParseException("ヘッダーフィールドが不正なものだった:" + str);
-//                }
-//            }
-//
-//            System.out.println("リクエストヘッダーフィールドが読み終わった");
-//
-//            if ("POST".equals(rl.getMethod())) {
-////                while ((str = br.readLine()) != null && !str.equals("")) {
-////                    str = URLDecoder.decode(str, "UTF-8");
-////                    System.out.println("リクエストメッセージボディ" + str);
-////
-////                    String[] s1 = str.split(MESSAGE_BODY_EACH_QUERY_DIVISION);
-////                    for (String aS1 : s1) {
-////                        String[] s2 = aS1.split(MESSAGE_BODY_NAME_VALUE_DIVISION);
-////                        if (s2.length == MESSAGE_BODY_NUM_ITEMS) {
-////                            messageBody.put(s2[0], s2[1]);
-////                        } else {
-////                            throw new RequestParseException("リクエストのメッセージボディが不正なものだった:" + str);
-////                        }
-////                    }
-////                }
-//                System.out.println("あ");
-//                StringBuilder builder = new StringBuilder();
-//                int num;
-//                while ((num = br.read()) != -1) {
-//                    builder.append(String.valueOf(num)).append("\n");
-//                }
-//                System.out.println(builder.toString());
-//            }
-//
-//        } catch (IOException e) {
-//            throw new RequestParseException("BufferedReaderで発生した例外:" + e.toString());
-//
-//        }
-//    }
-
     /**
      * コンストラクタ、リクエストメッセージのパースを行う
      *
@@ -123,21 +57,14 @@ public class RequestMessage {
             throw new RequestParseException("引数であるInputStreamがnullだった");
         }
         try {
-            System.out.println("リクエストメッセージのパース開始");
-
             BufferedReader br = new BufferedReader(new InputStreamReader(bis, "UTF-8"));
-
             String str = br.readLine();
-
-            System.out.println("リクエストライン" + str);
-
             if (str == null) {
                 throw new RequestParseException("BufferedReaderのreadLineメソッドの戻り値がnullだった");
             }
 
+            //ヘッダーフィールドの処理
             while ((str = br.readLine()) != null && !str.equals("")) {
-                System.out.println("リクエストヘッダーフィールド" + str);
-
                 String[] header = str.split(HEADER_FIELD_NAME_VALUE_DIVISION);
                 if (header.length == HEADER_FIELD_NUM_ITEMS) {
                     header[1] = header[1].trim();
@@ -150,34 +77,25 @@ public class RequestMessage {
                 }
             }
 
-            System.out.println("リクエストヘッダーフィールドが読み終わった");
-
-
-
+            //POSTの場合のみ、メッセージボディの処理
             if ("POST".equals(rl.getMethod())) {
-//                while ((str = br.readLine()) != null && !str.equals("")) {
-//                    str = URLDecoder.decode(str, "UTF-8");
-//                    System.out.println("リクエストメッセージボディ" + str);
-//
-//                    String[] s1 = str.split(MESSAGE_BODY_EACH_QUERY_DIVISION);
-//                    for (String aS1 : s1) {
-//                        String[] s2 = aS1.split(MESSAGE_BODY_NAME_VALUE_DIVISION);
-//                        if (s2.length == MESSAGE_BODY_NUM_ITEMS) {
-//                            messageBody.put(s2[0], s2[1]);
-//                        } else {
-//                            throw new RequestParseException("リクエストのメッセージボディが不正なものだった:" + str);
-//                        }
-//                    }
-//                }
-                System.out.println("あ");
-                StringBuilder builder = new StringBuilder();
-                int num;
-                while ((num = br.read()) != -1) {
-                    builder.append(String.valueOf(num)).append("\n");
+                int contentLength = Integer.parseInt(findHeaderByName("Content-Length"));
+                if (0 < contentLength) { // ★Content-Length 分取得
+                    char[] c = new char[contentLength];
+                    br.read(c);
+                    str = new String(c);
                 }
-                System.out.println(builder.toString());
+                str = URLDecoder.decode(str, "UTF-8");
+                String[] s1 = str.split(MESSAGE_BODY_EACH_QUERY_DIVISION);
+                for (String aS1 : s1) {
+                    String[] s2 = aS1.split(MESSAGE_BODY_NAME_VALUE_DIVISION);
+                    if (s2.length == MESSAGE_BODY_NUM_ITEMS) {
+                        messageBody.put(s2[0], s2[1]);
+                    } else {
+                        throw new RequestParseException("リクエストのメッセージボディが不正なものだった:" + str);
+                    }
+                }
             }
-
         } catch (IOException e) {
             throw new RequestParseException("BufferedReaderで発生した例外:" + e.toString());
 

@@ -1,9 +1,6 @@
 package jp.co.topgate.asada.web;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -61,8 +58,8 @@ public class ResponseMessage {
      * @param os         ソケットの出力ストリーム
      * @param statusCode レスポンスメッセージのステータスコード
      */
-    public ResponseMessage(OutputStream os, int statusCode, String uri) throws IOException {
-        if (os == null || uri == null) {
+    public ResponseMessage(OutputStream os, int statusCode, String filePath) throws IOException {
+        if (os == null || filePath == null) {
             throw new IOException();
         }
 
@@ -75,7 +72,7 @@ public class ResponseMessage {
         reasonPhrase.put(NOT_IMPLEMENTED, "Not Implemented");
         reasonPhrase.put(HTTP_VERSION_NOT_SUPPORTED, "HTTP Version Not Supported");
 
-        returnResponse(os, statusCode, uri);
+        returnResponse(os, statusCode, filePath);
     }
 
     /**
@@ -84,48 +81,39 @@ public class ResponseMessage {
      * @param os         ソケットの出力ストリーム
      * @param statusCode レスポンスメッセージのステータスコード
      */
-    private void returnResponse(OutputStream os, int statusCode, String uri) throws IOException {
-        if (os == null || uri == null) {
+    private void returnResponse(OutputStream os, int statusCode, String filePath) throws IOException {
+        if (os == null || filePath == null) {
             throw new IOException();
         }
+        StringBuilder builder = new StringBuilder();
 
-        ContentType ct = new ContentType(uri);
+        builder.append(protocolVersion).append(" ").append(statusCode).append(" ").append(reasonPhrase.get(statusCode));
+        builder.append("\n");
 
         if (statusCode == OK) {
+            ContentType ct = new ContentType(filePath);
             addHeader("Content-Type", ct.getContentType());
-            InputStream in = null;
-            StringBuilder builder = new StringBuilder();
-            try {
-                builder.append(protocolVersion).append(" ").append(statusCode).append(" ").append(reasonPhrase.get(statusCode));
-                builder.append("\n");
-                for (String s : headerField) {
-                    builder.append(s).append("\n");
-                }
-                builder.append("\n");
-                os.write(builder.toString().getBytes());
-                in = new FileInputStream(ct);
+        } else {
+            addHeader("Content-Type", "text/html; charset=UTF-8");
+        }
+
+        for (String s : headerField) {
+            builder.append(s).append("\n");
+        }
+        builder.append("\n");
+
+        os.write(builder.toString().getBytes());
+
+        if (statusCode == OK) {
+            try (InputStream in = new FileInputStream(new File(filePath))) {
                 int num;
                 while ((num = in.read()) != -1) {
                     os.write(num);
                 }
                 os.flush();
-            } finally {
-                if (in != null) {
-                    in.close();
-                }
             }
         } else {
-            this.addHeader("Content-Type", "text/html; charset=UTF-8");
-            String stringMessageBody = getErrorMessageBody(statusCode);
-
-            StringBuilder builder = new StringBuilder();
-            builder.append(protocolVersion).append(" ").append(statusCode).append(" ").append(reasonPhrase.get(statusCode)).append("\n");
-            for (String s : headerField) {
-                builder.append(s).append("\n");
-            }
-            builder.append("\n");
-            builder.append(stringMessageBody);
-            os.write(builder.toString().getBytes());
+            os.write(getErrorMessageBody(statusCode).getBytes());
             os.flush();
         }
     }
@@ -134,7 +122,7 @@ public class ResponseMessage {
     /**
      * エラーメッセージを保持しているメソッド
      *
-     * @param statusCode
+     * @param statusCode ステータスコード
      * @return エラーの場合のレスポンスメッセージの内容
      */
     private String getErrorMessageBody(int statusCode) {
