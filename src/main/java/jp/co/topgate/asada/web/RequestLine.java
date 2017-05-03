@@ -52,13 +52,6 @@ public class RequestLine {
     private String protocolVersion = null;
 
     /**
-     * このコンストラクタはもっとうまいやり方を考える必要あり。
-     */
-    public RequestLine() {
-        this.uri = "";
-    }
-
-    /**
      * コンストラクタ、リクエストメッセージのパースを行う
      *
      * @param bis サーバーソケットのInputStream

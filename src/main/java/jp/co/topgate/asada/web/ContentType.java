@@ -10,10 +10,6 @@ import java.util.Map;
  * @author asada
  */
 public class ContentType extends File {
-    /**
-     * リソースファイルのパス
-     */
-    private static final String FILE_PATH = "./src/main/resources";
 
     /**
      * ファイル拡張子とコンテンツタイプのハッシュマップ
@@ -32,7 +28,7 @@ public class ContentType extends File {
      * @param filePath リクエストメッセージで指定されたファイルのパス
      */
     public ContentType(String filePath) {
-        super(FILE_PATH + filePath);
+        super(filePath);
 
         fileType.put("htm", "text/html; charset=UTF-8");
         fileType.put("html", "text/html; charset=UTF-8");

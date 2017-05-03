@@ -26,6 +26,12 @@ public class HandlerFactory {
         urlPattern.put("/program/board/", "/2/");
     }
 
+    /**
+     * ハンドラーのファクトリーメソッド
+     *
+     * @param bis ソケットの入力ストリーム
+     * @return 今回の接続を担当するハンドラーのオブジェクト
+     */
     public static Handler getHandler(BufferedInputStream bis) {
         Handler handler;
         RequestLine requestLine;
@@ -46,15 +52,8 @@ public class HandlerFactory {
             handler.setRequestLine(requestLine);
 
         } catch (RequestParseException e) {
-
             //リクエストラインのパースの失敗:400
             handler = new StaticHandler();
-
-            //リクエストラインのデフォルトコンストラクタを使うべきではないゾ。
-            requestLine = new RequestLine();
-
-            //nullを避けられる。
-            handler.setRequestLine(requestLine);
             handler.setStatusCode(ResponseMessage.BAD_REQUEST);
         }
 
@@ -71,15 +70,23 @@ public class HandlerFactory {
         if (uri == null) {
             return null;
         }
-        String[] s = uri.split("/");
-        int slashNum = s.length;
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < slashNum - 1; i++) {
-            builder.append(s[i]).append("/");
-        }
-        String str = builder.toString();
-        if (urlPattern.containsKey(str)) {
-            return FILE_PATH + urlPattern.get(str) + s[slashNum - 1];
+        for (String s : urlPattern.keySet()) {
+            String[] s1 = s.split("/");
+            String[] s2 = uri.split("/");
+            int i1 = s1.length;
+            int i2 = s2.length;
+
+            StringBuilder builder = new StringBuilder();
+            builder.append(FILE_PATH).append(urlPattern.get(s));
+
+            for (int i = i1; i < i2; i++) {
+                if (i == i1) {
+                    builder.append(s2[i]);
+                } else {
+                    builder.append("/").append(s2[i]);
+                }
+            }
+            return builder.toString();
         }
         return FILE_PATH + uri;
     }
