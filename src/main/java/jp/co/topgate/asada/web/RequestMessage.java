@@ -46,6 +46,8 @@ public class RequestMessage {
     private Map<String, String> headerFieldUri = new HashMap<>();
     private Map<String, String> messageBody = new HashMap<>();
 
+    RequestLine requestLine;
+
     /**
      * コンストラクタ、リクエストメッセージのパースを行う
      *
@@ -53,9 +55,11 @@ public class RequestMessage {
      * @throws RequestParseException パースに失敗した場合に投げられる
      */
     public RequestMessage(BufferedInputStream bis, RequestLine rl) throws RequestParseException {
-        if (bis == null) {
-            throw new RequestParseException("引数であるInputStreamがnullだった");
+        if (bis == null || rl == null) {
+            throw new RequestParseException("引数のどちらかがnullだった");
         }
+        this.requestLine = rl;
+
         try {
             BufferedReader br = new BufferedReader(new InputStreamReader(bis, "UTF-8"));
             String str = br.readLine();
