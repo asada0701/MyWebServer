@@ -1,9 +1,6 @@
 package jp.co.topgate.asada.web;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -88,13 +85,13 @@ public class ResponseMessage {
         if (os == null || filePath == null) {
             throw new IOException();
         }
-        ContentType ct = new ContentType(filePath);
         StringBuilder builder = new StringBuilder();
 
         builder.append(protocolVersion).append(" ").append(statusCode).append(" ").append(reasonPhrase.get(statusCode));
         builder.append("\n");
 
         if (statusCode == OK) {
+            ContentType ct = new ContentType(filePath);
             addHeader("Content-Type", ct.getContentType());
         } else {
             addHeader("Content-Type", "text/html; charset=UTF-8");
@@ -108,7 +105,7 @@ public class ResponseMessage {
         os.write(builder.toString().getBytes());
 
         if (statusCode == OK) {
-            try (InputStream in = new FileInputStream(ct)) {
+            try (InputStream in = new FileInputStream(new File(filePath))) {
                 int num;
                 while ((num = in.read()) != -1) {
                     os.write(num);

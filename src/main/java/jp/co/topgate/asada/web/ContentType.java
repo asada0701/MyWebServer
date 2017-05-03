@@ -1,6 +1,5 @@
 package jp.co.topgate.asada.web;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,7 +8,7 @@ import java.util.Map;
  *
  * @author asada
  */
-public class ContentType extends File {
+public class ContentType {
 
     /**
      * ファイル拡張子とコンテンツタイプのハッシュマップ
@@ -28,7 +27,6 @@ public class ContentType extends File {
      * @param filePath リクエストメッセージで指定されたファイルのパス
      */
     public ContentType(String filePath) {
-        super(filePath);
 
         fileType.put("htm", "text/html; charset=UTF-8");
         fileType.put("html", "text/html; charset=UTF-8");
