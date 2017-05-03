@@ -45,43 +45,39 @@ public class ResponseMessage {
      */
     static final int HTTP_VERSION_NOT_SUPPORTED = 505;
 
-    private String protocolVersion = null;
-    private Map<Integer, String> reasonPhrase = new HashMap<>();
-    private List<String> headerField = new ArrayList<>();
+    /**
+     * プロトコルバージョン
+     */
+    private static String protocolVersion = "HTTP/1.1";
+
 
     /**
-     * コンストラクタ
-     * プロトコルバージョンの初期設定をする
-     * リーズンフレーズを用意する
-     * returnResponseメソッドを呼び出し、レスポンスメッセージを書き出す
-     *
-     * @param os         ソケットの出力ストリーム
-     * @param statusCode レスポンスメッセージのステータスコード
+     * リーズンフレーズ
      */
-    public ResponseMessage(OutputStream os, int statusCode, String filePath) throws IOException {
-        if (os == null || filePath == null) {
-            throw new IOException();
-        }
+    private static Map<Integer, String> reasonPhrase = new HashMap<>();
 
-        protocolVersion = "HTTP/1.1";
-
+    static {
         reasonPhrase.put(OK, "OK");
         reasonPhrase.put(BAD_REQUEST, "Bad Request");
         reasonPhrase.put(NOT_FOUND, "Not Found");
         reasonPhrase.put(INTERNAL_SERVER_ERROR, "Internal Server Error");
         reasonPhrase.put(NOT_IMPLEMENTED, "Not Implemented");
         reasonPhrase.put(HTTP_VERSION_NOT_SUPPORTED, "HTTP Version Not Supported");
-
-        returnResponse(os, statusCode, filePath);
     }
 
     /**
-     * レスポンスメッセージを出力ストリームに書き出すメソッド
+     * ヘッダーフィールドd
+     */
+    private List<String> headerField = new ArrayList<>();
+
+    /**
+     * コンストラクタ
+     * returnResponseメソッドを呼び出し、レスポンスメッセージを書き出す
      *
      * @param os         ソケットの出力ストリーム
      * @param statusCode レスポンスメッセージのステータスコード
      */
-    private void returnResponse(OutputStream os, int statusCode, String filePath) throws IOException {
+    public ResponseMessage(OutputStream os, int statusCode, String filePath) throws IOException {
         if (os == null || filePath == null) {
             throw new IOException();
         }
@@ -117,7 +113,6 @@ public class ResponseMessage {
             os.flush();
         }
     }
-
 
     /**
      * エラーメッセージを保持しているメソッド
