@@ -7,15 +7,4 @@ import java.io.OutputStream;
  * Created by yusuke-pc on 2017/05/01.
  */
 public class StaticHandler extends Handler {
-
-    @Override
-    public void returnResponse(OutputStream os) {
-        try {
-            //レスポンスメッセージに渡すURIはファイルパスに変更する
-            String path = HandlerFactory.getFilePath(requestLine.getUri());
-            new ResponseMessage(os, statusCode, path);
-        } catch (IOException e) {
-
-        }
-    }
 }

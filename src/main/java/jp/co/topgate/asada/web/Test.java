@@ -22,25 +22,38 @@ public class Test {
     }
 
     public static void main(String[] args) {
-        String uri = "/program/board/css/style.css";
+        String uri = "/index.html";
+        //String uri = "/program/boar/css/style.css";
 
         for (String s : urlPattern.keySet()) {
             String[] s1 = s.split("/");
             String[] s2 = uri.split("/");
             int i1 = s1.length;
             int i2 = s2.length;
-            System.out.println(i1);
-            System.out.println(i2);
 
-            StringBuilder builder = new StringBuilder();
-            for (int i = i1; i < i2; i++) {
-                if (i == i1) {
-                    builder.append(s2[i]);
-                }else{
-                    builder.append("/").append(s2[i]);
+            boolean isMatch = true;
+            if(i2 >= i1){
+                for (int i = 0; i < i1; i++) {
+                    if(!s1[i].equals(s2[i])){
+                        isMatch = false;
+                    }
                 }
+            }else{
+                isMatch = false;
             }
-            System.out.println(urlPattern.get(s) + builder.toString());
+
+
+            if (isMatch) {
+                StringBuilder builder = new StringBuilder();
+                for (int i = i1; i < i2; i++) {
+                    if (i == i1) {
+                        builder.append(s2[i]);
+                    } else {
+                        builder.append("/").append(s2[i]);
+                    }
+                }
+                System.out.println(urlPattern.get(s) + builder.toString());
+            }
         }
     }
 }
