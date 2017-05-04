@@ -121,8 +121,8 @@ public class RequestMessage {
             for (String aS1 : s1) {
                 String[] s2 = aS1.split(MESSAGE_BODY_NAME_VALUE_DIVISION);
                 if (s2.length == MESSAGE_BODY_NUM_ITEMS) {
-                    String[] s3 = s2[1].split("\n");
-                    messageBody.put(s2[0], s3[0]);
+                    //String[] s3 = s2[1].split("\n");
+                    messageBody.put(s2[0], s2[1]);
                 } else {
                     throw new RequestParseException("リクエストのメッセージボディが不正なものだった:" + str);
                 }

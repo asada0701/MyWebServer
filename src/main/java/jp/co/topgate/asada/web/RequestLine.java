@@ -155,4 +155,10 @@ public class RequestLine {
     public String getProtocolVersion() {
         return protocolVersion;
     }
+
+    public void setUri(String uri) {
+        if (uri != null) {
+            this.uri = uri;
+        }
+    }
 }

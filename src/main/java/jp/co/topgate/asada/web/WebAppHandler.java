@@ -3,8 +3,7 @@ package jp.co.topgate.asada.web;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 
 import java.io.*;
-import java.util.Calendar;
-import java.util.TimeZone;
+import java.time.LocalDateTime;
 
 /**
  * WebAppの処理を行うハンドラークラス
@@ -12,7 +11,7 @@ import java.util.TimeZone;
  * @author asada
  */
 public class WebAppHandler extends Handler implements HtmlEditor {
-    private int score = 1;
+    private static int score = 1;
 
     /**
      * リクエストが来たときに呼び出すメソッド
@@ -57,8 +56,6 @@ public class WebAppHandler extends Handler implements HtmlEditor {
 
     @Override
     public void editHtml(RequestMessage requestMessage) throws IOException {
-        System.out.println("editHTMLメソッドスタート");
-        System.out.println("リクエストラインのURI" + requestLine.getUri());
         if (requestLine.getUri().startsWith("/program/board/")) {
             String param = requestMessage.findMessageBody("param");
             if (param != null) {
@@ -67,16 +64,21 @@ public class WebAppHandler extends Handler implements HtmlEditor {
                         contribution(requestMessage);
                         break;
                     case "search":
+                        search(requestMessage);
                         break;
                     case "delete1":
+                        requestLine.setUri("/program/board/delete.html");
                         break;
                     case "delete2":
+                        delete(requestMessage);
+                        break;
+                    case "back":
+                        requestLine.setUri("/program/board/index.html");
                         break;
                     default:
                 }
             }
         }
-        System.out.println("editHTMLメソッド終了");
     }
 
     public void contribution(RequestMessage requestMessage) {
@@ -115,34 +117,41 @@ public class WebAppHandler extends Handler implements HtmlEditor {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        score++;
+    }
+
+    public void search(RequestMessage requestMessage) {
+        String number = requestMessage.findMessageBody("number");
+        System.out.println(number);
+    }
+
+    public void delete(RequestMessage requestMessage) {
+        String email = requestMessage.findMessageBody("email");
+        System.out.println(email);
     }
 
     private String setData(String name, String title, String message) {
         String str =
                 "            <tr>\n" +
-                        "                <td>" + score + "</td>\n" +
+                        "                <td>No." + score + "</td>\n" +
                         "                <td>" + title + "</td>\n" +
                         "                <td>" + message + "</td>\n" +
                         "                <td>" + name + "</td>\n" +
-                        "                <td>" + getDate() + "</td>\n" +
+                        "                <td>" + getNowDate() + "</td>\n" +
                         "                <td>\n" +
                         "                    <form action=\"/program/board/\" method=\"post\">\n" +
                         "                        <input type=\"hidden\" name=\"param\" value=\"delete1\">\n" +
+                        "                        <input type=\"hidden\" name=\"number\" value=\"" + score + "\"" +
                         "                        <input type=\"submit\" value=\"このコメントを削除する\">\n" +
                         "                    </form>\n" +
                         "                </td>\n";
-        score++;
         return str;
     }
 
-    private String getDate() {
-        Calendar c = Calendar.getInstance();
-        TimeZone tz = TimeZone.getTimeZone("Asia/Tokyo");
-        c.setTimeZone(tz);
-
-        String s = String.valueOf(c.get(Calendar.YEAR)) + "-" + c.get(Calendar.MONTH) + "-" + c.get(Calendar.DATE) +
-                " " + c.get(Calendar.HOUR) + ":" + c.get(Calendar.MINUTE);
-
+    private String getNowDate() {
+        LocalDateTime ldt = LocalDateTime.now();
+        String s = String.valueOf(ldt.getYear()) + "/" + ldt.getMonthValue() + "/" + ldt.getDayOfMonth() +
+                " " + ldt.getHour() + ":" + ldt.getMinute();
         return s;
     }
 }
