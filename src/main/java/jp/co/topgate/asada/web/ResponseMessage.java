@@ -66,7 +66,7 @@ public class ResponseMessage {
     }
 
     /**
-     * ヘッダーフィールドd
+     * ヘッダーフィールド
      */
     private List<String> headerField = new ArrayList<>();
 
