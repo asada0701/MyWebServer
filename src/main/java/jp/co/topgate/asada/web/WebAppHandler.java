@@ -131,6 +131,9 @@ public class WebAppHandler extends Handler implements HtmlEditor {
     }
 
     private String setData(String name, String title, String message) {
+        if (message.contains("\n")) {
+            message = message.replaceAll("\n", "<br>");
+        }
         String str =
                 "            <tr>\n" +
                         "                <td>No." + score + "</td>\n" +
@@ -141,7 +144,7 @@ public class WebAppHandler extends Handler implements HtmlEditor {
                         "                <td>\n" +
                         "                    <form action=\"/program/board/\" method=\"post\">\n" +
                         "                        <input type=\"hidden\" name=\"param\" value=\"delete1\">\n" +
-                        "                        <input type=\"hidden\" name=\"number\" value=\"" + score + "\"" +
+                        "                        <input type=\"hidden\" name=\"number\" value=\"" + score + "\">\n" +
                         "                        <input type=\"submit\" value=\"このコメントを削除する\">\n" +
                         "                    </form>\n" +
                         "                </td>\n";
