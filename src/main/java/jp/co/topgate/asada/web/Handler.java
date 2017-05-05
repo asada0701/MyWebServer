@@ -1,7 +1,5 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.exception.RequestParseException;
-
 import java.io.*;
 
 /**
@@ -14,27 +12,23 @@ public abstract class Handler {
 
     public void requestComes(BufferedInputStream bis) {
         if (requestLine != null) {
-            try {
-                String method = requestLine.getMethod();        //サーバーをスタートする前にアクセスすると、ここでヌルポする
-                String uri = requestLine.getUri();
-                String protocolVersion = requestLine.getProtocolVersion();
+            String method = requestLine.getMethod();        //サーバーをスタートする前にアクセスすると、ここでヌルポする
+            String uri = requestLine.getUri();
+            String protocolVersion = requestLine.getProtocolVersion();
 
-                if (!"HTTP/1.1".equals(protocolVersion)) {
-                    statusCode = ResponseMessage.HTTP_VERSION_NOT_SUPPORTED;
+            if (!"HTTP/1.1".equals(protocolVersion)) {
+                statusCode = ResponseMessage.HTTP_VERSION_NOT_SUPPORTED;
 
-                } else if (!"GET".equals(method) && !"POST".equals(method)) {
-                    statusCode = ResponseMessage.NOT_IMPLEMENTED;
+            } else if (!"GET".equals(method) && !"POST".equals(method)) {
+                statusCode = ResponseMessage.NOT_IMPLEMENTED;
 
+            } else {
+                File file = new File(HandlerFactory.getFilePath(uri));
+                if (!file.exists() || !file.isFile()) {
+                    statusCode = ResponseMessage.NOT_FOUND;
                 } else {
-                    File file = new File(HandlerFactory.getFilePath(uri));
-                    if (!file.exists() || !file.isFile()) {
-                        statusCode = ResponseMessage.NOT_FOUND;
-                    } else {
-                        statusCode = ResponseMessage.OK;
-                    }
+                    statusCode = ResponseMessage.OK;
                 }
-            } catch (RequestParseException e) {
-                statusCode = ResponseMessage.BAD_REQUEST;
             }
         }
     }

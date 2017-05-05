@@ -6,14 +6,18 @@ import jp.co.topgate.asada.web.model.User;
 
 import java.io.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * WebAppの処理を行うハンドラークラス
  *
  * @author asada
  */
-public class WebAppHandler extends Handler implements HtmlEditor {
+public class WebAppHandler extends Handler {
     private static int score = 1;
+    private static List<User> userList = new ArrayList<>();
+    private static List<Message> messageList = new ArrayList<>();
 
     /**
      * リクエストが来たときに呼び出すメソッド
@@ -22,32 +26,15 @@ public class WebAppHandler extends Handler implements HtmlEditor {
      */
     @Override
     public void requestComes(BufferedInputStream bis) {
+        super.requestComes(bis);
         try {
-            RequestMessage requestMessage = new RequestMessage(bis, requestLine);
-            String method = requestLine.getMethod();
-
-            String protocolVersion = requestLine.getProtocolVersion();
-
-            if (!"HTTP/1.1".equals(protocolVersion)) {
-                statusCode = ResponseMessage.HTTP_VERSION_NOT_SUPPORTED;
-
-            } else if (!"GET".equals(method) && !"POST".equals(method)) {
-                statusCode = ResponseMessage.NOT_IMPLEMENTED;
-
-            } else {
-                File file = new File(HandlerFactory.getFilePath(requestLine.getUri()));
-                if (!file.exists() || !file.isFile()) {
-                    statusCode = ResponseMessage.NOT_FOUND;
-                } else {
-                    statusCode = ResponseMessage.OK;
-
-                    if ("POST".equals(requestLine.getMethod())) {
-                        //POSTの時のみHTMLを編集する
-                        try {
-                            editHtml(requestMessage);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+            if (statusCode == ResponseMessage.OK) {
+                if ("POST".equals(requestLine.getMethod())) {
+                    //POSTの時のみHTMLを編集する
+                    try {
+                        editHtml(new RequestMessage(bis, requestLine));
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
             }
@@ -56,26 +43,39 @@ public class WebAppHandler extends Handler implements HtmlEditor {
         }
     }
 
-    @Override
-    public void editHtml(RequestMessage requestMessage) throws IOException {
+    /**
+     * HTMLを編集するメソッド
+     *
+     * @param requestMessage
+     * @throws IOException
+     */
+    private void editHtml(RequestMessage requestMessage) throws IOException {
         if (requestLine.getUri().startsWith("/program/board/")) {
             String param = requestMessage.findMessageBody("param");
             if (param != null) {
+                Message message;
+                User user;
+
                 switch (param) {
                     case "contribution":
-                        Message message1 = new Message();
-                        message1.setTitle(requestMessage.findMessageBody("title"));
-                        message1.setText(requestMessage.findMessageBody("text"));
+                        user = new User();
+                        user.setName(requestMessage.findMessageBody("name"));
+                        user.setEmail(requestMessage.findMessageBody("email"));
 
-                        User user1 = new User();
-                        user1.setName(requestMessage.findMessageBody("name"));
-                        user1.setEmail(requestMessage.findMessageBody("email"));
+                        message = new Message();
+                        message.setTitle(requestMessage.findMessageBody("title"));
+                        message.setText(requestMessage.findMessageBody("text"));
 
-                        contribution(message1, user1);
+                        userList.add(user);
+                        messageList.add(message);
+                        contribution(message, user);
                         break;
 
                     case "search":
-                        search(requestMessage);
+                        user = new User();
+                        user.setName(requestMessage.findMessageBody("name"));
+
+                        search(user);
                         break;
 
                     case "delete1":
@@ -84,8 +84,8 @@ public class WebAppHandler extends Handler implements HtmlEditor {
 
                     case "delete2":
                         //メールで認証（未実装）
-                        User user2 = new User();
-                        user2.setEmail(requestMessage.findMessageBody("email"));
+                        user = new User();
+                        user.setEmail(requestMessage.findMessageBody("email"));
 
                         Message message2 = new Message();
                         message2.setMessageID(Integer.parseInt(requestMessage.findMessageBody("number")));
@@ -104,6 +104,12 @@ public class WebAppHandler extends Handler implements HtmlEditor {
         }
     }
 
+    /**
+     * 投稿するメソッド
+     *
+     * @param message
+     * @param user
+     */
     private void contribution(Message message, User user) {
 
         String path = HandlerFactory.getFilePath(requestLine.getUri());
@@ -139,12 +145,24 @@ public class WebAppHandler extends Handler implements HtmlEditor {
         score++;
     }
 
-    private void search(RequestMessage requestMessage) {
-        String number = requestMessage.findMessageBody("number");
-        System.out.println(number);
+    /**
+     * 投稿した人で抽出するメソッド
+     *
+     * @param user
+     */
+    private void search(User user) {
+        for (User u : userList) {
+            if (user.getName().equals(u.getName())) {
+                System.out.println(user.getName());
+            }
+        }
     }
 
-
+    /**
+     * 削除ボタンが押された時のメソッド
+     *
+     * @param message
+     */
     private void delete(Message message) {
         String trID = "            <tr id=\"No." + message.getMessageID() + "\">";
 
@@ -177,6 +195,14 @@ public class WebAppHandler extends Handler implements HtmlEditor {
         }
     }
 
+    /**
+     * 投稿する文字をHTMLに編集する
+     *
+     * @param name
+     * @param title
+     * @param text
+     * @return
+     */
     private String setData(String name, String title, String text) {
         if (text.contains("\n")) {
             text = text.replaceAll("\n", "<br>");
@@ -198,6 +224,11 @@ public class WebAppHandler extends Handler implements HtmlEditor {
         return str;
     }
 
+    /**
+     * 現在日時を返す
+     *
+     * @return 2017/5/5 17:55
+     */
     private String getNowDate() {
         LocalDateTime ldt = LocalDateTime.now();
         String s = String.valueOf(ldt.getYear()) + "/" + ldt.getMonthValue() + "/" + ldt.getDayOfMonth() +
