@@ -1,7 +1,5 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.exception.RequestParseException;
-
 import java.io.*;
 
 /**
@@ -13,8 +11,8 @@ public abstract class Handler {
     protected RequestLine requestLine;
 
     public void requestComes(BufferedInputStream bis) {
-        try {
-            String method = requestLine.getMethod();
+        if (requestLine != null) {
+            String method = requestLine.getMethod();        //サーバーをスタートする前にアクセスすると、ここでヌルポする
             String uri = requestLine.getUri();
             String protocolVersion = requestLine.getProtocolVersion();
 
@@ -32,13 +30,20 @@ public abstract class Handler {
                     statusCode = ResponseMessage.OK;
                 }
             }
-
-        } catch (RequestParseException e) {
-            statusCode = ResponseMessage.BAD_REQUEST;
         }
     }
 
-    public abstract void returnResponse(OutputStream os);
+    public void returnResponse(OutputStream os) {
+        try {
+            String path = "";
+            if (requestLine != null) {
+                path = HandlerFactory.getFilePath(requestLine.getUri());
+            }
+            new ResponseMessage(os, statusCode, path);
+        } catch (IOException e) {
+            //レスポンスメッセージ書き込み中のエラー、挽回無理
+        }
+    }
 
     public void setStatusCode(int statusCode) {
         this.statusCode = statusCode;

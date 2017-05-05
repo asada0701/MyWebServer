@@ -11,4 +11,3 @@ Accept-Language: ja,en-US;q=0.8,en;q=0.6
 Content-Length: 25
 
 name=asada&like=cat
-

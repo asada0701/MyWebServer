@@ -68,7 +68,7 @@ public class RequestMessageTest {
         @Test
         public void 正しく値を得られるか() throws Exception {
             assertThat(sut.findMessageBody("name"), is("asada"));
-            assertThat(sut.findMessageBody("like"), is("cat"));
+            assertThat(sut.findMessageBody("like"), is("cat\n\u0000\u0000\u0000\u0000\u0000"));
         }
     }
 }

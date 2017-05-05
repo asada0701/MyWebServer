@@ -5,25 +5,8 @@ package jp.co.topgate.asada.web.model;
  */
 public class User {
 
-    private int userID;
-    private String pw;
     private String name;
-
-    public int getUserID() {
-        return userID;
-    }
-
-    public void setUserID(int userID) {
-        this.userID = userID;
-    }
-
-    public String getPw() {
-        return pw;
-    }
-
-    public void setPw(String pw) {
-        this.pw = pw;
-    }
+    private String email;
 
     public String getName() {
         return name;
@@ -31,5 +14,13 @@ public class User {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

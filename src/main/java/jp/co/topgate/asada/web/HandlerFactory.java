@@ -55,6 +55,8 @@ public class HandlerFactory {
             //リクエストラインのパースの失敗:400
             handler = new StaticHandler();
             handler.setStatusCode(ResponseMessage.BAD_REQUEST);
+
+            //ハンドラーにリクエストラインを渡せないのでnullになるので注意
         }
 
         return handler;
@@ -70,24 +72,40 @@ public class HandlerFactory {
         if (uri == null) {
             return null;
         }
+
         for (String s : urlPattern.keySet()) {
             String[] s1 = s.split("/");
             String[] s2 = uri.split("/");
             int i1 = s1.length;
             int i2 = s2.length;
 
-            StringBuilder builder = new StringBuilder();
-            builder.append(FILE_PATH).append(urlPattern.get(s));
-
-            for (int i = i1; i < i2; i++) {
-                if (i == i1) {
-                    builder.append(s2[i]);
-                } else {
-                    builder.append("/").append(s2[i]);
+            boolean isMatch = true;
+            if (i2 >= i1) {
+                for (int i = 0; i < i1; i++) {
+                    if (!s1[i].equals(s2[i])) {
+                        isMatch = false;
+                    }
                 }
+            } else {
+                isMatch = false;
             }
-            return builder.toString();
+
+
+            if (isMatch) {
+                StringBuilder builder = new StringBuilder();
+                builder.append(FILE_PATH).append(urlPattern.get(s));
+
+                for (int i = i1; i < i2; i++) {
+                    if (i == i1) {
+                        builder.append(s2[i]);
+                    } else {
+                        builder.append("/").append(s2[i]);
+                    }
+                }
+                return builder.toString();
+            }
         }
+
         return FILE_PATH + uri;
     }
 }

@@ -74,18 +74,15 @@ public class Server extends Thread {
             while (true) {
                 socket = serverSocket.accept();
 
-                //BufferedInputStreamのマークをしておいてファクトリーに渡す。
                 BufferedInputStream bis = new BufferedInputStream(socket.getInputStream());
                 bis.mark(bis.available());
+
                 Handler handler = HandlerFactory.getHandler(bis);
 
-                //リセットを行う
                 bis.reset();
 
-                //リクエストカムズをオーバーライドすれば処理の内容が変わっても問題ない
                 handler.requestComes(bis);
 
-                //ハンドラーにレスポンスさせる
                 handler.returnResponse(socket.getOutputStream());
 
                 socket.close();
