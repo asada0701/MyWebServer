@@ -1,6 +1,8 @@
 package jp.co.topgate.asada.web;
 
 import jp.co.topgate.asada.web.exception.RequestParseException;
+import jp.co.topgate.asada.web.model.Message;
+import jp.co.topgate.asada.web.model.User;
 
 import java.io.*;
 import java.time.LocalDateTime;
@@ -61,31 +63,48 @@ public class WebAppHandler extends Handler implements HtmlEditor {
             if (param != null) {
                 switch (param) {
                     case "contribution":
-                        contribution(requestMessage);
+                        Message message1 = new Message();
+                        message1.setTitle(requestMessage.findMessageBody("title"));
+                        message1.setText(requestMessage.findMessageBody("text"));
+
+                        User user1 = new User();
+                        user1.setName(requestMessage.findMessageBody("name"));
+                        user1.setEmail(requestMessage.findMessageBody("email"));
+
+                        contribution(message1, user1);
                         break;
+
                     case "search":
                         search(requestMessage);
                         break;
+
                     case "delete1":
                         requestLine.setUri("/program/board/delete.html");
                         break;
+
                     case "delete2":
-                        delete(requestMessage);
+                        //メールで認証（未実装）
+                        User user2 = new User();
+                        user2.setEmail(requestMessage.findMessageBody("email"));
+
+                        Message message2 = new Message();
+                        message2.setMessageID(Integer.parseInt(requestMessage.findMessageBody("number")));
+
+                        delete(message2);
                         break;
+
                     case "back":
                         requestLine.setUri("/program/board/index.html");
                         break;
+
                     default:
+                        requestLine.setUri("/program/board/index.html");
                 }
             }
         }
     }
 
-    public void contribution(RequestMessage requestMessage) {
-        String name = requestMessage.findMessageBody("name");
-        String email = requestMessage.findMessageBody("email");
-        String title = requestMessage.findMessageBody("title");
-        String message = requestMessage.findMessageBody("message");
+    private void contribution(Message message, User user) {
 
         String path = HandlerFactory.getFilePath(requestLine.getUri());
 
@@ -99,7 +118,7 @@ public class WebAppHandler extends Handler implements HtmlEditor {
                         str = br.readLine();
                         builder.append(str).append("\n");
                     }
-                    builder.append("\n").append(setData(name, title, message)).append("\n");
+                    builder.append(setData(user.getName(), message.getTitle(), message.getText()));
                 }
                 builder.append(str).append("\n");
             }
@@ -120,25 +139,53 @@ public class WebAppHandler extends Handler implements HtmlEditor {
         score++;
     }
 
-    public void search(RequestMessage requestMessage) {
+    private void search(RequestMessage requestMessage) {
         String number = requestMessage.findMessageBody("number");
         System.out.println(number);
     }
 
-    public void delete(RequestMessage requestMessage) {
-        String email = requestMessage.findMessageBody("email");
-        System.out.println(email);
+
+    private void delete(Message message) {
+        String trID = "            <tr id=\"No." + message.getMessageID() + "\">";
+
+        String path = HandlerFactory.getFilePath(requestLine.getUri());
+
+        try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
+            String str;
+            StringBuilder builder = new StringBuilder();
+            while ((str = br.readLine()) != null) {
+                if (trID.equals(str)) {
+                    for (int i = 0; i < 14; i++) {
+                        str = br.readLine();
+                    }
+                }
+                builder.append(str).append("\n");
+            }
+            File file = new File(path);
+            if (!file.delete()) {
+                throw new IOException("存在しないファイルを編集しようとしました。");
+            }
+
+            try (OutputStream os = new FileOutputStream(new File(path))) {
+                os.write(builder.toString().getBytes());
+                os.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    private String setData(String name, String title, String message) {
-        if (message.contains("\n")) {
-            message = message.replaceAll("\n", "<br>");
+    private String setData(String name, String title, String text) {
+        if (text.contains("\n")) {
+            text = text.replaceAll("\n", "<br>");
         }
         String str =
-                "            <tr>\n" +
+                "            <tr id=\"No." + score + "\">\n" +
                         "                <td>No." + score + "</td>\n" +
                         "                <td>" + title + "</td>\n" +
-                        "                <td>" + message + "</td>\n" +
+                        "                <td>" + text + "</td>\n" +
                         "                <td>" + name + "</td>\n" +
                         "                <td>" + getNowDate() + "</td>\n" +
                         "                <td>\n" +
