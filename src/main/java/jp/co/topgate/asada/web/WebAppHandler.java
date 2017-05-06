@@ -58,7 +58,7 @@ public class WebAppHandler extends Handler {
                         message.setName(requestMessage.findMessageBody("name"));
                         message.setTitle(requestMessage.findMessageBody("title"));
                         message.setText(requestMessage.findMessageBody("text"));
-                        message.setPassword(requestMessage.findMessageBody("pw"));
+                        message.setPassword(requestMessage.findMessageBody("password"));
                         ModelController.addMessage(message);
 
                         he.contribution(message);
@@ -67,8 +67,8 @@ public class WebAppHandler extends Handler {
                     case "search":
                         //投稿した人で絞り込む
                         //メッセージリストからメッセージオブジェクトを特定して、ユーザーオブジェクトの特定をする
-
-                        he.search(ModelController.findMessage(Integer.parseInt(requestMessage.findMessageBody("number"))));
+                        message = ModelController.findMessage(Integer.parseInt(requestMessage.findMessageBody("number")));
+                        he.search(message);
                         break;
 
                     case "delete1":
@@ -76,9 +76,9 @@ public class WebAppHandler extends Handler {
                         //メッセージリストからメッセージオブジェクトを特定する。
                         //delete.htmlにメッセージを書いて渡す。
 
-                        String number2 = requestMessage.findMessageBody("number");
-                        he.delete1();
                         requestLine.setUri("/program/board/delete.html");
+                        message = ModelController.findMessage(Integer.parseInt(requestMessage.findMessageBody("number")));
+                        he.delete1(message);
                         break;
 
                     case "delete2":
