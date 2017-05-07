@@ -177,6 +177,12 @@ public class HtmlEditor {
 
                     builder.append(getDelete(message));
                 }
+                if (str.endsWith("<input type=\"hidden\" name=\"number\" value=\"\">")) {
+                    builder.append("            <input type=\"hidden\" name=\"number\" value=\"");
+                    builder.append(message.getMessageID()).append("\">").append("\n");
+
+                    str = br.readLine();
+                }
                 builder.append(str).append("\n");
             }
             File file = new File(path);
@@ -227,6 +233,7 @@ public class HtmlEditor {
                 "            <p>\n" +
                 "                パスワード<input type=\"password\" name=\"pw\" size=\"10\" required>\n" +
                 "            </p>\n" +
+                "            <input type=\"hidden\" name=\"number\" value=\"\">\n" +
                 "            <input type=\"hidden\" name=\"param\" value=\"delete2\">\n" +
                 "            <input type=\"submit\" value=\"削除する\">\n" +
                 "        </form>\n" +
@@ -268,22 +275,16 @@ public class HtmlEditor {
         return str;
     }
 
-    /**
-     * 削除ボタンが押された時のメソッド
-     *
-     * @param message
-     */
     public void delete2(Message message) {
-        String trID = "            <tr id=\"No." + message.getMessageID() + "\">";
-
         try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
             String str;
             StringBuilder builder = new StringBuilder();
             while ((str = br.readLine()) != null) {
-                if (trID.equals(str)) {
-                    for (int i = 0; i < 14; i++) {
+                if (str.endsWith("<tr id=\"No." + message.getMessageID() + "\">")) {
+                    builder.append(str).append("\n");
+                    do {
                         str = br.readLine();
-                    }
+                    } while (!str.endsWith("</tr>"));
                 }
                 builder.append(str).append("\n");
             }

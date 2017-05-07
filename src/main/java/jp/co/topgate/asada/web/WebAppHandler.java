@@ -52,14 +52,12 @@ public class WebAppHandler extends Handler {
 
                 switch (param) {
                     case "contribution":
-                        //メッセージを投稿する
+                        String name = requestMessage.findMessageBody("name");
+                        String title = requestMessage.findMessageBody("title");
+                        String text = requestMessage.findMessageBody("text");
+                        String password = requestMessage.findMessageBody("password");
 
-                        message = new Message();
-                        message.setName(requestMessage.findMessageBody("name"));
-                        message.setTitle(requestMessage.findMessageBody("title"));
-                        message.setText(requestMessage.findMessageBody("text"));
-                        message.setPassword(requestMessage.findMessageBody("password"));
-                        ModelController.addMessage(message);
+                        message = ModelController.addMessage(name, title, text, password);
 
                         he.contribution(message);
                         break;
@@ -86,10 +84,17 @@ public class WebAppHandler extends Handler {
                         //メッセージリストからメッセージオブジェクトを特定する。ユーザーオブジェクトの特定をする
                         //パスワードが一致した場合、削除する
 
-                        Message message2 = new Message();
-                        message2.setMessageID(Integer.parseInt(requestMessage.findMessageBody("number")));
+                        message = ModelController.findMessage(Integer.parseInt(requestMessage.findMessageBody("number")));
 
-                        he.delete2(message2);
+                        if (message != null) {
+                            requestLine.setUri("/program/board/delete.html");
+                            he.delete2(message);
+                            ModelController.deleteMessage(message);
+                            requestLine.setUri("/program/board/result.html");
+                        } else {
+                            requestLine.setUri("/program/board/delete.html");
+                            System.out.println("パスワードが異なる場合の処理");
+                        }
                         break;
 
                     case "back":
@@ -102,6 +107,4 @@ public class WebAppHandler extends Handler {
             }
         }
     }
-
-
 }

@@ -18,20 +18,27 @@ public class ModelController {
 
     private static int score = 1;
 
+    //初期設定をさせる
+    static {
+
+    }
+
     /**
      * メッセージリストにメッセージクラスを追加する
-     *
-     * @param message
      */
-    public static void addMessage(Message message) {
-        if (message == null) {
-            throw new NullPointerException();
-        }
+    public static Message addMessage(String name, String title, String text, String password) {
+        Message message = new Message();
         message.setMessageID(score);
+        message.setName(name);
+        message.setTitle(title);
+        message.setText(text);
+        message.setPassword(password);
         message.setDate(getNowDate());
         messageList.add(message);
 
         score++;
+
+        return message;
     }
 
     public static Message findMessage(int messageID) {
@@ -52,10 +59,10 @@ public class ModelController {
         if (message == null) {
             throw new NullPointerException();
         }
-        for (Message m : messageList) {
-            if (m.getMessageID() == message.getMessageID()) {
-                if (m.getPassword().equals(message.getPassword())) {
-                    messageList.remove(m);
+        for (int i = 0; i < messageList.size(); i++) {
+            if (message.getMessageID() == messageList.get(i).getMessageID()) {
+                if (message.getPassword().equals(messageList.get(i).getPassword())) {
+                    messageList.remove(messageList.get(i));
                 }
             }
         }
