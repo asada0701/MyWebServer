@@ -66,6 +66,7 @@ public class RequestMessage {
 
             //ヘッダーフィールドの処理
             while ((str = br.readLine()) != null && !str.equals("")) {
+                System.out.println(str);
                 String[] header = str.split(HEADER_FIELD_NAME_VALUE_DIVISION);
                 if (header.length == HEADER_FIELD_NUM_ITEMS) {
                     header[1] = header[1].trim();

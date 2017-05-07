@@ -5,6 +5,7 @@ import jp.co.topgate.asada.web.model.Message;
 import jp.co.topgate.asada.web.model.ModelController;
 
 import java.io.*;
+import java.util.ArrayList;
 
 /**
  * WebAppの処理を行うハンドラークラス
@@ -65,8 +66,10 @@ public class WebAppHandler extends Handler {
                     case "search":
                         //投稿した人で絞り込む
                         //メッセージリストからメッセージオブジェクトを特定して、ユーザーオブジェクトの特定をする
-                        message = ModelController.findMessage(Integer.parseInt(requestMessage.findMessageBody("number")));
-                        he.search(message);
+                        requestLine.setUri("/program/board/search.html");
+
+                        ArrayList<Message> al = ModelController.findMessageByID(Integer.parseInt(requestMessage.findMessageBody("number")));
+                        he.search(al);
                         break;
 
                     case "delete1":

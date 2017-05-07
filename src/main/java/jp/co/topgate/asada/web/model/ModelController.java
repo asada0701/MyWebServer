@@ -50,6 +50,19 @@ public class ModelController {
         return null;
     }
 
+    public static ArrayList<Message> findMessageByID(int messageID) {
+        ArrayList<Message> al = new ArrayList<>();
+
+        Message message = findMessage(messageID);
+
+        for (Message m : messageList) {
+            if (message.getName().equals(m.getName())) {
+                al.add(m);
+            }
+        }
+        return al;
+    }
+
     /**
      * メッセージリストからメッセージを削除する
      *
