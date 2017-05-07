@@ -11,11 +11,23 @@
     <div id="header">
         <h1>掲示板-LightBoard</h1>
     </div>
+    <div id="log">
+        <h2>削除するメッセージ</h2>
+        <table border="1">
+            <tr>
+                <th>ナンバー</th>
+                <th>タイトル</th>
+                <th>本文</th>
+                <th>ユーザー名</th>
+                <th>日付</th>
+            </tr>
+        </table>
+    </div>
     <div id="form">
-        <p>投稿した時に入力したメールアドレスを入力してください。</p>
+        <p>投稿した時に入力したパスワードを入力してください。</p>
         <form action="/program/board/" method="post">
             <p>
-                メールアドレス<input type="email" name="mail" size="40" required>
+                パスワード<input type="password" name="pw" size="10" required>
             </p>
             <input type="hidden" name="param" value="delete2">
             <input type="submit" value="削除する">

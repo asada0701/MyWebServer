@@ -1,34 +1,23 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.model.Message;
-import jp.co.topgate.asada.web.model.User;
-
 import java.io.*;
 
 /**
- * Created by yusuke-pc on 2017/05/04.
+ * Created by yusukenakashima0701 on 2017/05/06.
  */
-public class DeleteSample {
+public class Test {
     public static void main(String[] args) {
-        User user = new User();
-        user.setEmail("");
-
-        Message message = new Message();
-        message.setMessageID(3);
-
-
-        String trID = "            <tr id=\"No." + message.getMessageID() + "\">";
-
-        String path = "./src/main/resources/2/index.html";
+        String path = "./src/main/resources/2/delete.html";
 
         try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
             String str;
             StringBuilder builder = new StringBuilder();
             while ((str = br.readLine()) != null) {
-                if (trID.equals(str)) {
-                    System.out.println("どうかな");
-                    for (int i = 0; i < 14; i++) {
+                if (str.endsWith("<div id=\"log\">")) {
+                    builder.append(str).append("\n");
+                    for (int i = 0; i < 9; i++) {
                         str = br.readLine();
+                        builder.append(str).append("\n");
                     }
                 }
                 builder.append(str).append("\n");
@@ -48,4 +37,5 @@ public class DeleteSample {
             e.printStackTrace();
         }
     }
+
 }

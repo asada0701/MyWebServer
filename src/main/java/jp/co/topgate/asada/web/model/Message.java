@@ -1,16 +1,15 @@
 package jp.co.topgate.asada.web.model;
 
-import java.util.Date;
-
 /**
  * Created by yusuke-pc on 2017/05/02.
  */
 public class Message {
     int messageID;
-    int userID;
+    String password;
+    String name;
     String title;
     String text;
-    Date date;
+    String date;
 
     public int getMessageID() {
         return messageID;
@@ -20,12 +19,20 @@ public class Message {
         this.messageID = messageID;
     }
 
-    public int getUserID() {
-        return userID;
+    public String getPassword() {
+        return password;
     }
 
-    public void setUserID(int userID) {
-        this.userID = userID;
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getTitle() {
@@ -44,11 +51,11 @@ public class Message {
         this.text = text;
     }
 
-    public Date getDate() {
+    public String getDate() {
         return date;
     }
 
-    public void setDate(Date date) {
+    public void setDate(String date) {
         this.date = date;
     }
 }
