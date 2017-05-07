@@ -18,73 +18,6 @@ public class HtmlEditor {
         path = HandlerFactory.getFilePath(requestLine.getUri());
     }
 
-    public void initialization() {
-        try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
-            String str = "<!DOCTYPE html>\n" +
-                    "<html>\n" +
-                    "\n" +
-                    "<head>\n" +
-                    "    <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n" +
-                    "    <link rel=\"stylesheet\" type=\"text/css\" href=\"./css/style.css\">\n" +
-                    "</head>\n" +
-                    "\n" +
-                    "<body>\n" +
-                    "<center>\n" +
-                    "    <div id=\"header\">\n" +
-                    "        <h1>掲示板-LightBoard</h1>\n" +
-                    "    </div>\n" +
-                    "    <div id=\"form\">\n" +
-                    "        <form action=\"/program/board/\" method=\"post\">\n" +
-                    "            <p>\n" +
-                    "                名前<input type=\"text\" name=\"name\" size=\"40\" required>\n" +
-                    "            </p>\n" +
-                    "            <p>\n" +
-                    "                タイトル<input type=\"text\" name=\"title\" size=\"40\" required>\n" +
-                    "            </p>\n" +
-                    "            <p>\n" +
-                    "                メッセージ<br>\n" +
-                    "                <textarea name=\"text\" rows=\"4\" cols=\"40\"></textarea>\n" +
-                    "            </p>\n" +
-                    "            <p>\n" +
-                    "                パスワード<input type=\"password\" name=\"password\" size=\"10\" required>(投稿した文を削除するときに使います。)\n" +
-                    "            </p>\n" +
-                    "            <input type=\"hidden\" name=\"param\" value=\"contribution\">\n" +
-                    "            <input type=\"submit\" value=\"投稿\">\n" +
-                    "        </form>\n" +
-                    "    </div>\n" +
-                    "    <div id=\"log\">\n" +
-                    "        <table border=\"1\">\n" +
-                    "            <tr>\n" +
-                    "                <th>ナンバー</th>\n" +
-                    "                <th>タイトル</th>\n" +
-                    "                <th>本文</th>\n" +
-                    "                <th>ユーザー名</th>\n" +
-                    "                <th>日付</th>\n" +
-                    "                <th></th>\n" +
-                    "                <th></th>\n" +
-                    "            </tr>\n" +
-                    "        </table>\n" +
-                    "    </div>\n" +
-                    "</center>\n" +
-                    "</body>\n" +
-                    "\n" +
-                    "</html>\n";
-            File file = new File(path);
-            if (!file.delete()) {
-                throw new IOException("存在しないファイルを編集しようとしました。");
-            }
-
-            try (OutputStream os = new FileOutputStream(new File(path))) {
-                os.write(str.getBytes());
-                os.flush();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
     /**
      * 投稿するメソッド
      *
@@ -161,7 +94,7 @@ public class HtmlEditor {
     public void search(ArrayList<Message> al) {
         path = HandlerFactory.getFilePath(requestLine.getUri());
         //search.htmlを初期化
-        initializationSearch();
+        searchInitialization();
 
         try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
             String str;
@@ -196,7 +129,159 @@ public class HtmlEditor {
         }
     }
 
-    public void initializationSearch() {
+
+    public void delete1(Message message) {
+        path = HandlerFactory.getFilePath(requestLine.getUri());
+        deleteInitialization();
+
+        try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
+            String str;
+            StringBuilder builder = new StringBuilder();
+            while ((str = br.readLine()) != null) {
+                if (str.endsWith("<div id=\"log\">")) {
+                    builder.append(str).append("\n");
+                    do {
+                        str = br.readLine();
+                        builder.append(str).append("\n");
+                    } while (!str.endsWith("</tr>"));
+
+                    builder.append(getDelete(message));
+                }
+                if (str.endsWith("<input type=\"hidden\" name=\"number\" value=\"\">")) {
+                    builder.append("            <input type=\"hidden\" name=\"number\" value=\"");
+                    builder.append(message.getMessageID()).append("\">").append("\n");
+
+                    str = br.readLine();
+                }
+                builder.append(str).append("\n");
+            }
+            File file = new File(path);
+            if (!file.delete()) {
+                throw new IOException("存在しないファイルを編集しようとしました。");
+            }
+
+            try (OutputStream os = new FileOutputStream(new File(path))) {
+                os.write(builder.toString().getBytes());
+                os.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public String getDelete(Message message) {
+        if (message.getText().contains("\n")) {
+            message.setText(message.getText().replaceAll("\n", "<br>"));    //改行文字\nを<br>に変換する
+        }
+
+        String str = "            <tr id=\"No." + message.getMessageID() + "\">\n" +
+                "                <td>No." + message.getMessageID() + "</td>\n" +
+                "                <td>" + message.getTitle() + "</td>\n" +
+                "                <td>" + message.getText() + "</td>\n" +
+                "                <td>" + message.getName() + "</td>\n" +
+                "                <td>" + message.getDate() + "</td>\n";
+        return str;
+    }
+
+    public void delete2(Message message) {
+        try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
+            String str;
+            StringBuilder builder = new StringBuilder();
+            while ((str = br.readLine()) != null) {
+                if (str.endsWith("<tr id=\"No." + message.getMessageID() + "\">")) {
+                    do {
+                        str = br.readLine();
+                    } while (!str.endsWith("</tr>"));
+                }
+                builder.append(str).append("\n");
+            }
+            File file = new File(path);
+            if (!file.delete()) {
+                throw new IOException("存在しないファイルを編集しようとしました。");
+            }
+
+            try (OutputStream os = new FileOutputStream(new File(path))) {
+                os.write(builder.toString().getBytes());
+                os.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void indexInitialization() {
+        try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
+            String str = "<!DOCTYPE html>\n" +
+                    "<html>\n" +
+                    "\n" +
+                    "<head>\n" +
+                    "    <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n" +
+                    "    <link rel=\"stylesheet\" type=\"text/css\" href=\"./css/style.css\">\n" +
+                    "</head>\n" +
+                    "\n" +
+                    "<body>\n" +
+                    "<center>\n" +
+                    "    <div id=\"header\">\n" +
+                    "        <h1>掲示板-LightBoard</h1>\n" +
+                    "    </div>\n" +
+                    "    <div id=\"form\">\n" +
+                    "        <form action=\"/program/board/\" method=\"post\">\n" +
+                    "            <p>\n" +
+                    "                名前<input type=\"text\" name=\"name\" size=\"40\" required>\n" +
+                    "            </p>\n" +
+                    "            <p>\n" +
+                    "                タイトル<input type=\"text\" name=\"title\" size=\"40\" required>\n" +
+                    "            </p>\n" +
+                    "            <p>\n" +
+                    "                メッセージ<br>\n" +
+                    "                <textarea name=\"text\" rows=\"4\" cols=\"40\"></textarea>\n" +
+                    "            </p>\n" +
+                    "            <p>\n" +
+                    "                パスワード<input type=\"password\" name=\"password\" size=\"10\" required>(投稿した文を削除するときに使います。)\n" +
+                    "            </p>\n" +
+                    "            <input type=\"hidden\" name=\"param\" value=\"contribution\">\n" +
+                    "            <input type=\"submit\" value=\"投稿\">\n" +
+                    "        </form>\n" +
+                    "    </div>\n" +
+                    "    <div id=\"log\">\n" +
+                    "        <table border=\"1\">\n" +
+                    "            <tr>\n" +
+                    "                <th>ナンバー</th>\n" +
+                    "                <th>タイトル</th>\n" +
+                    "                <th>本文</th>\n" +
+                    "                <th>ユーザー名</th>\n" +
+                    "                <th>日付</th>\n" +
+                    "                <th></th>\n" +
+                    "                <th></th>\n" +
+                    "            </tr>\n" +
+                    "        </table>\n" +
+                    "    </div>\n" +
+                    "</center>\n" +
+                    "</body>\n" +
+                    "\n" +
+                    "</html>\n";
+            File file = new File(path);
+            if (!file.delete()) {
+                throw new IOException("存在しないファイルを編集しようとしました。");
+            }
+
+            try (OutputStream os = new FileOutputStream(new File(path))) {
+                os.write(str.getBytes());
+                os.flush();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void searchInitialization() {
         String str = "<!DOCTYPE html>\n" +
                 "<html>\n" +
                 "\n" +
@@ -265,48 +350,7 @@ public class HtmlEditor {
         }
     }
 
-    public void delete1(Message message) {
-        path = HandlerFactory.getFilePath(requestLine.getUri());
-        initialization2();
-
-        try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
-            String str;
-            StringBuilder builder = new StringBuilder();
-            while ((str = br.readLine()) != null) {
-                if (str.endsWith("<div id=\"log\">")) {
-                    builder.append(str).append("\n");
-                    do {
-                        str = br.readLine();
-                        builder.append(str).append("\n");
-                    } while (!str.endsWith("</tr>"));
-
-                    builder.append(getDelete(message));
-                }
-                if (str.endsWith("<input type=\"hidden\" name=\"number\" value=\"\">")) {
-                    builder.append("            <input type=\"hidden\" name=\"number\" value=\"");
-                    builder.append(message.getMessageID()).append("\">").append("\n");
-
-                    str = br.readLine();
-                }
-                builder.append(str).append("\n");
-            }
-            File file = new File(path);
-            if (!file.delete()) {
-                throw new IOException("存在しないファイルを編集しようとしました。");
-            }
-
-            try (OutputStream os = new FileOutputStream(new File(path))) {
-                os.write(builder.toString().getBytes());
-                os.flush();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public void initialization2() {
+    public void deleteInitialization() {
         String str = "<!DOCTYPE html>\n" +
                 "<html>\n" +
                 "\n" +
@@ -361,48 +405,6 @@ public class HtmlEditor {
         try (OutputStream os = new FileOutputStream(new File(path))) {
             os.write(str.getBytes());
             os.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public String getDelete(Message message) {
-        if (message.getText().contains("\n")) {
-            message.setText(message.getText().replaceAll("\n", "<br>"));    //改行文字\nを<br>に変換する
-        }
-
-        String str = "            <tr id=\"No." + message.getMessageID() + "\">\n" +
-                "                <td>No." + message.getMessageID() + "</td>\n" +
-                "                <td>" + message.getTitle() + "</td>\n" +
-                "                <td>" + message.getText() + "</td>\n" +
-                "                <td>" + message.getName() + "</td>\n" +
-                "                <td>" + message.getDate() + "</td>\n";
-        return str;
-    }
-
-    public void delete2(Message message) {
-        try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
-            String str;
-            StringBuilder builder = new StringBuilder();
-            while ((str = br.readLine()) != null) {
-                if (str.endsWith("<tr id=\"No." + message.getMessageID() + "\">")) {
-                    do {
-                        str = br.readLine();
-                    } while (!str.endsWith("</tr>"));
-                }
-                builder.append(str).append("\n");
-            }
-            File file = new File(path);
-            if (!file.delete()) {
-                throw new IOException("存在しないファイルを編集しようとしました。");
-            }
-
-            try (OutputStream os = new FileOutputStream(new File(path))) {
-                os.write(builder.toString().getBytes());
-                os.flush();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         } catch (IOException e) {
             e.printStackTrace();
         }
