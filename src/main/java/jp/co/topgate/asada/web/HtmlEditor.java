@@ -86,7 +86,9 @@ class HtmlEditor {
      * @return
      */
     private String getContribution(Message message) {
-        if (message.getText().contains("\n")) {
+        if (message.getText().contains("\r\n")) {
+            message.setText(message.getText().replaceAll("\r\n", "<br>"));
+        } else if (message.getText().contains("\n")) {
             message.setText(message.getText().replaceAll("\n", "<br>"));
         }
 

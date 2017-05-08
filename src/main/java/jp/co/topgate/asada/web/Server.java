@@ -129,9 +129,6 @@ class Server extends Thread {
         try (OutputStream os = new FileOutputStream(new File(filePath))) {
             StringBuffer buffer = new StringBuffer();
             for (Message m : list) {
-                if (m.getText().contains("\n")) {
-                    m.setText(m.getText().replaceAll("\n", "<br>"));    //改行文字\nを<br>に変換する
-                }
                 buffer.append(m.getMessageID()).append(",");
 
                 String original = String.valueOf(m.getMessageID());

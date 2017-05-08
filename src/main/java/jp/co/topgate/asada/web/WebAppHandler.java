@@ -214,16 +214,17 @@ public class WebAppHandler extends Handler {
         try (OutputStream os = new FileOutputStream(new File(filePath))) {
             StringBuffer buffer = new StringBuffer();
             for (Message m : list) {
+
                 if (m.getText().contains("\n")) {
-                    m.setText(m.getText().replaceAll("\n", "<br>"));    //改行文字\nを<br>に変換する
+                    m.setText(m.getText().replaceAll("\r\n", "<br>"));    //改行文字\nを<br>に変換する
                 }
                 buffer.append(m.getMessageID()).append(",");
 
                 String original = String.valueOf(m.getMessageID());
 
-                String encrypedResult = CipherHelper.encrypt(original);
+                String result = CipherHelper.encrypt(original);
 
-                buffer.append(encrypedResult);
+                buffer.append(result);
 
                 buffer.append(",").append(m.getName()).append(",");
                 buffer.append(m.getTitle()).append(",").append(m.getText()).append(",").append(m.getDate()).append("\n");
