@@ -18,7 +18,7 @@ public class HandlerFactory {
     private static final String FILE_PATH = "./src/main/resources";
 
     /**
-     * URIと実際のパスのハッシュマップ
+     * URIとファイルパスのハッシュマップ
      */
     private static Map<String, String> urlPattern = new HashMap<>();
 
@@ -32,14 +32,13 @@ public class HandlerFactory {
      * @param bis ソケットの入力ストリーム
      * @return 今回の接続を担当するハンドラーのオブジェクト
      */
-    public static Handler getHandler(BufferedInputStream bis) {
+    static Handler getHandler(BufferedInputStream bis) {
         Handler handler;
         RequestLine requestLine;
         try {
             requestLine = new RequestLine(bis);
             String uri = requestLine.getUri();
 
-            //先に入れてしまう。
             handler = new StaticHandler();
 
             for (String s : urlPattern.keySet()) {
@@ -63,7 +62,11 @@ public class HandlerFactory {
     }
 
     /**
-     * URIを元に実際のファイルパスを返すメソッド
+     * URIを元にファイルパスを返すメソッド
+     * （例）/program/board/css/style.css
+     * を渡すと
+     * ./src/main/resources/2/css/style.css
+     * が返ってくる
      *
      * @param uri リクエストラインクラスのURI
      * @retur リクエストされたファイルのパス
@@ -87,9 +90,8 @@ public class HandlerFactory {
                     }
                 }
             } else {
-                isMatch = false;
+                continue;
             }
-
 
             if (isMatch) {
                 StringBuilder builder = new StringBuilder();

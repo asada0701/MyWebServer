@@ -3,13 +3,27 @@ package jp.co.topgate.asada.web;
 import java.io.*;
 
 /**
- * Created by yusuke-pc on 2017/05/01.
+ * ハンドラー抽象クラス
+ *
+ * @author asada
  */
 public abstract class Handler {
 
-    protected int statusCode;
-    protected RequestLine requestLine;
+    /**
+     * HTTPレスポンスメッセージのステータスコード
+     */
+    int statusCode;
 
+    /**
+     * リクエストライン
+     */
+    RequestLine requestLine;
+
+    /**
+     * リクエストが来たときに呼び出すメソッド
+     *
+     * @param bis SocketのInputStreamをBufferedInputStreamにラップして渡す
+     */
     public void requestComes(BufferedInputStream bis) {
         if (requestLine != null) {
             String method = requestLine.getMethod();        //サーバーをスタートする前にアクセスすると、ここでヌルポする
@@ -33,19 +47,19 @@ public abstract class Handler {
         }
     }
 
-    public void returnResponse(OutputStream os) {
-        try {
-            String path = "";
-            if (requestLine != null) {
-                path = HandlerFactory.getFilePath(requestLine.getUri());
-            }
-            new ResponseMessage(os, statusCode, path);
-        } catch (IOException e) {
-            //レスポンスメッセージ書き込み中のエラー、挽回無理
-        }
-    }
+    /**
+     * 抽象メソッド、レスポンスを返すときに呼び出すメソッド
+     *
+     * @param os SocketのOutputStream
+     */
+    public abstract void returnResponse(OutputStream os);
 
-    public void setStatusCode(int statusCode) {
+    /**
+     * ステータスコードをセットできる
+     *
+     * @param statusCode HTTPレスポンスのステータスコード
+     */
+    void setStatusCode(int statusCode) {
         this.statusCode = statusCode;
     }
 
@@ -53,7 +67,12 @@ public abstract class Handler {
         return statusCode;
     }
 
-    public void setRequestLine(RequestLine requestLine) {
+    /**
+     * リクエストラインをセットできる
+     *
+     * @param requestLine requestLineクラスのオブジェクト
+     */
+    void setRequestLine(RequestLine requestLine) {
         this.requestLine = requestLine;
     }
 }

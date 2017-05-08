@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by yusuke-pc on 2017/05/01.
+ * レスポンスメッセージクラス
+ *
+ * @author asada
  */
 public class ResponseMessage {
     /**
@@ -76,6 +78,7 @@ public class ResponseMessage {
      *
      * @param os         ソケットの出力ストリーム
      * @param statusCode レスポンスメッセージのステータスコード
+     * @param filePath   リソースファイルのパス
      */
     public ResponseMessage(OutputStream os, int statusCode, String filePath) throws IOException {
         if (os == null || filePath == null) {

@@ -11,22 +11,20 @@ import java.util.List;
  */
 public class ModelController {
 
-    /**
-     *
-     */
     private static List<Message> messageList = new ArrayList<>();
 
     private static int score = 1;
 
-    //初期設定をさせる
-    static {
+    public ModelController(List<Message> messageList) {
+        ModelController.messageList = messageList;
 
+        score = messageList.size() + 1;
     }
 
     /**
      * メッセージリストにメッセージクラスを追加する
      */
-    public static Message addMessage(String name, String title, String text, String password) {
+    public static void addMessage(String name, String title, String text, String password) {
         Message message = new Message();
         message.setMessageID(score);
         message.setName(name);
@@ -37,8 +35,10 @@ public class ModelController {
         messageList.add(message);
 
         score++;
+    }
 
-        return message;
+    public static List<Message> getAllMessage() {
+        return messageList;
     }
 
     public static Message findMessage(int messageID) {

@@ -15,7 +15,7 @@ import java.util.Map;
  *
  * @author asada
  */
-public class RequestLine {
+class RequestLine {
     /**
      * リクエストラインを分割する
      */
@@ -57,7 +57,7 @@ public class RequestLine {
      * @param bis サーバーソケットのInputStream
      * @throws RequestParseException パースに失敗した場合に投げられる
      */
-    public RequestLine(BufferedInputStream bis) throws RequestParseException {
+    RequestLine(BufferedInputStream bis) throws RequestParseException {
         if (bis == null) {
             throw new RequestParseException("引数がnullだった");
         }
@@ -120,7 +120,7 @@ public class RequestLine {
      *
      * @return HTTPメソッドを返す
      */
-    public String getMethod() {
+    String getMethod() {
         return method;
     }
 
@@ -129,17 +129,17 @@ public class RequestLine {
      *
      * @return URIを返す
      */
-    public String getUri() {
+    String getUri() {
         return uri;
     }
 
     /**
      * リクエストメッセージURIに含まれていたQuery名を元にQuery値を返す
      *
-     * @param name 　探したいQuery名
+     * @param name 探したいQuery名
      * @return Query値を返す。URIに含まれていなかった場合はNullを返す
      */
-    public String findUriQuery(String name) {
+    String findUriQuery(String name) {
         if (name != null) {
             return uriQuery.get(name);
         } else {
@@ -152,11 +152,11 @@ public class RequestLine {
      *
      * @return プロトコルバージョンを返す
      */
-    public String getProtocolVersion() {
+    String getProtocolVersion() {
         return protocolVersion;
     }
 
-    public void setUri(String uri) {
+    void setUri(String uri) {
         if (uri != null) {
             this.uri = uri;
         }

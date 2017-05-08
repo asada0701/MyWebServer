@@ -17,7 +17,7 @@ import java.util.Map;
  *
  * @author asada
  */
-public class RequestMessage {
+class RequestMessage {
     /**
      * ヘッダーフィールドのフィールド名とフィールド値を分割する（その後のスペースは自由のため注意）
      */
@@ -52,7 +52,7 @@ public class RequestMessage {
      * @param bis サーバーソケットのInputStream
      * @throws RequestParseException パースに失敗した場合に投げられる
      */
-    public RequestMessage(BufferedInputStream bis, RequestLine rl) throws RequestParseException {
+    RequestMessage(BufferedInputStream bis, RequestLine rl) throws RequestParseException {
         if (bis == null || rl == null) {
             throw new RequestParseException("引数のどちらかがnullだった");
         }
@@ -66,7 +66,6 @@ public class RequestMessage {
 
             //ヘッダーフィールドの処理
             while ((str = br.readLine()) != null && !str.equals("")) {
-                System.out.println(str);
                 String[] header = str.split(HEADER_FIELD_NAME_VALUE_DIVISION);
                 if (header.length == HEADER_FIELD_NUM_ITEMS) {
                     header[1] = header[1].trim();
@@ -81,11 +80,7 @@ public class RequestMessage {
 
             //POSTの場合のみ、メッセージボディの処理
             if ("POST".equals(rl.getMethod())) {
-                try {
-                    messageBodyParse(br);
-                } catch (RequestParseException e) {
-                    throw e;
-                }
+                messageBodyParse(br);
             }
         } catch (IOException e) {
             throw new RequestParseException("BufferedReaderで発生した例外:" + e.toString());
@@ -111,7 +106,7 @@ public class RequestMessage {
             int contentLength = Integer.parseInt(contentLengthS);
             if (0 < contentLength) {
                 char[] c = new char[contentLength];
-                br.read(c);
+                int i = br.read(c);
                 str = new String(c);
             }
             if (str == null) {
@@ -137,7 +132,7 @@ public class RequestMessage {
      * @param fieldName 探したいヘッダ名
      * @return ヘッダ値を返す。ヘッダーフィールドに含まれていなかった場合はNullを返す
      */
-    public String findHeaderByName(String fieldName) {
+    String findHeaderByName(String fieldName) {
         if (fieldName != null) {
             return headerFieldUri.get(fieldName);
         } else {
@@ -151,7 +146,7 @@ public class RequestMessage {
      * @param key 探したいQuery名
      * @return Query値を返す。URIに含まれていなかった場合はNullを返す
      */
-    public String findMessageBody(String key) {
+    String findMessageBody(String key) {
         if (key != null) {
             return messageBody.get(key);
         } else {

@@ -14,7 +14,7 @@ import java.net.SocketException;
  *
  * @author asada
  */
-public class Server extends Thread {
+class Server extends Thread {
     private static final int portNumber = 8080;
     private ServerSocket serverSocket = null;
     private Socket socket = new Socket();
@@ -24,14 +24,14 @@ public class Server extends Thread {
      *
      * @throws IOException サーバーソケットでエラーが発生しました
      */
-    public Server() throws IOException {
+    Server() throws IOException {
         serverSocket = new ServerSocket(portNumber);
     }
 
     /**
      * サーバーを立ち上げるメソッド
      */
-    public void startServer() {
+    void startServer() {
         this.start();
     }
 
@@ -41,7 +41,7 @@ public class Server extends Thread {
      * @return trueの場合、サーバーの停止に成功
      * @throws IOException サーバーソケットでエラーが発生しました
      */
-    public boolean stopServer() throws IOException {
+    boolean stopServer() throws IOException {
         boolean result = false;
         if (socket == null || socket.isClosed()) {
             serverSocket.close();
@@ -55,7 +55,7 @@ public class Server extends Thread {
      *
      * @throws IOException サーバーソケットでエラーが発生しました
      */
-    public void endServer() throws IOException {
+    void endServer() throws IOException {
         if (socket != null) {
             socket.close();
         }
