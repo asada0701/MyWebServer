@@ -3,7 +3,13 @@ package jp.co.topgate.asada.web;
 import jp.co.topgate.asada.web.model.Message;
 import jp.co.topgate.asada.web.model.ModelController;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import java.io.*;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,9 +26,10 @@ public class WebAppHandler extends Handler {
      * リクエストが来たときに呼び出すメソッド
      *
      * @param bis SocketのInputStreamをBufferedInputStreamにラップして渡す
+     * @throws RuntimeException データを保存しているCSVファイルに異常が見つかった場合に発生する
      */
     @Override
-    public void requestComes(BufferedInputStream bis) {
+    public void requestComes(BufferedInputStream bis) throws RuntimeException {
         super.requestComes(bis);
 
         try {
@@ -39,7 +46,12 @@ public class WebAppHandler extends Handler {
                     new ModelController(readCsv());
                 }
             }
-        } catch (Exception e) {
+        } catch (NoSuchPaddingException | InvalidAlgorithmParameterException | IllegalBlockSizeException |
+                NoSuchAlgorithmException | BadPaddingException | InvalidKeyException e) {
+
+            throw new RuntimeException("CSVファイルに異常があります。");
+
+        } catch (IOException e) {
             statusCode = ResponseMessage.INTERNAL_SERVER_ERROR;
         }
     }
@@ -48,9 +60,10 @@ public class WebAppHandler extends Handler {
      * レスポンスを返すときに呼び出すメソッド
      *
      * @param os SocketのOutputStream
+     * @throws RuntimeException データを保存しているCSVファイルに異常が見つかった場合に発生する
      */
     @Override
-    public void returnResponse(OutputStream os) {
+    public void returnResponse(OutputStream os) throws RuntimeException {
         try {
             String path = "";
             if (requestLine != null) {
@@ -64,20 +77,18 @@ public class WebAppHandler extends Handler {
                 he.searchInitialization();
                 he.deleteInitialization();
             }
+            writeCsv();
+        } catch (NoSuchPaddingException | InvalidAlgorithmParameterException | IllegalBlockSizeException |
+                NoSuchAlgorithmException | BadPaddingException | InvalidKeyException e) {
 
-            try {
-                writeCsv();
-
-            } catch (IOException e) {
-                //入出力例外
-                System.out.println("");
-
-            } catch (Exception e) {
-                //IOException以外の例外は暗号(CipherHelperクラスで発生した例外)
-            }
+            throw new RuntimeException("CSVファイルに異常があります。");
 
         } catch (IOException e) {
-
+            /*
+            ソケットにレスポンスを書き出す段階で、例外が出た。
+            原因としては、ソケットが閉じてしまった場合などが考えられる。
+            レスポンスを返せない例外なので、発生しても無視する。
+             */
         }
     }
 
@@ -86,7 +97,7 @@ public class WebAppHandler extends Handler {
      *
      * @param requestMessage リクエストメッセージクラスのオブジェクトを渡す
      */
-    private void editHtml(RequestMessage requestMessage) throws Exception {
+    private void editHtml(RequestMessage requestMessage) throws IOException {
         String param = requestMessage.findMessageBody("param");
         if (param != null && requestLine.getUri().startsWith("/program/board/")) {
             Message message;
@@ -164,7 +175,8 @@ public class WebAppHandler extends Handler {
      * @return 過去に投稿された文をメッセージクラスのListに格納して返す
      * @throws IOException 読み出し中の例外
      */
-    private List<Message> readCsv() throws Exception {
+    private List<Message> readCsv() throws IOException, NoSuchPaddingException, InvalidAlgorithmParameterException,
+            NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
         String filePath = "./src/main/resources/data/message.csv";
         List<Message> list = new ArrayList<>();
 
@@ -200,9 +212,16 @@ public class WebAppHandler extends Handler {
     /**
      * CSVファイルに投稿された文を書き出すメソッド
      *
-     * @throws IOException
+     * @throws IOException                        存在しないファイルを編集しようとした場合に発生する
+     * @throws NoSuchAlgorithmException           ある暗号アルゴリズムが現在の環境で使用できない場合発生する
+     * @throws NoSuchPaddingException             あるパディング・メカニズムが現在の環境で使用できない場合発生する
+     * @throws InvalidKeyException                無効な鍵に対する例外
+     * @throws IllegalBlockSizeException          提供されたデータの長さが暗号のブロック・サイズと一致しない場合発生する
+     * @throws BadPaddingException                データが適切にパディングされない場合に発生する(暗号キーと複合キーが同じかチェックすること
+     * @throws InvalidAlgorithmParameterException 無効なアルゴリズム・パラメータの例外
      */
-    private void writeCsv() throws Exception {
+    private void writeCsv() throws IOException, NoSuchPaddingException, InvalidAlgorithmParameterException,
+            NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
         String filePath = "./src/main/resources/data/message.csv";
         List<Message> list = ModelController.getAllMessage();
 

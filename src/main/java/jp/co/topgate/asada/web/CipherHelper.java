@@ -16,19 +16,19 @@ import java.util.Base64;
  *
  * @author asada
  */
-public class CipherHelper {
+class CipherHelper {
     /**
      * 暗号化方式「AES(Advanced Encryption Standard)」
      */
     private static final String algorithm = "AES";
 
     /**
-     * 暗号化方式「AES」の場合、キーは16文字で
+     * 暗号化方式「AES」の場合、キーは16文字
      */
     private static final String secretKey = "1234567890123456";
 
     /**
-     * 暗号化方式「AES」の場合、初期化ベクトルは16文字で
+     * 暗号化方式「AES」の場合、初期化ベクトルは16文字
      */
     private static final String initializationVector = "abcdefghijklmnop";
 
@@ -37,8 +37,8 @@ public class CipherHelper {
     /**
      * 暗号化メソッド
      *
-     * @param originalSource
-     * @return
+     * @param original 暗号化したい文字
+     * @return 暗号化された文字
      * @throws NoSuchAlgorithmException           ある暗号アルゴリズムが現在の環境で使用できない場合発生する
      * @throws NoSuchPaddingException             あるパディング・メカニズムが現在の環境で使用できない場合発生する
      * @throws InvalidKeyException                無効な鍵に対する例外
@@ -46,11 +46,11 @@ public class CipherHelper {
      * @throws BadPaddingException                データが適切にパディングされない場合に発生する(暗号キーと複合キーが同じかチェックすること
      * @throws InvalidAlgorithmParameterException 無効なアルゴリズム・パラメータの例外
      */
-    public static String encrypt(String originalSource)
+    static String encrypt(String original)
             throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException,
             BadPaddingException, InvalidAlgorithmParameterException {
 
-        byte[] originalBytes = originalSource.getBytes();
+        byte[] originalBytes = original.getBytes();
         byte[] encryptBytes = CipherHelper.cipher(originalBytes, true);
         return Base64.getEncoder().encodeToString(encryptBytes);
     }
@@ -58,8 +58,8 @@ public class CipherHelper {
     /**
      * 複合化メソッド
      *
-     * @param encryptBytesBase64String
-     * @return
+     * @param encrypt 複合化したい文字
+     * @return 複合化された文字
      * @throws NoSuchAlgorithmException           ある暗号アルゴリズムが現在の環境で使用できない場合発生する
      * @throws NoSuchPaddingException             あるパディング・メカニズムが現在の環境で使用できない場合発生する
      * @throws InvalidKeyException                無効な鍵に対する例外
@@ -67,18 +67,16 @@ public class CipherHelper {
      * @throws BadPaddingException                データが適切にパディングされない場合に発生する(暗号キーと複合キーが同じかチェックすること
      * @throws InvalidAlgorithmParameterException 無効なアルゴリズム・パラメータの例外
      */
-    public static String decrypt(String encryptBytesBase64String) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
+    static String decrypt(String encrypt) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
             IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
 
-        byte[] encryptBytes = Base64.getDecoder().decode(encryptBytesBase64String);
+        byte[] encryptBytes = Base64.getDecoder().decode(encrypt);
         byte[] originalBytes = CipherHelper.cipher(encryptBytes, false);
         return new String(originalBytes);
     }
 
     /**
-     * 暗号化/複合化の共通部分
-     *
-     * @throws InvalidAlgorithmParameterException
+     * encryptメソッドとdecryptメソッドの共通部分
      */
     private static byte[] cipher(byte[] source, boolean isEncrypt) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException,
             IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {

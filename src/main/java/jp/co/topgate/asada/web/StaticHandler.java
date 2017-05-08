@@ -7,6 +7,7 @@ import java.io.OutputStream;
  * Created by yusuke-pc on 2017/05/01.
  */
 public class StaticHandler extends Handler {
+
     @Override
     public void returnResponse(OutputStream os) {
         try {

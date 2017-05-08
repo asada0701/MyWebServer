@@ -4,11 +4,17 @@ import jp.co.topgate.asada.web.exception.BindRuntimeException;
 import jp.co.topgate.asada.web.model.Message;
 import jp.co.topgate.asada.web.model.ModelController;
 
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import java.io.*;
 import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 /**
@@ -60,12 +66,12 @@ class Server extends Thread {
     void endServer() throws IOException {
         try {
             writeCsv();
+        } catch (NoSuchPaddingException | InvalidAlgorithmParameterException | NoSuchAlgorithmException |
+                IllegalBlockSizeException | BadPaddingException | InvalidKeyException e) {
 
-        } catch (IOException e) {
-            //入出力例外
-
-        } catch (Exception e) {
-            //IOException以外の例外は暗号(CipherHelperクラスで発生した例外)
+            throw new IOException("CSVファイル書き出し中に例外が発生しました。CSVファイルの中身を確認してください。");
+        } catch (RuntimeException | IOException e) {
+            throw e;
         }
 
         if (socket != null) {
@@ -78,8 +84,6 @@ class Server extends Thread {
 
     /**
      * Threadクラスのrunメソッドのオーバーライドメソッド
-     * endServerメソッドを呼び出すと、serverSocketが閉じ、nullを参照するようになる
-     * 77行目で、serverSocketがnullを参照するので、NullPointerExceptionが発生する
      *
      * @throws BindRuntimeException ポートが使用中であるが、要求されたローカル・アドレスの割り当てに失敗しました
      * @throws RuntimeException     ソケットの入出力でエラーが発生しました
@@ -105,9 +109,11 @@ class Server extends Thread {
             }
         } catch (BindException e) {
             throw new BindRuntimeException(e.toString());
-        } catch (SocketException e) {
 
-        } catch (IOException e) {
+        } catch (SocketException e) {
+            //endServerメソッドが呼ばれると、ServerSocket.accept()メソッドで発生する例外
+            
+        } catch (RuntimeException | IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -115,9 +121,16 @@ class Server extends Thread {
     /**
      * CSVファイルに投稿された文を書き出すメソッド
      *
-     * @throws Exception
+     * @throws IOException                        存在しないファイルを編集しようとした場合に発生する
+     * @throws NoSuchAlgorithmException           ある暗号アルゴリズムが現在の環境で使用できない場合発生する
+     * @throws NoSuchPaddingException             あるパディング・メカニズムが現在の環境で使用できない場合発生する
+     * @throws InvalidKeyException                無効な鍵に対する例外
+     * @throws IllegalBlockSizeException          提供されたデータの長さが暗号のブロック・サイズと一致しない場合発生する
+     * @throws BadPaddingException                データが適切にパディングされない場合に発生する(暗号キーと複合キーが同じかチェックすること
+     * @throws InvalidAlgorithmParameterException 無効なアルゴリズム・パラメータの例外
      */
-    private void writeCsv() throws Exception {
+    private void writeCsv() throws IOException, NoSuchPaddingException, InvalidAlgorithmParameterException,
+            NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
         String filePath = "./src/main/resources/data/message.csv";
         List<Message> list = ModelController.getAllMessage();
 

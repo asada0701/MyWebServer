@@ -70,13 +70,12 @@ public class ModelController {
      *
      * @param message
      */
-    public static void deleteMessage(Message message) throws Exception {
-        if (message == null) {
-            throw new NullPointerException();
-        }
-        for (int i = 0; i < messageList.size(); i++) {
-            if (message.getMessageID() == messageList.get(i).getMessageID()) {
-                messageList.remove(messageList.get(i));
+    public static void deleteMessage(Message message) {
+        if (message != null) {
+            for (int i = 0; i < messageList.size(); i++) {
+                if (message.getMessageID() == messageList.get(i).getMessageID()) {
+                    messageList.remove(messageList.get(i));
+                }
             }
         }
     }
