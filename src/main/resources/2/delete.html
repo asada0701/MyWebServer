@@ -21,15 +21,22 @@
                 <th>ユーザー名</th>
                 <th>日付</th>
             </tr>
+            <tr id="No.2">
+                <td>No.2</td>
+                <td>null</td>
+                <td>テスト</td>
+                <td>null</td>
+                <td>null</td>
+            </tr>
         </table>
     </div>
     <div id="form">
         <p>投稿した時に入力したパスワードを入力してください。</p>
         <form action="/program/board/" method="post">
             <p>
-                パスワード<input type="password" name="pw" size="10" required>
+                パスワード<input type="password" name="password" size="10" required>
             </p>
-            <input type="hidden" name="number" value="3">
+            <input type="hidden" name="number" value="2">
             <input type="hidden" name="param" value="delete2">
             <input type="submit" value="削除する">
         </form>

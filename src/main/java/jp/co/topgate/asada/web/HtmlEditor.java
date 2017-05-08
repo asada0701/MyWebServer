@@ -33,14 +33,14 @@ class HtmlEditor {
     }
 
     private String getHtml(String path) throws IOException {
-        StringBuilder builder = new StringBuilder();
+        StringBuffer buffer = new StringBuffer();
         try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
             String str;
             while ((str = br.readLine()) != null) {
-                builder.append(str).append("\n");
+                buffer.append(str).append("\n");
             }
         }
-        return builder.toString();
+        return buffer.toString();
     }
 
     /**
@@ -51,21 +51,21 @@ class HtmlEditor {
     void contribution(List<Message> list) throws IOException {
         try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
             String str;
-            StringBuilder builder = new StringBuilder();
+            StringBuffer buffer = new StringBuffer();
             while ((str = br.readLine()) != null) {
                 if (str.endsWith("<div id=\"log\">")) {
-                    builder.append(str).append("\n");
+                    buffer.append(str).append("\n");
                     do {
                         str = br.readLine();
-                        builder.append(str).append("\n");
+                        buffer.append(str).append("\n");
                     } while (!str.endsWith("</tr>"));
 
                     for (int i = list.size() - 1; i > -1; i--) {
-                        builder.append(getContribution(list.get(i)));
-                        builder.append(str).append("\n");
+                        buffer.append(getContribution(list.get(i)));
+                        buffer.append(str).append("\n");
                     }
                 }
-                builder.append(str).append("\n");
+                buffer.append(str).append("\n");
             }
             File file = new File(path);
             if (!file.delete()) {
@@ -73,7 +73,7 @@ class HtmlEditor {
             }
 
             try (OutputStream os = new FileOutputStream(new File(path))) {
-                os.write(builder.toString().getBytes());
+                os.write(buffer.toString().getBytes());
                 os.flush();
             }
         }
@@ -85,9 +85,9 @@ class HtmlEditor {
      * @param message
      * @return
      */
-    String getContribution(Message message) {
+    private String getContribution(Message message) {
         if (message.getText().contains("\n")) {
-            message.setText(message.getText().replaceAll("\n", "<br>"));    //改行文字\nを<br>に変換する
+            message.setText(message.getText().replaceAll("\n", "<br>"));
         }
 
         String str = "            <tr id=\"No." + message.getMessageID() + "\">\n" +
@@ -123,21 +123,21 @@ class HtmlEditor {
 
         try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
             String str;
-            StringBuilder builder = new StringBuilder();
+            StringBuffer buffer = new StringBuffer();
             while ((str = br.readLine()) != null) {
                 if (str.endsWith("<div id=\"log\">")) {
-                    builder.append(str).append("\n");
+                    buffer.append(str).append("\n");
                     do {
                         str = br.readLine();
-                        builder.append(str).append("\n");
+                        buffer.append(str).append("\n");
                     } while (!str.endsWith("</tr>"));
 
                     for (int i = al.size() - 1; i > -1; i--) {
-                        builder.append(getContribution(al.get(i)));
-                        builder.append(str).append("\n");
+                        buffer.append(getContribution(al.get(i)));
+                        buffer.append(str).append("\n");
                     }
                 }
-                builder.append(str).append("\n");
+                buffer.append(str).append("\n");
             }
             File file = new File(path);
             if (!file.delete()) {
@@ -145,7 +145,7 @@ class HtmlEditor {
             }
 
             try (OutputStream os = new FileOutputStream(new File(path))) {
-                os.write(builder.toString().getBytes());
+                os.write(buffer.toString().getBytes());
                 os.flush();
             }
         }
@@ -157,24 +157,24 @@ class HtmlEditor {
 
         try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
             String str;
-            StringBuilder builder = new StringBuilder();
+            StringBuffer buffer = new StringBuffer();
             while ((str = br.readLine()) != null) {
                 if (str.endsWith("<div id=\"log\">")) {
-                    builder.append(str).append("\n");
+                    buffer.append(str).append("\n");
                     do {
                         str = br.readLine();
-                        builder.append(str).append("\n");
+                        buffer.append(str).append("\n");
                     } while (!str.endsWith("</tr>"));
 
-                    builder.append(getDelete(message));
+                    buffer.append(getDelete(message));
                 }
                 if (str.endsWith("<input type=\"hidden\" name=\"number\" value=\"\">")) {
-                    builder.append("            <input type=\"hidden\" name=\"number\" value=\"");
-                    builder.append(message.getMessageID()).append("\">").append("\n");
+                    buffer.append("            <input type=\"hidden\" name=\"number\" value=\"");
+                    buffer.append(message.getMessageID()).append("\">").append("\n");
 
                     str = br.readLine();
                 }
-                builder.append(str).append("\n");
+                buffer.append(str).append("\n");
             }
             File file = new File(path);
             if (!file.delete()) {
@@ -182,14 +182,14 @@ class HtmlEditor {
             }
 
             try (OutputStream os = new FileOutputStream(new File(path))) {
-                os.write(builder.toString().getBytes());
+                os.write(buffer.toString().getBytes());
                 os.flush();
             }
         }
     }
 
 
-    String getDelete(Message message) {
+    private String getDelete(Message message) {
         if (message.getText().contains("\n")) {
             message.setText(message.getText().replaceAll("\n", "<br>"));    //改行文字\nを<br>に変換する
         }
@@ -206,14 +206,14 @@ class HtmlEditor {
     void delete2(Message message) {
         try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
             String str;
-            StringBuilder builder = new StringBuilder();
+            StringBuffer buffer = new StringBuffer();
             while ((str = br.readLine()) != null) {
                 if (str.endsWith("<tr id=\"No." + message.getMessageID() + "\">")) {
                     do {
                         str = br.readLine();
                     } while (!str.endsWith("</tr>"));
                 }
-                builder.append(str).append("\n");
+                buffer.append(str).append("\n");
             }
             File file = new File(path);
             if (!file.delete()) {
@@ -221,7 +221,7 @@ class HtmlEditor {
             }
 
             try (OutputStream os = new FileOutputStream(new File(path))) {
-                os.write(builder.toString().getBytes());
+                os.write(buffer.toString().getBytes());
                 os.flush();
             } catch (IOException e) {
                 e.printStackTrace();

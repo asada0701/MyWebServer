@@ -1,13 +1,15 @@
 package jp.co.topgate.asada.web;
 
 import jp.co.topgate.asada.web.exception.BindRuntimeException;
+import jp.co.topgate.asada.web.model.Message;
+import jp.co.topgate.asada.web.model.ModelController;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.List;
 
 /**
  * サーバークラス
@@ -56,15 +58,28 @@ class Server extends Thread {
      * @throws IOException サーバーソケットでエラーが発生しました
      */
     void endServer() throws IOException {
+        try {
+            writeCsv();
+
+        } catch (IOException e) {
+            //入出力例外
+
+        } catch (Exception e) {
+            //IOException以外の例外は暗号(CipherHelperクラスで発生した例外)
+        }
+
         if (socket != null) {
             socket.close();
         }
         serverSocket.close();
+
+        serverSocket = null;
     }
 
     /**
      * Threadクラスのrunメソッドのオーバーライドメソッド
-     * SocketExceptionはserverSocket.accept中にserverSocket.closeメソッドを呼び出すと発生するのでここで消す
+     * endServerメソッドを呼び出すと、serverSocketが閉じ、nullを参照するようになる
+     * 77行目で、serverSocketがnullを参照するので、NullPointerExceptionが発生する
      *
      * @throws BindRuntimeException ポートが使用中であるが、要求されたローカル・アドレスの割り当てに失敗しました
      * @throws RuntimeException     ソケットの入出力でエラーが発生しました
@@ -90,11 +105,46 @@ class Server extends Thread {
             }
         } catch (BindException e) {
             throw new BindRuntimeException(e.toString());
-
         } catch (SocketException e) {
 
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * CSVファイルに投稿された文を書き出すメソッド
+     *
+     * @throws Exception
+     */
+    private void writeCsv() throws Exception {
+        String filePath = "./src/main/resources/data/message.csv";
+        List<Message> list = ModelController.getAllMessage();
+
+        File file = new File(filePath);
+        if (!file.delete()) {
+            throw new IOException("存在しないファイルを編集しようとしました。");
+        }
+
+        try (OutputStream os = new FileOutputStream(new File(filePath))) {
+            StringBuffer buffer = new StringBuffer();
+            for (Message m : list) {
+                if (m.getText().contains("\n")) {
+                    m.setText(m.getText().replaceAll("\n", "<br>"));    //改行文字\nを<br>に変換する
+                }
+                buffer.append(m.getMessageID()).append(",");
+
+                String original = String.valueOf(m.getMessageID());
+
+                String result = CipherHelper.encrypt(original);
+
+                buffer.append(result);
+
+                buffer.append(",").append(m.getName()).append(",");
+                buffer.append(m.getTitle()).append(",").append(m.getText()).append(",").append(m.getDate()).append("\n");
+            }
+            os.write(buffer.toString().getBytes());
+            os.flush();
         }
     }
 }

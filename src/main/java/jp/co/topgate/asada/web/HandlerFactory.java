@@ -94,17 +94,17 @@ public class HandlerFactory {
             }
 
             if (isMatch) {
-                StringBuilder builder = new StringBuilder();
-                builder.append(FILE_PATH).append(urlPattern.get(s));
+                StringBuffer buffer = new StringBuffer();
+                buffer.append(FILE_PATH).append(urlPattern.get(s));
 
                 for (int i = i1; i < i2; i++) {
                     if (i == i1) {
-                        builder.append(s2[i]);
+                        buffer.append(s2[i]);
                     } else {
-                        builder.append("/").append(s2[i]);
+                        buffer.append("/").append(s2[i]);
                     }
                 }
-                return builder.toString();
+                return buffer.toString();
             }
         }
 

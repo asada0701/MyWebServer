@@ -18,7 +18,9 @@ public class ModelController {
     public ModelController(List<Message> messageList) {
         ModelController.messageList = messageList;
 
-        score = messageList.size() + 1;
+        if (messageList.size() > 0) {
+            score = messageList.get(messageList.size() - 1).getMessageID() + 1;
+        }
     }
 
     /**
@@ -68,15 +70,13 @@ public class ModelController {
      *
      * @param message
      */
-    public static void deleteMessage(Message message) {
+    public static void deleteMessage(Message message) throws Exception {
         if (message == null) {
             throw new NullPointerException();
         }
         for (int i = 0; i < messageList.size(); i++) {
             if (message.getMessageID() == messageList.get(i).getMessageID()) {
-                if (message.getPassword().equals(messageList.get(i).getPassword())) {
-                    messageList.remove(messageList.get(i));
-                }
+                messageList.remove(messageList.get(i));
             }
         }
     }

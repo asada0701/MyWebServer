@@ -27,19 +27,19 @@ public class WebAppHandler extends Handler {
 
         try {
             if (statusCode == ResponseMessage.OK) {
-
                 if ("POST".equals(requestLine.getMethod())) {
                     editHtml(new RequestMessage(bis, requestLine));
 
                 } else if ("GET".equals(requestLine.getMethod())) {
                     //index.htmlをGETされたときにデータを仕込む
                     he = new HtmlEditor(requestLine);
+
                     he.contribution(readCsv());
 
                     new ModelController(readCsv());
                 }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             statusCode = ResponseMessage.INTERNAL_SERVER_ERROR;
         }
     }
@@ -65,7 +65,16 @@ public class WebAppHandler extends Handler {
                 he.deleteInitialization();
             }
 
-            writeCsv();
+            try {
+                writeCsv();
+
+            } catch (IOException e) {
+                //入出力例外
+                System.out.println("");
+
+            } catch (Exception e) {
+                //IOException以外の例外は暗号(CipherHelperクラスで発生した例外)
+            }
 
         } catch (IOException e) {
 
@@ -77,7 +86,7 @@ public class WebAppHandler extends Handler {
      *
      * @param requestMessage リクエストメッセージクラスのオブジェクトを渡す
      */
-    private void editHtml(RequestMessage requestMessage) throws IOException {
+    private void editHtml(RequestMessage requestMessage) throws Exception {
         String param = requestMessage.findMessageBody("param");
         if (param != null && requestLine.getUri().startsWith("/program/board/")) {
             Message message;
@@ -119,17 +128,24 @@ public class WebAppHandler extends Handler {
                     //メッセージリストからメッセージオブジェクトを特定する。ユーザーオブジェクトの特定をする
                     //パスワードが一致した場合、削除する
 
-                    message = ModelController.findMessage(Integer.parseInt(requestMessage.findMessageBody("number")));
+                    int num = Integer.parseInt(requestMessage.findMessageBody("number"));
 
-                    if (message != null) {
+                    message = ModelController.findMessage(num);
+
+                    password = requestMessage.findMessageBody("password");
+
+                    if (message != null && password.equals(message.getPassword())) {
                         requestLine.setUri("/program/board/delete.html");
                         he.delete2(message);
                         ModelController.deleteMessage(message);
                         requestLine.setUri("/program/board/result.html");
                     } else {
                         requestLine.setUri("/program/board/delete.html");
+                        message = ModelController.findMessage(Integer.parseInt(requestMessage.findMessageBody("number")));
+                        he.delete1(message);
                         System.out.println("パスワードが異なる場合の処理");
                     }
+
                     break;
 
                 case "back":
@@ -142,7 +158,13 @@ public class WebAppHandler extends Handler {
         }
     }
 
-    private List<Message> readCsv() throws IOException {
+    /**
+     * CSVファイルから過去の投稿された文を読み出すメソッド
+     *
+     * @return 過去に投稿された文をメッセージクラスのListに格納して返す
+     * @throws IOException 読み出し中の例外
+     */
+    private List<Message> readCsv() throws Exception {
         String filePath = "./src/main/resources/data/message.csv";
         List<Message> list = new ArrayList<>();
 
@@ -154,7 +176,11 @@ public class WebAppHandler extends Handler {
                 if (s.length == 6) {
                     Message message = new Message();
                     message.setMessageID(Integer.parseInt(s[0]));
-                    message.setPassword(s[1]);
+
+                    String decryptedResult = CipherHelper.decrypt(s[1]);
+
+                    message.setPassword(decryptedResult);
+
                     message.setName(s[2]);
                     message.setTitle(s[3]);
                     message.setText(s[4]);
@@ -171,7 +197,12 @@ public class WebAppHandler extends Handler {
         return list;
     }
 
-    private void writeCsv() throws IOException {
+    /**
+     * CSVファイルに投稿された文を書き出すメソッド
+     *
+     * @throws IOException
+     */
+    private void writeCsv() throws Exception {
         String filePath = "./src/main/resources/data/message.csv";
         List<Message> list = ModelController.getAllMessage();
 
@@ -181,12 +212,23 @@ public class WebAppHandler extends Handler {
         }
 
         try (OutputStream os = new FileOutputStream(new File(filePath))) {
-            StringBuilder builder = new StringBuilder();
+            StringBuffer buffer = new StringBuffer();
             for (Message m : list) {
-                builder.append(m.getMessageID()).append(",").append(m.getPassword()).append(",").append(m.getName()).append(",");
-                builder.append(m.getTitle()).append(",").append(m.getText()).append(",").append(m.getDate()).append("\n");
+                if (m.getText().contains("\n")) {
+                    m.setText(m.getText().replaceAll("\n", "<br>"));    //改行文字\nを<br>に変換する
+                }
+                buffer.append(m.getMessageID()).append(",");
+
+                String original = String.valueOf(m.getMessageID());
+
+                String encrypedResult = CipherHelper.encrypt(original);
+
+                buffer.append(encrypedResult);
+
+                buffer.append(",").append(m.getName()).append(",");
+                buffer.append(m.getTitle()).append(",").append(m.getText()).append(",").append(m.getDate()).append("\n");
             }
-            os.write(builder.toString().getBytes());
+            os.write(buffer.toString().getBytes());
             os.flush();
         }
     }
