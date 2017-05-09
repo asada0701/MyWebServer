@@ -41,9 +41,9 @@ public class WebAppHandler extends Handler {
                     //index.htmlをGETされたときにデータを仕込む
                     he = new HtmlEditor(requestLine);
 
-                    he.contribution(readCsv());
+                    he.contribution(CsvWriter.read());
 
-                    new ModelController(readCsv());
+                    new ModelController(CsvWriter.read());
                 }
             }
         } catch (NoSuchPaddingException | InvalidAlgorithmParameterException | IllegalBlockSizeException |
@@ -77,7 +77,7 @@ public class WebAppHandler extends Handler {
                 he.searchInitialization();
                 he.deleteInitialization();
             }
-            writeCsv();
+            CsvWriter.write(ModelController.getAllMessage());
         } catch (NoSuchPaddingException | InvalidAlgorithmParameterException | IllegalBlockSizeException |
                 NoSuchAlgorithmException | BadPaddingException | InvalidKeyException e) {
 
@@ -166,90 +166,6 @@ public class WebAppHandler extends Handler {
                 default:
                     requestLine.setUri("/program/board/index.html");
             }
-        }
-    }
-
-    /**
-     * CSVファイルから過去の投稿された文を読み出すメソッド
-     *
-     * @return 過去に投稿された文をメッセージクラスのListに格納して返す
-     * @throws IOException 読み出し中の例外
-     */
-    private List<Message> readCsv() throws IOException, NoSuchPaddingException, InvalidAlgorithmParameterException,
-            NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
-        String filePath = "./src/main/resources/data/message.csv";
-        List<Message> list = new ArrayList<>();
-
-        try (BufferedReader br = new BufferedReader(new FileReader(new File(filePath)))) {
-            String str;
-            while ((str = br.readLine()) != null) {
-
-                String[] s = str.split(",");
-                if (s.length == 6) {
-                    Message message = new Message();
-                    message.setMessageID(Integer.parseInt(s[0]));
-
-                    String decryptedResult = CipherHelper.decrypt(s[1]);
-
-                    message.setPassword(decryptedResult);
-
-                    message.setName(s[2]);
-                    message.setTitle(s[3]);
-                    message.setText(s[4]);
-                    message.setDate(s[5]);
-
-                    list.add(message);
-                } else {
-                    throw new IOException("指定されたCSVが規定の形にそっていないため読み込めません。");
-                }
-            }
-        } catch (FileNotFoundException e) {
-            throw new FileNotFoundException("CSVファイルが見つかりません。");
-        }
-        return list;
-    }
-
-    /**
-     * CSVファイルに投稿された文を書き出すメソッド
-     *
-     * @throws IOException                        存在しないファイルを編集しようとした場合に発生する
-     * @throws NoSuchAlgorithmException           ある暗号アルゴリズムが現在の環境で使用できない場合発生する
-     * @throws NoSuchPaddingException             あるパディング・メカニズムが現在の環境で使用できない場合発生する
-     * @throws InvalidKeyException                無効な鍵に対する例外
-     * @throws IllegalBlockSizeException          提供されたデータの長さが暗号のブロック・サイズと一致しない場合発生する
-     * @throws BadPaddingException                データが適切にパディングされない場合に発生する(暗号キーと複合キーが同じかチェックすること
-     * @throws InvalidAlgorithmParameterException 無効なアルゴリズム・パラメータの例外
-     */
-    private void writeCsv() throws IOException, NoSuchPaddingException, InvalidAlgorithmParameterException,
-            NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
-        String filePath = "./src/main/resources/data/message.csv";
-        List<Message> list = ModelController.getAllMessage();
-
-        File file = new File(filePath);
-        if (!file.delete()) {
-            throw new IOException("存在しないファイルを編集しようとしました。");
-        }
-
-        try (OutputStream os = new FileOutputStream(new File(filePath))) {
-            StringBuffer buffer = new StringBuffer();
-            for (Message m : list) {
-
-                if (m.getText().contains("\n")) {
-                    m.setText(m.getText().replaceAll("\r\n", "<br>"));    //改行文字\nを<br>に変換する
-                }
-                buffer.append(m.getMessageID()).append(",");
-
-                String original = String.valueOf(m.getMessageID());
-
-                String result = CipherHelper.encrypt(original);
-
-                buffer.append(result);
-
-                buffer.append(",").append(m.getName()).append(",");
-                buffer.append(m.getTitle()).append(",").append(m.getText()).append(",").append(m.getDate()).append("\n");
-            }
-            os.write(buffer.toString().getBytes());
-            os.flush();
         }
     }
 }

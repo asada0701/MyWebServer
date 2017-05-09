@@ -1,7 +1,6 @@
 package jp.co.topgate.asada.web;
 
 import jp.co.topgate.asada.web.exception.BindRuntimeException;
-import jp.co.topgate.asada.web.model.Message;
 import jp.co.topgate.asada.web.model.ModelController;
 
 import javax.crypto.BadPaddingException;
@@ -15,7 +14,6 @@ import java.net.SocketException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.List;
 
 /**
  * サーバークラス
@@ -60,17 +58,18 @@ class Server extends Thread {
 
     /**
      * サーバーの緊急停止を行うメソッド、サーバーが通信中でも停止できる
+     * サーバーを停止する前に、データを保存する必要がある。
      *
      * @throws IOException サーバーソケットでエラーが発生しました
      */
     void endServer() throws IOException {
         try {
-            writeCsv();
+            CsvWriter.write(ModelController.getAllMessage());
         } catch (NoSuchPaddingException | InvalidAlgorithmParameterException | NoSuchAlgorithmException |
-                IllegalBlockSizeException | BadPaddingException | InvalidKeyException e) {
+                IllegalBlockSizeException | BadPaddingException | InvalidKeyException | IOException e) {
 
             throw new IOException("CSVファイル書き出し中に例外が発生しました。CSVファイルの中身を確認してください。");
-        } catch (RuntimeException | IOException e) {
+        } catch (RuntimeException e) {
             throw e;
         }
 
@@ -118,43 +117,5 @@ class Server extends Thread {
         }
     }
 
-    /**
-     * CSVファイルに投稿された文を書き出すメソッド
-     *
-     * @throws IOException                        存在しないファイルを編集しようとした場合に発生する
-     * @throws NoSuchAlgorithmException           ある暗号アルゴリズムが現在の環境で使用できない場合発生する
-     * @throws NoSuchPaddingException             あるパディング・メカニズムが現在の環境で使用できない場合発生する
-     * @throws InvalidKeyException                無効な鍵に対する例外
-     * @throws IllegalBlockSizeException          提供されたデータの長さが暗号のブロック・サイズと一致しない場合発生する
-     * @throws BadPaddingException                データが適切にパディングされない場合に発生する(暗号キーと複合キーが同じかチェックすること
-     * @throws InvalidAlgorithmParameterException 無効なアルゴリズム・パラメータの例外
-     */
-    private void writeCsv() throws IOException, NoSuchPaddingException, InvalidAlgorithmParameterException,
-            NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
-        String filePath = "./src/main/resources/data/message.csv";
-        List<Message> list = ModelController.getAllMessage();
 
-        File file = new File(filePath);
-        if (!file.delete()) {
-            throw new IOException("存在しないファイルを編集しようとしました。");
-        }
-
-        try (OutputStream os = new FileOutputStream(new File(filePath))) {
-            StringBuffer buffer = new StringBuffer();
-            for (Message m : list) {
-                buffer.append(m.getMessageID()).append(",");
-
-                String original = String.valueOf(m.getMessageID());
-
-                String result = CipherHelper.encrypt(original);
-
-                buffer.append(result);
-
-                buffer.append(",").append(m.getName()).append(",");
-                buffer.append(m.getTitle()).append(",").append(m.getText()).append(",").append(m.getDate()).append("\n");
-            }
-            os.write(buffer.toString().getBytes());
-            os.flush();
-        }
-    }
 }
