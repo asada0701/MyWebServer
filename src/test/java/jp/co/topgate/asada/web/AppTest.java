@@ -13,7 +13,6 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 public class AppTest {
-
     @Test
     public void サーバースタートテスト() throws Exception {
         Server server = new Server();

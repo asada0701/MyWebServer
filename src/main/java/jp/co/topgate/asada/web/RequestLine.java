@@ -19,7 +19,7 @@ class RequestLine {
     /**
      * リクエストラインを分割する
      */
-    private static final String REQUEST_LINE_DIVISION = " ";
+    private static final String REQUEST_LINE_SEPARATOR = " ";
 
     /**
      * リクエスト行の項目数
@@ -29,17 +29,17 @@ class RequestLine {
     /**
      * URIとクエリーを分割する
      */
-    private static final String URI_QUERY_DIVISION = "\\?";
+    private static final String URI_QUERY_SEPARATOR = "\\?";
 
     /**
      * URIのクエリーをクエリー毎に分割する
      */
-    private static final String URI_EACH_QUERY_DIVISION = "&";
+    private static final String URI_EACH_QUERY_SEPARATOR = "&";
 
     /**
      * クエリー名とクエリー値を分割する
      */
-    private static final String URI_QUERY_NAME_VALUE_DIVISION = "=";
+    private static final String URI_QUERY_NAME_VALUE_SEPARATOR = "=";
 
     /**
      * URIのクエリーの項目数
@@ -67,7 +67,7 @@ class RequestLine {
             if (str == null) {
                 throw new RequestParseException("BufferedReaderのreadLineメソッドの戻り値がnullだった");
             }
-            String[] requestLine = str.split(REQUEST_LINE_DIVISION);
+            String[] requestLine = str.split(REQUEST_LINE_SEPARATOR);
             if (requestLine.length != REQUEST_LINE_NUM_ITEMS) {
                 throw new RequestParseException("リクエストラインが不正なものだった:" + str);
             }
@@ -100,12 +100,12 @@ class RequestLine {
      * @throws RequestParseException クエリーに問題があった場合発生する
      */
     private void uriQueryParse() throws RequestParseException {
-        String[] s1 = uri.split(URI_QUERY_DIVISION);
+        String[] s1 = uri.split(URI_QUERY_SEPARATOR);
         uri = s1[0];
         if (s1.length > 1) {
-            String[] s2 = s1[1].split(URI_EACH_QUERY_DIVISION);
+            String[] s2 = s1[1].split(URI_EACH_QUERY_SEPARATOR);
             for (String aS2 : s2) {
-                String[] s3 = aS2.split(URI_QUERY_NAME_VALUE_DIVISION);
+                String[] s3 = aS2.split(URI_QUERY_NAME_VALUE_SEPARATOR);
                 if (s3.length == URI_QUERY_NUM_ITEMS) {
                     uriQuery.put(s3[0], s3[1]);
                 } else {

@@ -1,9 +1,11 @@
 package jp.co.topgate.asada.web;
 
 import jp.co.topgate.asada.web.exception.BindRuntimeException;
+import jp.co.topgate.asada.web.exception.EncryptionRuntimeException;
 import jp.co.topgate.asada.web.exception.ServerStateException;
 
 import java.io.IOException;
+import java.net.SocketException;
 import java.util.Scanner;
 
 /**
@@ -45,6 +47,10 @@ public class App {
             } while (!choices.equals(END_NUM));
 
         } catch (BindRuntimeException e) {
+            System.out.println(e.getMessage());
+            System.exit(1);
+
+        } catch (EncryptionRuntimeException e) {
             System.out.println(e.getMessage());
             System.exit(1);
 

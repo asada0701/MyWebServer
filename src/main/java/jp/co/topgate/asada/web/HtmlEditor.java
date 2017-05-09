@@ -3,7 +3,6 @@ package jp.co.topgate.asada.web;
 import jp.co.topgate.asada.web.model.Message;
 
 import java.io.*;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -118,7 +117,7 @@ class HtmlEditor {
     /**
      * 投稿した人で抽出するメソッド
      */
-    void search(ArrayList<Message> al) throws IOException {
+    void search(List<Message> al) throws IOException {
         path = Handler.getFilePath(requestLine.getUri());
         //search.htmlを初期化
         searchInitialization();
@@ -234,11 +233,6 @@ class HtmlEditor {
     }
 
     void indexInitialization() throws IOException {
-        File file = new File(indexPath);
-        if (!file.delete()) {
-            throw new IOException("存在しないファイルを編集しようとしました。");
-        }
-
         try (OutputStream os = new FileOutputStream(new File(indexPath))) {
             os.write(indexHtml.getBytes());
             os.flush();
@@ -246,11 +240,6 @@ class HtmlEditor {
     }
 
     void searchInitialization() throws IOException {
-        File file = new File(searchPath);
-        if (!file.delete()) {
-            throw new IOException("存在しないファイルを編集しようとしました。");
-        }
-
         try (OutputStream os = new FileOutputStream(new File(searchPath))) {
             os.write(searchHtml.getBytes());
             os.flush();
@@ -258,11 +247,6 @@ class HtmlEditor {
     }
 
     void deleteInitialization() throws IOException {
-        File file = new File(deletePath);
-        if (!file.delete()) {
-            throw new IOException("存在しないファイルを編集しようとしました。");
-        }
-
         try (OutputStream os = new FileOutputStream(new File(deletePath))) {
             os.write(deleteHtml.getBytes());
             os.flush();

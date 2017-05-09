@@ -10,7 +10,6 @@ import java.io.*;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -52,6 +51,7 @@ public class WebAppHandler extends Handler {
             throw new RuntimeException("CSVファイルに異常があります。");
 
         } catch (IOException e) {
+            //存在しないファイルを編集しようとしたか、ファイルの書き出し中に例外が発生した。
             statusCode = ResponseMessage.INTERNAL_SERVER_ERROR;
         }
     }
@@ -120,8 +120,8 @@ public class WebAppHandler extends Handler {
                     //メッセージリストからメッセージオブジェクトを特定して、ユーザーオブジェクトの特定をする
                     requestLine.setUri("/program/board/search.html");
 
-                    ArrayList<Message> al = ModelController.findMessageByID(Integer.parseInt(requestMessage.findMessageBody("number")));
-                    he.search(al);
+                    List<Message> list = ModelController.findSameNameMessage(Integer.parseInt(requestMessage.findMessageBody("number")));
+                    he.search(list);
                     break;
 
                 case "delete1":
@@ -140,23 +140,20 @@ public class WebAppHandler extends Handler {
                     //パスワードが一致した場合、削除する
 
                     int num = Integer.parseInt(requestMessage.findMessageBody("number"));
-
-                    message = ModelController.findMessage(num);
-
                     password = requestMessage.findMessageBody("password");
 
-                    if (message != null && password.equals(message.getPassword())) {
-                        requestLine.setUri("/program/board/delete.html");
-                        he.delete2(message);
-                        ModelController.deleteMessage(message);
+                    if (ModelController.deleteMessage(num, password)) {
+                        //削除成功
                         requestLine.setUri("/program/board/result.html");
+                        //message = ModelController.findMessage(Integer.parseInt(requestMessage.findMessageBody("number")));
+                        //he.delete2(message);
+
                     } else {
+                        //削除失敗
                         requestLine.setUri("/program/board/delete.html");
                         message = ModelController.findMessage(Integer.parseInt(requestMessage.findMessageBody("number")));
                         he.delete1(message);
-                        System.out.println("パスワードが異なる場合の処理");
                     }
-
                     break;
 
                 case "back":

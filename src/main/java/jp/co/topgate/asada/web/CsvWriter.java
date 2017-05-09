@@ -20,6 +20,11 @@ import java.util.List;
 class CsvWriter {
 
     /**
+     * CSVファイルのパス
+     */
+    private static final String filePath = "./src/main/resources/data/message.csv";
+
+    /**
      * CSVファイルから過去の投稿された文を読み出すメソッド
      *
      * @return 過去に投稿された文をメッセージクラスのListに格納して返す
@@ -33,7 +38,6 @@ class CsvWriter {
      */
     static List<Message> read() throws IOException, NoSuchPaddingException, InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
-        String filePath = "./src/main/resources/data/message.csv";
         List<Message> list = new ArrayList<>();
 
         try (BufferedReader br = new BufferedReader(new FileReader(new File(filePath)))) {
@@ -45,8 +49,8 @@ class CsvWriter {
                     Message message = new Message();
                     message.setMessageID(Integer.parseInt(s[0]));
 
+                    //複合
                     String decryptedResult = CipherHelper.decrypt(s[1]);
-
                     message.setPassword(decryptedResult);
 
                     message.setName(s[2]);
@@ -79,25 +83,18 @@ class CsvWriter {
      */
     static void write(List<Message> list) throws IOException, NoSuchPaddingException, InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
-        String filePath = "./src/main/resources/data/message.csv";
-
-        File file = new File(filePath);
-        if (!file.delete()) {
-            throw new IOException("存在しないファイルを編集しようとしました。");
-        }
 
         try (OutputStream os = new FileOutputStream(new File(filePath))) {
             StringBuffer buffer = new StringBuffer();
             for (Message m : list) {
                 buffer.append(m.getMessageID()).append(",");
 
-                String original = String.valueOf(m.getMessageID());
-
+                //暗号化
+                String original = String.valueOf(m.getPassword());
                 String result = CipherHelper.encrypt(original);
+                buffer.append(result).append(",");
 
-                buffer.append(result);
-
-                buffer.append(",").append(m.getName()).append(",");
+                buffer.append(m.getName()).append(",");
                 buffer.append(m.getTitle()).append(",").append(m.getText()).append(",").append(m.getDate()).append("\n");
             }
             os.write(buffer.toString().getBytes());

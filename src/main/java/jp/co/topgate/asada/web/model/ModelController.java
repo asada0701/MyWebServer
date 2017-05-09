@@ -5,21 +5,32 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Modelパッケージのクラス群を管理するクラス
+ * modelパッケージのクラス群を管理するクラス
  *
  * @author asada
  */
 public class ModelController {
 
+    /**
+     * 書き込まれたメッセージのリスト
+     */
     private static List<Message> messageList = new ArrayList<>();
 
-    private static int score = 1;
+    /**
+     *
+     */
+    private static int messageID = 1;
 
+    /**
+     * コンストクタ
+     *
+     * @param messageList
+     */
     public ModelController(List<Message> messageList) {
         ModelController.messageList = messageList;
 
         if (messageList.size() > 0) {
-            score = messageList.get(messageList.size() - 1).getMessageID() + 1;
+            messageID = messageList.get(messageList.size() - 1).getMessageID() + 1;
         }
     }
 
@@ -28,7 +39,7 @@ public class ModelController {
      */
     public static void addMessage(String name, String title, String text, String password) {
         Message message = new Message();
-        message.setMessageID(score);
+        message.setMessageID(messageID);
         message.setName(name);
         message.setTitle(title);
         message.setText(text);
@@ -36,13 +47,24 @@ public class ModelController {
         message.setDate(getNowDate());
         messageList.add(message);
 
-        score++;
+        messageID++;
     }
 
+    /**
+     * 全てのメッセージを返すメソッド
+     *
+     * @return このクラスがもつ、メッセージリストを返す
+     */
     public static List<Message> getAllMessage() {
         return messageList;
     }
 
+    /**
+     * 登録されているかメッセージを探すメソッド
+     *
+     * @param messageID 探したいメッセージのIDを渡す
+     * @return ターゲットのメッセージを返す
+     */
     public static Message findMessage(int messageID) {
         for (Message m : messageList) {
             if (m.getMessageID() == messageID) {
@@ -52,10 +74,19 @@ public class ModelController {
         return null;
     }
 
-    public static ArrayList<Message> findMessageByID(int messageID) {
-        ArrayList<Message> al = new ArrayList<>();
+    /**
+     * messageListの中のname属性が同じものを返す
+     *
+     * @param messageID 探したいメッセージのIDを渡す
+     * @return 見つからない場合はnull、見つかった場合はListで返す
+     */
+    public static List<Message> findSameNameMessage(int messageID) {
+        List<Message> al = new ArrayList<>();
 
         Message message = findMessage(messageID);
+        if (message == null) {
+            return null;
+        }
 
         for (Message m : messageList) {
             if (message.getName().equals(m.getName())) {
@@ -68,22 +99,46 @@ public class ModelController {
     /**
      * メッセージリストからメッセージを削除する
      *
-     * @param message
+     * @param messageID 削除したいメッセージのID
+     * @param password  削除したいメッセージのPW
+     * @return 削除に成功するとtrueを返す
      */
-    public static void deleteMessage(Message message) {
-        if (message != null) {
-            for (int i = 0; i < messageList.size(); i++) {
-                if (message.getMessageID() == messageList.get(i).getMessageID()) {
-                    messageList.remove(messageList.get(i));
-                }
+    public static boolean deleteMessage(int messageID, String password) {
+        if (password == null) {
+            return false;
+        }
+        for (Message m : messageList) {
+            if (messageID == m.getMessageID() && password.equals(m.getPassword())) {
+                messageList.remove(m);
+                return true;
             }
         }
+        return false;
     }
 
+    /**
+     * 現在の日付をフォーマットして文字列で返す
+     *
+     * @return （例)2017/5/5 17:20
+     */
     private static String getNowDate() {
         LocalDateTime ldt = LocalDateTime.now();
         String s = String.valueOf(ldt.getYear()) + "/" + ldt.getMonthValue() + "/" + ldt.getDayOfMonth() +
                 " " + ldt.getHour() + ":" + ldt.getMinute();
         return s;
+    }
+
+    /**
+     * テスト用、メッセージIDのゲッター
+     */
+    static int getMessageID() {
+        return messageID;
+    }
+
+    /**
+     * テスト用、現在格納しているメッセージの総数を返す
+     */
+    static int size() {
+        return messageList.size();
     }
 }

@@ -1,6 +1,7 @@
 package jp.co.topgate.asada.web;
 
 import jp.co.topgate.asada.web.exception.BindRuntimeException;
+import jp.co.topgate.asada.web.exception.EncryptionRuntimeException;
 import jp.co.topgate.asada.web.model.ModelController;
 
 import javax.crypto.BadPaddingException;
@@ -63,29 +64,18 @@ class Server extends Thread {
      * @throws IOException サーバーソケットでエラーが発生しました
      */
     void endServer() throws IOException {
-        try {
-            CsvWriter.write(ModelController.getAllMessage());
-        } catch (NoSuchPaddingException | InvalidAlgorithmParameterException | NoSuchAlgorithmException |
-                IllegalBlockSizeException | BadPaddingException | InvalidKeyException | IOException e) {
-
-            throw new IOException("CSVファイル書き出し中に例外が発生しました。CSVファイルの中身を確認してください。");
-        } catch (RuntimeException e) {
-            throw e;
-        }
-
         if (socket != null) {
             socket.close();
         }
         serverSocket.close();
-
-        serverSocket = null;
     }
 
     /**
      * Threadクラスのrunメソッドのオーバーライドメソッド
      *
-     * @throws BindRuntimeException ポートが使用中であるが、要求されたローカル・アドレスの割り当てに失敗しました
-     * @throws RuntimeException     ソケットの入出力でエラーが発生しました
+     * @throws BindRuntimeException       ポートが使用中であるが、要求されたローカル・アドレスの割り当てに失敗しました
+     * @throws EncryptionRuntimeException 暗号化、複合中の例外が発生した
+     * @throws RuntimeException           ソケットの入出力でエラーが発生しました
      */
     public void run() {
         try {
@@ -110,12 +100,17 @@ class Server extends Thread {
             throw new BindRuntimeException(e.toString());
 
         } catch (SocketException e) {
-            //endServerメソッドが呼ばれると、ServerSocket.accept()メソッドで発生する例外
 
         } catch (RuntimeException | IOException e) {
+            try {
+                CsvWriter.write(ModelController.getAllMessage());
+
+            } catch (NoSuchPaddingException | InvalidAlgorithmParameterException | NoSuchAlgorithmException |
+                    IllegalBlockSizeException | BadPaddingException | InvalidKeyException | IOException e2) {
+
+                throw new EncryptionRuntimeException(e2.toString());
+            }
             throw new RuntimeException(e);
         }
     }
-
-
 }
