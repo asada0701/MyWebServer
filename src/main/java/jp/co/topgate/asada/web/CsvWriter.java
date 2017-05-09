@@ -22,7 +22,7 @@ class CsvWriter {
     /**
      * CSVファイルのパス
      */
-    private static final String filePath = "./src/main/resources/data/message.csv";
+    private static String filePath = "./src/main/resources/data/message.csv";
 
     /**
      * CSVファイルから過去の投稿された文を読み出すメソッド
@@ -100,5 +100,12 @@ class CsvWriter {
             os.write(buffer.toString().getBytes());
             os.flush();
         }
+    }
+
+    /**
+     * テスト用ファイルパスのセッター
+     */
+    static void setFilePath(String path) {
+        filePath = path;
     }
 }
