@@ -96,7 +96,7 @@ class Server extends Thread {
                 BufferedInputStream bis = new BufferedInputStream(socket.getInputStream());
                 bis.mark(bis.available());
 
-                Handler handler = HandlerFactory.getHandler(bis);
+                Handler handler = Handler.getHandler(bis);
 
                 bis.reset();
 
@@ -112,7 +112,7 @@ class Server extends Thread {
 
         } catch (SocketException e) {
             //endServerメソッドが呼ばれると、ServerSocket.accept()メソッドで発生する例外
-            
+
         } catch (RuntimeException | IOException e) {
             throw new RuntimeException(e);
         }

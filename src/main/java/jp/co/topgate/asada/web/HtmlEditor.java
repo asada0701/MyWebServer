@@ -25,7 +25,7 @@ class HtmlEditor {
 
     HtmlEditor(RequestLine requestLine) throws IOException {
         this.requestLine = requestLine;
-        path = HandlerFactory.getFilePath(requestLine.getUri());
+        path = Handler.getFilePath(requestLine.getUri());
 
         indexHtml = getHtml(indexPath);
         searchHtml = getHtml(searchPath);
@@ -119,7 +119,7 @@ class HtmlEditor {
      * 投稿した人で抽出するメソッド
      */
     void search(ArrayList<Message> al) throws IOException {
-        path = HandlerFactory.getFilePath(requestLine.getUri());
+        path = Handler.getFilePath(requestLine.getUri());
         //search.htmlを初期化
         searchInitialization();
 
@@ -154,7 +154,7 @@ class HtmlEditor {
     }
 
     void delete1(Message message) throws IOException {
-        path = HandlerFactory.getFilePath(requestLine.getUri());
+        path = Handler.getFilePath(requestLine.getUri());
         deleteInitialization();
 
         try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {

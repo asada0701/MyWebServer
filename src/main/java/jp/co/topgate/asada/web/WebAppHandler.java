@@ -67,7 +67,7 @@ public class WebAppHandler extends Handler {
         try {
             String path = "";
             if (requestLine != null) {
-                path = HandlerFactory.getFilePath(requestLine.getUri());
+                path = Handler.getFilePath(requestLine.getUri());
             }
             new ResponseMessage(os, statusCode, path);
 

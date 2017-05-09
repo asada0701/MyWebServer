@@ -13,7 +13,7 @@ public class StaticHandler extends Handler {
         try {
             String path = "";
             if (requestLine != null) {
-                path = HandlerFactory.getFilePath(requestLine.getUri());
+                path = Handler.getFilePath(requestLine.getUri());
             }
             new ResponseMessage(os, statusCode, path);
         } catch (IOException e) {
