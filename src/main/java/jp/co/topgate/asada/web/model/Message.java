@@ -1,7 +1,9 @@
 package jp.co.topgate.asada.web.model;
 
 /**
- * Created by yusuke-pc on 2017/05/02.
+ * 掲示板に投稿されたメッセージのオブジェクト
+ *
+ * @author asada
  */
 public class Message {
     int messageID;

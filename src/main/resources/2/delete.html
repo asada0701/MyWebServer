@@ -10,6 +10,7 @@
 <center>
     <div id="header">
         <h1>掲示板-LightBoard</h1>
+        <a href="./caution.html" target="_blank">注意事項を読む</a>
     </div>
     <div id="log">
         <h2>削除するメッセージ</h2>
@@ -27,14 +28,15 @@
         <p>投稿した時に入力したパスワードを入力してください。</p>
         <form action="/program/board/" method="post">
             <p>
-                パスワード<input type="password" name="pw" size="10" required>
+                パスワード<input type="password" name="password" size="10" required>
             </p>
+            <input type="hidden" name="number" value="">
             <input type="hidden" name="param" value="delete2">
             <input type="submit" value="削除する">
         </form>
     </div>
     <div id="back">
-        <form action="/program/board/" method="post">
+        <form action="/program/board/" method="get">
             <input type="hidden" name="param" value="back">
             <input type="submit" value="戻る">
         </form>

@@ -1,5 +1,6 @@
 package jp.co.topgate.asada.web;
 
+import com.google.common.base.Strings;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 
 import java.io.BufferedInputStream;
@@ -17,11 +18,11 @@ import java.util.Map;
  *
  * @author asada
  */
-public class RequestMessage {
+class RequestMessage {
     /**
      * ヘッダーフィールドのフィールド名とフィールド値を分割する（その後のスペースは自由のため注意）
      */
-    private static final String HEADER_FIELD_NAME_VALUE_DIVISION = ":";
+    private static final String HEADER_FIELD_NAME_VALUE_SEPARATOR = ":";
 
     /**
      * ヘッダーフィールドの項目数
@@ -31,12 +32,12 @@ public class RequestMessage {
     /**
      * メッセージボディのクエリーをクエリー毎に分割する
      */
-    private static final String MESSAGE_BODY_EACH_QUERY_DIVISION = "&";
+    private static final String MESSAGE_BODY_EACH_QUERY_SEPARATOR = "&";
 
     /**
      * メッセージボディのイコール
      */
-    private static final String MESSAGE_BODY_NAME_VALUE_DIVISION = "=";
+    private static final String MESSAGE_BODY_NAME_VALUE_SEPARATOR = "=";
 
     /**
      * メッセージボディの項目数
@@ -52,7 +53,7 @@ public class RequestMessage {
      * @param bis サーバーソケットのInputStream
      * @throws RequestParseException パースに失敗した場合に投げられる
      */
-    public RequestMessage(BufferedInputStream bis, RequestLine rl) throws RequestParseException {
+    RequestMessage(BufferedInputStream bis, RequestLine rl) throws RequestParseException {
         if (bis == null || rl == null) {
             throw new RequestParseException("引数のどちらかがnullだった");
         }
@@ -65,14 +66,15 @@ public class RequestMessage {
             }
 
             //ヘッダーフィールドの処理
-            while ((str = br.readLine()) != null && !str.equals("")) {
-                String[] header = str.split(HEADER_FIELD_NAME_VALUE_DIVISION);
+            while (!Strings.isNullOrEmpty(str = br.readLine())) {
+
+                String[] header = str.split(HEADER_FIELD_NAME_VALUE_SEPARATOR);
                 if (header.length == HEADER_FIELD_NUM_ITEMS) {
                     header[1] = header[1].trim();
                     headerFieldUri.put(header[0], header[1]);
                 } else if (header.length > HEADER_FIELD_NUM_ITEMS) {
                     header[1] = header[1].trim();
-                    headerFieldUri.put(header[0], header[1] + HEADER_FIELD_NAME_VALUE_DIVISION + header[2]);
+                    headerFieldUri.put(header[0], header[1] + HEADER_FIELD_NAME_VALUE_SEPARATOR + header[2]);
                 } else {
                     throw new RequestParseException("ヘッダーフィールドが不正なものだった:" + str);
                 }
@@ -80,11 +82,7 @@ public class RequestMessage {
 
             //POSTの場合のみ、メッセージボディの処理
             if ("POST".equals(rl.getMethod())) {
-                try {
-                    messageBodyParse(br);
-                } catch (RequestParseException e) {
-                    throw e;
-                }
+                messageBodyParse(br);
             }
         } catch (IOException e) {
             throw new RequestParseException("BufferedReaderで発生した例外:" + e.toString());
@@ -110,18 +108,17 @@ public class RequestMessage {
             int contentLength = Integer.parseInt(contentLengthS);
             if (0 < contentLength) {
                 char[] c = new char[contentLength];
-                br.read(c);
+                int i = br.read(c);
                 str = new String(c);
             }
             if (str == null) {
                 throw new RequestParseException("POSTなのにメッセージボディが空だった");
             }
             str = URLDecoder.decode(str, "UTF-8");
-            String[] s1 = str.split(MESSAGE_BODY_EACH_QUERY_DIVISION);
+            String[] s1 = str.split(MESSAGE_BODY_EACH_QUERY_SEPARATOR);
             for (String aS1 : s1) {
-                String[] s2 = aS1.split(MESSAGE_BODY_NAME_VALUE_DIVISION);
+                String[] s2 = aS1.split(MESSAGE_BODY_NAME_VALUE_SEPARATOR);
                 if (s2.length == MESSAGE_BODY_NUM_ITEMS) {
-                    //String[] s3 = s2[1].split("\n");
                     messageBody.put(s2[0], s2[1]);
                 } else {
                     throw new RequestParseException("リクエストのメッセージボディが不正なものだった:" + str);
@@ -136,7 +133,7 @@ public class RequestMessage {
      * @param fieldName 探したいヘッダ名
      * @return ヘッダ値を返す。ヘッダーフィールドに含まれていなかった場合はNullを返す
      */
-    public String findHeaderByName(String fieldName) {
+    String findHeaderByName(String fieldName) {
         if (fieldName != null) {
             return headerFieldUri.get(fieldName);
         } else {
@@ -150,7 +147,7 @@ public class RequestMessage {
      * @param key 探したいQuery名
      * @return Query値を返す。URIに含まれていなかった場合はNullを返す
      */
-    public String findMessageBody(String key) {
+    String findMessageBody(String key) {
         if (key != null) {
             return messageBody.get(key);
         } else {

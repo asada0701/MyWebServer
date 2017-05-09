@@ -15,11 +15,11 @@ import java.util.Map;
  *
  * @author asada
  */
-public class RequestLine {
+class RequestLine {
     /**
      * リクエストラインを分割する
      */
-    private static final String REQUEST_LINE_DIVISION = " ";
+    private static final String REQUEST_LINE_SEPARATOR = " ";
 
     /**
      * リクエスト行の項目数
@@ -29,17 +29,17 @@ public class RequestLine {
     /**
      * URIとクエリーを分割する
      */
-    private static final String URI_QUERY_DIVISION = "\\?";
+    private static final String URI_QUERY_SEPARATOR = "\\?";
 
     /**
      * URIのクエリーをクエリー毎に分割する
      */
-    private static final String URI_EACH_QUERY_DIVISION = "&";
+    private static final String URI_EACH_QUERY_SEPARATOR = "&";
 
     /**
      * クエリー名とクエリー値を分割する
      */
-    private static final String URI_QUERY_NAME_VALUE_DIVISION = "=";
+    private static final String URI_QUERY_NAME_VALUE_SEPARATOR = "=";
 
     /**
      * URIのクエリーの項目数
@@ -57,7 +57,7 @@ public class RequestLine {
      * @param bis サーバーソケットのInputStream
      * @throws RequestParseException パースに失敗した場合に投げられる
      */
-    public RequestLine(BufferedInputStream bis) throws RequestParseException {
+    RequestLine(BufferedInputStream bis) throws RequestParseException {
         if (bis == null) {
             throw new RequestParseException("引数がnullだった");
         }
@@ -67,7 +67,7 @@ public class RequestLine {
             if (str == null) {
                 throw new RequestParseException("BufferedReaderのreadLineメソッドの戻り値がnullだった");
             }
-            String[] requestLine = str.split(REQUEST_LINE_DIVISION);
+            String[] requestLine = str.split(REQUEST_LINE_SEPARATOR);
             if (requestLine.length != REQUEST_LINE_NUM_ITEMS) {
                 throw new RequestParseException("リクエストラインが不正なものだった:" + str);
             }
@@ -100,12 +100,12 @@ public class RequestLine {
      * @throws RequestParseException クエリーに問題があった場合発生する
      */
     private void uriQueryParse() throws RequestParseException {
-        String[] s1 = uri.split(URI_QUERY_DIVISION);
+        String[] s1 = uri.split(URI_QUERY_SEPARATOR);
         uri = s1[0];
         if (s1.length > 1) {
-            String[] s2 = s1[1].split(URI_EACH_QUERY_DIVISION);
+            String[] s2 = s1[1].split(URI_EACH_QUERY_SEPARATOR);
             for (String aS2 : s2) {
-                String[] s3 = aS2.split(URI_QUERY_NAME_VALUE_DIVISION);
+                String[] s3 = aS2.split(URI_QUERY_NAME_VALUE_SEPARATOR);
                 if (s3.length == URI_QUERY_NUM_ITEMS) {
                     uriQuery.put(s3[0], s3[1]);
                 } else {
@@ -120,7 +120,7 @@ public class RequestLine {
      *
      * @return HTTPメソッドを返す
      */
-    public String getMethod() {
+    String getMethod() {
         return method;
     }
 
@@ -129,17 +129,17 @@ public class RequestLine {
      *
      * @return URIを返す
      */
-    public String getUri() {
+    String getUri() {
         return uri;
     }
 
     /**
      * リクエストメッセージURIに含まれていたQuery名を元にQuery値を返す
      *
-     * @param name 　探したいQuery名
+     * @param name 探したいQuery名
      * @return Query値を返す。URIに含まれていなかった場合はNullを返す
      */
-    public String findUriQuery(String name) {
+    String findUriQuery(String name) {
         if (name != null) {
             return uriQuery.get(name);
         } else {
@@ -152,11 +152,11 @@ public class RequestLine {
      *
      * @return プロトコルバージョンを返す
      */
-    public String getProtocolVersion() {
+    String getProtocolVersion() {
         return protocolVersion;
     }
 
-    public void setUri(String uri) {
+    void setUri(String uri) {
         if (uri != null) {
             this.uri = uri;
         }
