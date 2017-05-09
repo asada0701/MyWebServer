@@ -8,12 +8,31 @@ import java.util.Map;
  *
  * @author asada
  */
-public class ContentType {
+class ContentType {
 
     /**
-     * ファイル拡張子とコンテンツタイプのハッシュマップ
+     * fileTypeマップになかった拡張子のコンテンツタイプ
+     */
+    static final String defaultFileType = "application/octet-stream";
+
+    /**
+     * ファイル拡張子とコンテンツタイプのマップ
      */
     private static Map<String, String> fileType = new HashMap<>();
+
+    static {
+        fileType.put("htm", "text/html; charset=UTF-8");
+        fileType.put("html", "text/html; charset=UTF-8");
+        fileType.put("css", "text/css");
+        fileType.put("js", "application/javascript");
+
+        fileType.put("txt", "text/plain");
+
+        fileType.put("jpg", "image/jpg");
+        fileType.put("jpeg", "image/jpeg");
+        fileType.put("png", "image/png");
+        fileType.put("gif", "image/gif");
+    }
 
     /**
      * 指定されたファイルの拡張子
@@ -26,25 +45,13 @@ public class ContentType {
      *
      * @param filePath リクエストメッセージで指定されたファイルのパス
      */
-    public ContentType(String filePath) {
-
-        fileType.put("htm", "text/html; charset=UTF-8");
-        fileType.put("html", "text/html; charset=UTF-8");
-        fileType.put("css", "text/css");
-        fileType.put("js", "application/javascript");
-
-        fileType.put("txt", "text/plain");
-
-        fileType.put("jpg", "image/jpg");
-        fileType.put("jpeg", "image/jpeg");
-        fileType.put("png", "image/png");
-        fileType.put("gif", "image/gif");
-
-        if (filePath != null) {
-            for (String key : fileType.keySet()) {
-                if (filePath.endsWith(key)) {
-                    extension = key;
-                }
+    ContentType(String filePath) throws NullPointerException {
+        if (filePath == null) {
+            throw new NullPointerException("ContentTypeのコンストラクでnullを渡した。");
+        }
+        for (String key : fileType.keySet()) {
+            if (filePath.endsWith(key)) {
+                extension = key;
             }
         }
     }
@@ -54,7 +61,7 @@ public class ContentType {
      *
      * @return コンテンツタイプを返す
      */
-    public String getContentType() {
-        return fileType.getOrDefault(extension, "application/octet-stream");
+    String getContentType() {
+        return fileType.getOrDefault(extension, defaultFileType);
     }
 }

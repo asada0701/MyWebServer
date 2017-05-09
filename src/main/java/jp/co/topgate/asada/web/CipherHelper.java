@@ -19,6 +19,8 @@ import java.util.Base64;
 class CipherHelper {
     /**
      * 暗号化方式「AES(Advanced Encryption Standard)」
+     * AES=高度な暗号化標準
+     * 共通鍵暗号方式
      */
     private static final String algorithm = "AES";
 
@@ -36,6 +38,7 @@ class CipherHelper {
 
     /**
      * 暗号化メソッド
+     * Base64(文字列エンコード)
      *
      * @param original 暗号化したい文字
      * @return 暗号化された文字
@@ -56,10 +59,10 @@ class CipherHelper {
     }
 
     /**
-     * 複合化メソッド
+     * 複合メソッド
      *
-     * @param encrypt 複合化したい文字
-     * @return 複合化された文字
+     * @param encrypt 複合したい文字
+     * @return 複合された文字
      * @throws NoSuchAlgorithmException           ある暗号アルゴリズムが現在の環境で使用できない場合発生する
      * @throws NoSuchPaddingException             あるパディング・メカニズムが現在の環境で使用できない場合発生する
      * @throws InvalidKeyException                無効な鍵に対する例外
@@ -77,13 +80,28 @@ class CipherHelper {
 
     /**
      * encryptメソッドとdecryptメソッドの共通部分
+     * IvParameterSpecのコンストラクは初期化ベクトルを返す。
+     * 初期化ベクトルとは、、
+     * ①ターゲットの文字列を、あるバイト数毎に分解する。
+     * ②分解したものを一つずつ、暗号化キーを使って、暗号化する
+     * このとき前のブロックの暗号化したデータが次のブロックの暗号化に使われる。
+     * 一番最初のブロックには前のブロックの暗号化データがないので、初期化ベクトルを用意する。
+     *
+     * @param source    対象となるバイト列
+     * @param isEncrypt trueの場合、暗号化。falseの場合、複合。
      */
     private static byte[] cipher(byte[] source, boolean isEncrypt) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException,
             IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
 
+        //秘密鍵の構築
         SecretKeySpec secretKeySpec = new SecretKeySpec(secretKey.getBytes(), algorithm);
+
+        //初期化ベクトルを返す。
         IvParameterSpec iv = new IvParameterSpec(initializationVector.getBytes());
+
+        //Cipher.getInstanceメソッドは指定された変換を実装するCipherオブジェクトを返す。
         Cipher cipher = Cipher.getInstance(String.format(FORMAT_OF_TRANSFORMATION, secretKeySpec.getAlgorithm()));
+
         if (isEncrypt) {
             cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, iv);
         } else {

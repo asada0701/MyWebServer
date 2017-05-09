@@ -11,7 +11,7 @@ import java.util.Map;
  *
  * @author asada
  */
-public class HandlerFactory {
+class HandlerFactory {
     /**
      * リソースファイルのパス
      */
@@ -71,7 +71,7 @@ public class HandlerFactory {
      * @param uri リクエストラインクラスのURI
      * @retur リクエストされたファイルのパス
      */
-    public static String getFilePath(String uri) {
+    static String getFilePath(String uri) {
         if (uri == null) {
             return null;
         }

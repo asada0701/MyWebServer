@@ -1,5 +1,6 @@
 package jp.co.topgate.asada.web;
 
+import com.google.common.base.Strings;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 
 import java.io.BufferedInputStream;
@@ -65,7 +66,8 @@ class RequestMessage {
             }
 
             //ヘッダーフィールドの処理
-            while ((str = br.readLine()) != null && !str.equals("")) {
+            while (!Strings.isNullOrEmpty(str = br.readLine())) {
+
                 String[] header = str.split(HEADER_FIELD_NAME_VALUE_DIVISION);
                 if (header.length == HEADER_FIELD_NUM_ITEMS) {
                     header[1] = header[1].trim();
@@ -117,7 +119,6 @@ class RequestMessage {
             for (String aS1 : s1) {
                 String[] s2 = aS1.split(MESSAGE_BODY_NAME_VALUE_DIVISION);
                 if (s2.length == MESSAGE_BODY_NUM_ITEMS) {
-                    //String[] s3 = s2[1].split("\n");
                     messageBody.put(s2[0], s2[1]);
                 } else {
                     throw new RequestParseException("リクエストのメッセージボディが不正なものだった:" + str);

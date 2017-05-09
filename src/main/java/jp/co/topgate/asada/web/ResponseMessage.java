@@ -11,7 +11,7 @@ import java.util.Map;
  *
  * @author asada
  */
-public class ResponseMessage {
+class ResponseMessage {
     /**
      * ヘッダーフィールドのコロン
      */
@@ -80,7 +80,7 @@ public class ResponseMessage {
      * @param statusCode レスポンスメッセージのステータスコード
      * @param filePath   リソースファイルのパス
      */
-    public ResponseMessage(OutputStream os, int statusCode, String filePath) throws IOException {
+    ResponseMessage(OutputStream os, int statusCode, String filePath) throws IOException {
         if (os == null || filePath == null) {
             throw new IOException();
         }
@@ -90,8 +90,14 @@ public class ResponseMessage {
         buffer.append("\n");
 
         if (statusCode == OK) {
-            ContentType ct = new ContentType(filePath);
-            addHeader("Content-Type", ct.getContentType());
+            try {
+                ContentType ct = new ContentType(filePath);
+                addHeader("Content-Type", ct.getContentType());
+
+            } catch (NullPointerException e) {
+                addHeader("Content-Type", ContentType.defaultFileType);
+            }
+
         } else {
             addHeader("Content-Type", "text/html; charset=UTF-8");
         }
@@ -160,7 +166,7 @@ public class ResponseMessage {
     /**
      * プロトコルバージョンの設定をするメソッド
      */
-    public void setProtocolVersion(String protocolVersion) {
+    void setProtocolVersion(String protocolVersion) {
         if (protocolVersion != null) {
             this.protocolVersion = protocolVersion;
         }
@@ -169,7 +175,7 @@ public class ResponseMessage {
     /**
      * ヘッダーフィールドにヘッダ名とヘッダ値を追加するメソッド
      */
-    public void addHeader(String name, String value) {
+    void addHeader(String name, String value) {
         if (name != null && value != null) {
             headerField.add(name + HEADER_FIELD_COLON + value);
         }
