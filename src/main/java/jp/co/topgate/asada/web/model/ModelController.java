@@ -22,11 +22,18 @@ public class ModelController {
     private static int messageID = 1;
 
     /**
-     * コンストクタ
+     * コンストラクタ
+     * インスタンス化禁止
+     */
+    private ModelController() {
+    }
+
+    /**
+     * messageListに初期値を与える
      *
      * @param messageList CSVファイルから読み込んだデータ
      */
-    public ModelController(List<Message> messageList) {
+    public static void setMessageList(List<Message> messageList) {
         ModelController.messageList = messageList;
 
         if (messageList.size() > 0) {

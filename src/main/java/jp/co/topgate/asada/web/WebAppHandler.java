@@ -1,18 +1,10 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.exception.CsvRuntimeException;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 import jp.co.topgate.asada.web.model.Message;
 import jp.co.topgate.asada.web.model.ModelController;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import java.io.*;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.List;
 
 /**
  * WebAppの処理を行うハンドラークラス
@@ -35,17 +27,12 @@ public class WebAppHandler extends Handler {
         try {
             if (statusCode == ResponseMessage.OK) {
                 if ("POST".equals(requestLine.getMethod())) {
-                    doPost(new RequestMessage(bis, requestLine));   //リクエストメッセージのパース
+                    //リクエストメッセージのパース
+                    doPost(new RequestMessage(bis, requestLine));
 
                 } else if ("GET".equals(requestLine.getMethod())) {
-                    //index.htmlをGETされたときにデータを仕込む
-                    he = new HtmlEditor(requestLine);
-
-                    List<Message> list = null;
-
-                    he.contribution(list);
-
-                    new ModelController(list);
+                    //index.htmlのGETの場合はデータを入れる
+                    new HtmlEditor().contribution();
                 }
             }
         } catch (RequestParseException e) {
@@ -65,7 +52,7 @@ public class WebAppHandler extends Handler {
         String param = requestMessage.findMessageBody("param");
         if (param != null && requestLine.getUri().startsWith("/program/board/")) {
             Message message;
-            he = new HtmlEditor(requestLine);
+            he = new HtmlEditor();
 
             switch (param) {
                 case "contribution":
@@ -76,16 +63,13 @@ public class WebAppHandler extends Handler {
 
                     ModelController.addMessage(name, title, text, password);
 
-                    he.contribution(ModelController.getAllMessage());
+                    he.contribution();
                     break;
 
                 case "search":
                     //投稿した人で絞り込む
                     //メッセージリストからメッセージオブジェクトを特定して、ユーザーオブジェクトの特定をする
-                    requestLine.setUri("/program/board/search.html");
-
-                    List<Message> list = ModelController.findSameNameMessage(Integer.parseInt(requestMessage.findMessageBody("number")));
-                    he.search(list);
+                    he.search(Integer.parseInt(requestMessage.findMessageBody("number")));
                     break;
 
                 case "delete1":
@@ -93,9 +77,8 @@ public class WebAppHandler extends Handler {
                     //メッセージリストからメッセージオブジェクトを特定する。
                     //delete.htmlにメッセージを書いて渡す。
 
-                    requestLine.setUri("/program/board/delete.html");
                     message = ModelController.findMessage(Integer.parseInt(requestMessage.findMessageBody("number")));
-                    he.delete1(message);
+                    he.delete(message);
                     break;
 
                 case "delete2":
@@ -112,9 +95,8 @@ public class WebAppHandler extends Handler {
 
                     } else {
                         //削除失敗
-                        requestLine.setUri("/program/board/delete.html");
                         message = ModelController.findMessage(Integer.parseInt(requestMessage.findMessageBody("number")));
-                        he.delete1(message);
+                        he.delete(message);
                     }
                     break;
 
@@ -145,9 +127,7 @@ public class WebAppHandler extends Handler {
 
             if (he != null) {
                 //htmlファイルの初期化
-                he.indexInitialization();
-                he.searchInitialization();
-                he.deleteInitialization();
+                he.allInitialization();
             }
         } catch (IOException e) {
             /*

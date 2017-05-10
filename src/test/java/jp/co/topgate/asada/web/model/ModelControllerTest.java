@@ -27,7 +27,7 @@ public class ModelControllerTest {
         m.setDate("2017/5/9 16:34");
         list.add(m);
 
-        new ModelController(list);
+        ModelController.setMessageList(list);
 
         assertThat(ModelController.size(), is(1));
 

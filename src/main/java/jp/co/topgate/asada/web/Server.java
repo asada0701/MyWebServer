@@ -5,17 +5,11 @@ import jp.co.topgate.asada.web.exception.CipherRuntimeException;
 import jp.co.topgate.asada.web.exception.CsvRuntimeException;
 import jp.co.topgate.asada.web.model.ModelController;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import java.io.*;
 import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 
 /**
  * サーバークラス
@@ -43,18 +37,8 @@ class Server extends Thread {
      * @throws CipherRuntimeException 読み込んだデータの複合に失敗した
      */
     void startServer() throws CsvRuntimeException, CipherRuntimeException {
-        try {
-            //CSVファイル読み込み
-            new ModelController(CsvWriter.read());
+        ModelController.setMessageList(CsvWriter.read());   //CSVファイル読み込み
 
-        } catch (IOException e) {
-            throw new CsvRuntimeException();
-
-        } catch (NoSuchPaddingException | InvalidAlgorithmParameterException | IllegalBlockSizeException |
-                NoSuchAlgorithmException | InvalidKeyException | BadPaddingException e) {
-
-            throw new CipherRuntimeException(e.toString());
-        }
         this.start();
     }
 
@@ -79,7 +63,7 @@ class Server extends Thread {
      *
      * @throws IOException            サーバーソケットでエラーが発生しました
      * @throws CsvRuntimeException    CSVファイルの読み込み中か、読み込む段階で例外が発生した
-     * @throws CipherRuntimeException 読み込んだデータの複合に失敗した
+     * @throws CipherRuntimeException 読み込んだデータの復号に失敗した
      */
     void endServer() throws IOException, CsvRuntimeException, CipherRuntimeException {
         if (socket != null) {
@@ -87,18 +71,7 @@ class Server extends Thread {
         }
         serverSocket.close();
 
-        try {
-            //CSVファイルに書き込む
-            CsvWriter.write(ModelController.getAllMessage());
-
-        } catch (IOException e) {
-            throw new CsvRuntimeException();
-
-        } catch (NoSuchPaddingException | InvalidAlgorithmParameterException | NoSuchAlgorithmException |
-                IllegalBlockSizeException | BadPaddingException | InvalidKeyException e) {
-
-            throw new CipherRuntimeException(e.toString());
-        }
+        CsvWriter.write(ModelController.getAllMessage());   //CSVファイルに書き込み
     }
 
     /**

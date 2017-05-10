@@ -1,6 +1,8 @@
 package jp.co.topgate.asada.web;
 
 import com.google.common.base.Strings;
+import jp.co.topgate.asada.web.exception.CipherRuntimeException;
+import jp.co.topgate.asada.web.exception.CsvRuntimeException;
 import jp.co.topgate.asada.web.model.Message;
 
 import javax.crypto.BadPaddingException;
@@ -34,18 +36,10 @@ class CsvWriter {
      * 過去のMessageListを、CSVファイルから読み出すメソッド
      *
      * @return 過去に投稿された文をメッセージクラスのListに格納して返す
-     * @throws IOException                        読み出し中の例外
-     * @throws FileNotFoundException              CSVファイルが存在しない
-     * @throws NoSuchAlgorithmException           ある暗号アルゴリズムが現在の環境で使用できない場合発生する
-     * @throws NoSuchPaddingException             あるパディング・メカニズムが現在の環境で使用できない場合発生する
-     * @throws InvalidKeyException                無効な鍵に対する例外
-     * @throws IllegalBlockSizeException          提供されたデータの長さが暗号のブロック・サイズと一致しない場合発生する
-     * @throws BadPaddingException                データが適切にパディングされない場合に発生する(暗号キーと複合キーが同じかチェックすること
-     * @throws InvalidAlgorithmParameterException 無効なアルゴリズム・パラメータの例外
+     * @throws CsvRuntimeException    CSVファイルの読み込み中か、読み込む段階で例外が発生した
+     * @throws CipherRuntimeException 読み込んだデータの復号に失敗した
      */
-    static List<Message> read() throws IOException, NoSuchPaddingException,
-            InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException,
-            BadPaddingException, InvalidKeyException {
+    static List<Message> read() throws CsvRuntimeException, CipherRuntimeException {
 
         List<Message> list = new ArrayList<>();
 
@@ -70,8 +64,13 @@ class CsvWriter {
                     throw new IOException("指定されたCSVが規定の形にそっていないため読み込めません。");
                 }
             }
-        } catch (FileNotFoundException e) {
-            throw new FileNotFoundException("CSVファイルが見つかりません。");
+        } catch (IOException e) {
+            throw new CsvRuntimeException(e.getMessage());
+
+        } catch (NoSuchAlgorithmException | InvalidKeyException | NoSuchPaddingException |
+                InvalidAlgorithmParameterException | BadPaddingException | IllegalBlockSizeException e) {
+
+            throw new CipherRuntimeException(e.getMessage());
         }
         return list;
     }
@@ -80,17 +79,10 @@ class CsvWriter {
      * 現在のMessageListを、CSVファイルに書き出すメソッド
      *
      * @param list CSVに書き込むメッセージクラスのListを渡す。
-     * @throws IOException                        ファイルに書き込み中に例外発生
-     * @throws FileNotFoundException              CSVファイルが存在しない
-     * @throws NoSuchAlgorithmException           ある暗号アルゴリズムが現在の環境で使用できない場合発生する
-     * @throws NoSuchPaddingException             あるパディング・メカニズムが現在の環境で使用できない場合発生する
-     * @throws InvalidKeyException                無効な鍵に対する例外
-     * @throws IllegalBlockSizeException          提供されたデータの長さが暗号のブロック・サイズと一致しない場合発生する
-     * @throws BadPaddingException                データが適切にパディングされない場合に発生する(暗号キーと複合キーが同じかチェックすること
-     * @throws InvalidAlgorithmParameterException 無効なアルゴリズム・パラメータの例外
+     * @throws CsvRuntimeException    CSVファイルの読み込み中か、読み込む段階で例外が発生した
+     * @throws CipherRuntimeException 読み込んだデータの復号に失敗した
      */
-    static void write(List<Message> list) throws IOException, NoSuchPaddingException, InvalidAlgorithmParameterException,
-            NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
+    static void write(List<Message> list) throws CsvRuntimeException, CipherRuntimeException {
 
         try (OutputStream os = new FileOutputStream(new File(filePath))) {
             for (Message m : list) {
@@ -111,8 +103,13 @@ class CsvWriter {
             }
             os.flush();
 
-        } catch (FileNotFoundException e) {
-            throw new FileNotFoundException("CSVファイルが見つかりません。");
+        } catch (IOException e) {
+            throw new CsvRuntimeException(e.getMessage());
+
+        } catch (NoSuchAlgorithmException | InvalidKeyException | NoSuchPaddingException |
+                InvalidAlgorithmParameterException | BadPaddingException | IllegalBlockSizeException e) {
+
+            throw new CipherRuntimeException(e.getMessage());
         }
     }
 

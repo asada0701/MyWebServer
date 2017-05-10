@@ -1,9 +1,12 @@
 package jp.co.topgate.asada.web;
 
 import jp.co.topgate.asada.web.model.Message;
+import jp.co.topgate.asada.web.model.ModelController;
 
 import java.io.*;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * HTMLを編集するクラス
@@ -12,42 +15,61 @@ import java.util.List;
  */
 class HtmlEditor {
 
-    private RequestLine requestLine;
-    private String path;
+    private static final int INDEX_HTML = 0;
+    private static final int SEARCH_HTML = 1;
+    private static final int DELETE_HTML = 2;
 
-    private String indexPath = "./src/main/resources/2/index.html";
-    private String indexHtml;
-    private String searchPath = "./src/main/resources/2/search.html";
-    private String searchHtml;
-    private String deletePath = "./src/main/resources/2/delete.html";
-    private String deleteHtml;
+    /**
+     * 編集したいhtmlファイルのパスのリスト
+     */
+    private static Map<Integer, String> filePath = new HashMap<>();
 
-    HtmlEditor(RequestLine requestLine) throws IOException {
-        this.requestLine = requestLine;
-        path = Handler.getFilePath(requestLine.getUri());
+    /**
+     * 編集するhtmlの初期状態を記録するリスト
+     */
+    private static Map<Integer, String> htmlContent = new HashMap<>();
 
-        indexHtml = getHtml(indexPath);
-        searchHtml = getHtml(searchPath);
-        deleteHtml = getHtml(deletePath);
+    static {
+        filePath.put(INDEX_HTML, "./src/main/resources/2/index.html");
+        filePath.put(SEARCH_HTML, "./src/main/resources/2/search.html");
+        filePath.put(DELETE_HTML, "./src/main/resources/2/delete.html");
     }
 
-    private String getHtml(String path) throws IOException {
+    /**
+     * コンストラクタ
+     *
+     * @throws IOException
+     */
+    HtmlEditor() throws IOException {
+        //編集する前のページを取得し、初期化する時に使う
+        setInitialHtml();
+    }
+
+    /**
+     * HTMLの初期状態を保存するメソッド
+     *
+     * @throws IOException 書き込み中に発生した例外
+     */
+    private void setInitialHtml() throws IOException {
         StringBuffer buffer = new StringBuffer();
-        try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
-            String str;
-            while ((str = br.readLine()) != null) {
-                buffer.append(str).append("\n");
+        for (int i = 0; i < filePath.size(); i++) {
+            try (BufferedReader br = new BufferedReader(new FileReader(new File(filePath.get(i))))) {
+                String str;
+                while ((str = br.readLine()) != null) {
+                    buffer.append(str).append("\n");
+                }
+                htmlContent.put(i, buffer.toString());
             }
         }
-        return buffer.toString();
     }
 
     /**
      * 投稿するメソッド
-     *
-     * @param list
      */
-    void contribution(List<Message> list) throws IOException {
+    void contribution() throws IOException {
+        List<Message> list = ModelController.getAllMessage();
+        String path = filePath.get(INDEX_HTML);
+
         try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
             String str;
             StringBuffer buffer = new StringBuffer();
@@ -65,10 +87,6 @@ class HtmlEditor {
                     }
                 }
                 buffer.append(str).append("\n");
-            }
-            File file = new File(path);
-            if (!file.delete()) {
-                throw new IOException("存在しないファイルを編集しようとしました。");
             }
 
             try (OutputStream os = new FileOutputStream(new File(path))) {
@@ -117,10 +135,15 @@ class HtmlEditor {
     /**
      * 投稿した人で抽出するメソッド
      */
-    void search(List<Message> al) throws IOException {
-        path = Handler.getFilePath(requestLine.getUri());
-        //search.htmlを初期化
-        searchInitialization();
+    void search(int messageID) throws IOException {
+        List<Message> list = ModelController.findSameNameMessage(messageID);
+
+        String path = filePath.get(SEARCH_HTML);
+
+        File file = new File(path);
+        if (!file.delete()) {
+            throw new IOException("存在しないファイルを編集しようとしました");
+        }
 
         try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
             String str;
@@ -133,8 +156,8 @@ class HtmlEditor {
                         buffer.append(str).append("\n");
                     } while (!str.endsWith("</tr>"));
 
-                    for (int i = al.size() - 1; i > -1; i--) {
-                        buffer.append(getContribution(al.get(i)));
+                    for (int i = list.size() - 1; i > -1; i--) {
+                        buffer.append(getContribution(list.get(i)));
                         buffer.append(str).append("\n");
                     }
                 }
@@ -148,9 +171,14 @@ class HtmlEditor {
         }
     }
 
-    void delete1(Message message) throws IOException {
-        path = Handler.getFilePath(requestLine.getUri());
-        deleteInitialization();
+    /**
+     * 削除確認画面に削除したいメッセージを表示するメソッド
+     *
+     * @param message
+     * @throws IOException
+     */
+    void delete(Message message) throws IOException {
+        String path = filePath.get(DELETE_HTML);
 
         try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
             String str;
@@ -172,10 +200,6 @@ class HtmlEditor {
                     str = br.readLine();
                 }
                 buffer.append(str).append("\n");
-            }
-            File file = new File(path);
-            if (!file.delete()) {
-                throw new IOException("存在しないファイルを編集しようとしました。");
             }
 
             try (OutputStream os = new FileOutputStream(new File(path))) {
@@ -200,24 +224,17 @@ class HtmlEditor {
         return str;
     }
 
-    void indexInitialization() throws IOException {
-        try (OutputStream os = new FileOutputStream(new File(indexPath))) {
-            os.write(indexHtml.getBytes());
-            os.flush();
-        }
-    }
-
-    void searchInitialization() throws IOException {
-        try (OutputStream os = new FileOutputStream(new File(searchPath))) {
-            os.write(searchHtml.getBytes());
-            os.flush();
-        }
-    }
-
-    void deleteInitialization() throws IOException {
-        try (OutputStream os = new FileOutputStream(new File(deletePath))) {
-            os.write(deleteHtml.getBytes());
-            os.flush();
+    /**
+     * 登録されているHTML全部を初期化する
+     *
+     * @throws IOException 書き込み中に発生した例外
+     */
+    void allInitialization() throws IOException {
+        for (int i = 0; i < filePath.size(); i++) {
+            try (OutputStream os = new FileOutputStream(new File(filePath.get(i)))) {
+                os.write(htmlContent.get(i).getBytes());
+                os.flush();
+            }
         }
     }
 }
