@@ -59,6 +59,8 @@ class HtmlEditor {
                     buffer.append(str).append("\n");
                 }
                 htmlContent.put(i, buffer.toString());
+
+                buffer = new StringBuffer();
             }
         }
     }
@@ -66,7 +68,7 @@ class HtmlEditor {
     /**
      * 投稿するメソッド
      */
-    void contribution() throws IOException {
+    static void contribution() throws IOException {
         List<Message> list = ModelController.getAllMessage();
         String path = filePath.get(INDEX_HTML);
 
@@ -102,7 +104,7 @@ class HtmlEditor {
      * @param message
      * @return
      */
-    private String getContribution(Message message) {
+    private static String getContribution(Message message) {
         if (message.getText().contains("\r\n")) {
             message.setText(message.getText().replaceAll("\r\n", "<br>"));
         } else if (message.getText().contains("\n")) {
@@ -135,15 +137,10 @@ class HtmlEditor {
     /**
      * 投稿した人で抽出するメソッド
      */
-    void search(int messageID) throws IOException {
+    static void search(int messageID) throws IOException {
         List<Message> list = ModelController.findSameNameMessage(messageID);
 
         String path = filePath.get(SEARCH_HTML);
-
-        File file = new File(path);
-        if (!file.delete()) {
-            throw new IOException("存在しないファイルを編集しようとしました");
-        }
 
         try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
             String str;
@@ -157,7 +154,7 @@ class HtmlEditor {
                     } while (!str.endsWith("</tr>"));
 
                     for (int i = list.size() - 1; i > -1; i--) {
-                        buffer.append(getContribution(list.get(i)));
+                        buffer.append(getSearch(list.get(i)));
                         buffer.append(str).append("\n");
                     }
                 }
@@ -172,12 +169,41 @@ class HtmlEditor {
     }
 
     /**
+     * 投稿する文字をHTMLに編集する
+     *
+     * @param message
+     * @return
+     */
+    private static String getSearch(Message message) {
+        if (message.getText().contains("\r\n")) {
+            message.setText(message.getText().replaceAll("\r\n", "<br>"));
+        } else if (message.getText().contains("\n")) {
+            message.setText(message.getText().replaceAll("\n", "<br>"));
+        }
+
+        String str = "            <tr id=\"No." + message.getMessageID() + "\">\n" +
+                "                <td>No." + message.getMessageID() + "</td>\n" +
+                "                <td>" + message.getTitle() + "</td>\n" +
+                "                <td>" + message.getText() + "</td>\n" +
+                "                <td>" + message.getName() + "</td>\n" +
+                "                <td>" + message.getDate() + "</td>\n" +
+                "                <td>\n" +
+                "                    <form action=\"/program/board/\" method=\"post\">\n" +
+                "                        <input type=\"hidden\" name=\"param\" value=\"delete1\">\n" +
+                "                        <input type=\"hidden\" name=\"number\" value=\"" + message.getMessageID() + "\">\n" +
+                "                        <input type=\"submit\" value=\"このコメントを削除する\">\n" +
+                "                    </form>\n" +
+                "                </td>\n";
+        return str;
+    }
+
+    /**
      * 削除確認画面に削除したいメッセージを表示するメソッド
      *
      * @param message
      * @throws IOException
      */
-    void delete(Message message) throws IOException {
+    static void delete(Message message) throws IOException {
         String path = filePath.get(DELETE_HTML);
 
         try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
@@ -210,7 +236,7 @@ class HtmlEditor {
     }
 
 
-    private String getDelete(Message message) {
+    private static String getDelete(Message message) {
         if (message.getText().contains("\n")) {
             message.setText(message.getText().replaceAll("\n", "<br>"));    //改行文字\nを<br>に変換する
         }

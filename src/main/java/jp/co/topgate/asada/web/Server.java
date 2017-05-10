@@ -37,7 +37,7 @@ class Server extends Thread {
      * @throws CipherRuntimeException 読み込んだデータの複合に失敗した
      */
     void startServer() throws CsvRuntimeException, CipherRuntimeException {
-        ModelController.setMessageList(CsvWriter.read());   //CSVファイル読み込み
+        ModelController.setMessageList(CsvWriter.read(CsvMode.MESSAGE_MODE));   //CSVファイル読み込み
 
         this.start();
     }
@@ -71,7 +71,7 @@ class Server extends Thread {
         }
         serverSocket.close();
 
-        CsvWriter.write(ModelController.getAllMessage());   //CSVファイルに書き込み
+        CsvWriter.write(CsvMode.MESSAGE_MODE, ModelController.getAllMessage());   //CSVファイルに書き込み
     }
 
     /**
@@ -84,6 +84,8 @@ class Server extends Thread {
         try {
             while (true) {
                 socket = serverSocket.accept();
+
+                HtmlEditor he = new HtmlEditor();
 
                 BufferedInputStream bis = new BufferedInputStream(socket.getInputStream());
                 bis.mark(bis.available());
@@ -98,6 +100,8 @@ class Server extends Thread {
 
                 socket.close();
                 socket = null;
+
+                he.allInitialization();
             }
 
         } catch (BindException e) {
