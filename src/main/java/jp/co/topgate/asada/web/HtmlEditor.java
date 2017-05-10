@@ -140,10 +140,6 @@ class HtmlEditor {
                 }
                 buffer.append(str).append("\n");
             }
-            File file = new File(path);
-            if (!file.delete()) {
-                throw new IOException("存在しないファイルを編集しようとしました。");
-            }
 
             try (OutputStream os = new FileOutputStream(new File(path))) {
                 os.write(buffer.toString().getBytes());
@@ -202,34 +198,6 @@ class HtmlEditor {
                 "                <td>" + message.getName() + "</td>\n" +
                 "                <td>" + message.getDate() + "</td>\n";
         return str;
-    }
-
-    void delete2(Message message) {
-        try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
-            String str;
-            StringBuffer buffer = new StringBuffer();
-            while ((str = br.readLine()) != null) {
-                if (str.endsWith("<tr id=\"No." + message.getMessageID() + "\">")) {
-                    do {
-                        str = br.readLine();
-                    } while (!str.endsWith("</tr>"));
-                }
-                buffer.append(str).append("\n");
-            }
-            File file = new File(path);
-            if (!file.delete()) {
-                throw new IOException("存在しないファイルを編集しようとしました。");
-            }
-
-            try (OutputStream os = new FileOutputStream(new File(path))) {
-                os.write(buffer.toString().getBytes());
-                os.flush();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     void indexInitialization() throws IOException {

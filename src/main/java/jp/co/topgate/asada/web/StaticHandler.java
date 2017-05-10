@@ -4,10 +4,17 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
- * Created by yusuke-pc on 2017/05/01.
+ * 静的なコンテンツの配信を行うハンドラー
+ *
+ * @author asada
  */
 public class StaticHandler extends Handler {
 
+    /**
+     * レスポンスを返すときに呼び出すメソッド
+     *
+     * @param os SocketのOutputStream
+     */
     @Override
     public void returnResponse(OutputStream os) {
         try {
@@ -17,7 +24,7 @@ public class StaticHandler extends Handler {
             }
             new ResponseMessage(os, statusCode, path);
         } catch (IOException e) {
-
+            //SocketがCloseすると発生する。
         }
     }
 }

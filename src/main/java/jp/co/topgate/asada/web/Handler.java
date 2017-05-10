@@ -1,5 +1,6 @@
 package jp.co.topgate.asada.web;
 
+import com.google.common.base.Strings;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 
 import java.io.*;
@@ -29,12 +30,12 @@ public abstract class Handler {
     /**
      * HTTPレスポンスメッセージのステータスコード
      */
-    int statusCode;
+    protected int statusCode;
 
     /**
      * リクエストライン
      */
-    RequestLine requestLine;
+    protected RequestLine requestLine;
 
     /**
      * ハンドラーのファクトリーメソッド
@@ -58,12 +59,12 @@ public abstract class Handler {
             }
 
             //リクエストラインに問題ない場合はハンドラーにリクエストラインを渡す。
-            handler.setRequestLine(requestLine);
+            handler.requestLine = requestLine;
 
         } catch (RequestParseException e) {
             //リクエストラインのパースの失敗:400
             handler = new StaticHandler();
-            handler.setStatusCode(ResponseMessage.BAD_REQUEST);
+            handler.statusCode = ResponseMessage.BAD_REQUEST;
 
             //ハンドラーにリクエストラインを渡せないのでnullになるので注意
         }
@@ -106,27 +107,6 @@ public abstract class Handler {
      */
     public abstract void returnResponse(OutputStream os);
 
-    /**
-     * ステータスコードをセットできる
-     *
-     * @param statusCode HTTPレスポンスのステータスコード
-     */
-    void setStatusCode(int statusCode) {
-        this.statusCode = statusCode;
-    }
-
-    public int getStatusCode() {
-        return statusCode;
-    }
-
-    /**
-     * リクエストラインをセットできる
-     *
-     * @param requestLine requestLineクラスのオブジェクト
-     */
-    void setRequestLine(RequestLine requestLine) {
-        this.requestLine = requestLine;
-    }
 
     /**
      * URIを元にファイルパスを返すメソッド
@@ -139,8 +119,8 @@ public abstract class Handler {
      * @retur リクエストされたファイルのパス
      */
     static String getFilePath(String uri) {
-        if (uri == null) {
-            return null;
+        if (Strings.isNullOrEmpty(uri)) {
+            uri = "/";
         }
 
         for (String s : urlPattern.keySet()) {
@@ -162,19 +142,28 @@ public abstract class Handler {
 
             if (isMatch) {
                 StringBuffer buffer = new StringBuffer();
-                buffer.append(FILE_PATH).append(urlPattern.get(s));
+                buffer.append(FILE_PATH).append(urlPattern.get(s)).append(s2[i1]);
 
-                for (int i = i1; i < i2; i++) {
-                    if (i == i1) {
-                        buffer.append(s2[i]);
-                    } else {
-                        buffer.append("/").append(s2[i]);
-                    }
+                for (int i = i1 + 1; i < i2; i++) {
+                    buffer.append("/").append(s2[i]);
                 }
                 return buffer.toString();
             }
         }
-
         return FILE_PATH + uri;
+    }
+
+    /**
+     * テスト用メソッド
+     */
+    void setStatusCode(int statusCode) {
+        this.statusCode = statusCode;
+    }
+
+    /**
+     * テスト用メソッド
+     */
+    void setRequestLine(RequestLine requestLine) {
+        this.requestLine = requestLine;
     }
 }

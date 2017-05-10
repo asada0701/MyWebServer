@@ -27,12 +27,10 @@ public class AppTest {
         server.endServer();
     }
 
-    @Test
+    @Test(expected = NullPointerException.class)
     public void controlServerメソッドのnullチェック() throws IOException {
         Server server = new Server();
         assertThat(App.controlServer(null, null), is(nullValue()));
-        assertThat(App.controlServer(null, "1"), is(nullValue()));
-        assertThat(App.controlServer(server, null), is(nullValue()));
         server.endServer();
     }
 }

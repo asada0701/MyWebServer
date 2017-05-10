@@ -1,11 +1,12 @@
 package jp.co.topgate.asada.web;
 
 import jp.co.topgate.asada.web.exception.BindRuntimeException;
-import jp.co.topgate.asada.web.exception.EncryptionRuntimeException;
+import jp.co.topgate.asada.web.exception.CipherRuntimeException;
+import jp.co.topgate.asada.web.exception.CsvRuntimeException;
 import jp.co.topgate.asada.web.exception.ServerStateException;
 
 import java.io.IOException;
-import java.net.SocketException;
+import java.util.Objects;
 import java.util.Scanner;
 
 /**
@@ -46,15 +47,9 @@ public class App {
                 }
             } while (!choices.equals(END_NUM));
 
-        } catch (BindRuntimeException e) {
-            System.out.println(e.getMessage());
-            System.exit(1);
+        } catch (BindRuntimeException | ServerStateException | CsvRuntimeException |
+                CipherRuntimeException | NullPointerException e) {
 
-        } catch (EncryptionRuntimeException e) {
-            System.out.println(e.getMessage());
-            System.exit(1);
-
-        } catch (ServerStateException e) {
             System.out.println(e.getMessage());
             System.exit(1);
 
@@ -72,14 +67,18 @@ public class App {
      *
      * @param choices 選択した文字
      * @return サーバーの状態をメッセージで返す
-     * @throws IOException          サーバークラスで発生した入出力エラー
-     * @throws BindRuntimeException サーバークラスで発生したバインド例外
-     * @throws ServerStateException サーバークラスの状態が予期しないものになった場合に発生する
+     * @throws IOException            サーバークラスで発生した入出力エラー
+     * @throws BindRuntimeException   サーバークラスで発生したバインド例外
+     * @throws ServerStateException   サーバークラスの状態が予期しないものになった場合に発生する
+     * @throws CsvRuntimeException    CSVファイルの読み込み中か、読み込む段階で例外が発生した
+     * @throws CipherRuntimeException 読み込んだデータの複合に失敗した
+     * @throws NullPointerException   引数がnullの場合
      */
-    static String controlServer(Server server, String choices) throws IOException, BindRuntimeException, ServerStateException {
-        if (server == null || choices == null) {
-            return null;
-        }
+    static String controlServer(Server server, String choices) throws IOException, BindRuntimeException,
+            ServerStateException, CsvRuntimeException, CipherRuntimeException, NullPointerException {
+        Objects.requireNonNull(server);
+        Objects.requireNonNull(choices);
+
         String msg;
         switch (choices) {
 
