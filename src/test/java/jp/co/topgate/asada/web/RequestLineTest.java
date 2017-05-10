@@ -25,7 +25,7 @@ public class RequestLineTest {
                 try {
                     RequestLine sut = new RequestLine(bis);
                 } catch (RequestParseException e) {
-                    assertThat(e.getMessage(), is("不正なリクエストメッセージをパースしようとしました"));
+                    assertThat(e.getMessage(), is("BufferedReaderのreadLineメソッドの戻り値がnullだった"));
                 }
             }
         }

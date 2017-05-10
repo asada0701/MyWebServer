@@ -9,7 +9,7 @@ import static org.junit.Assert.assertThat;
  * Created by yusuke-pc on 2017/05/03.
  */
 public class ContentTypeTest {
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = NullPointerException.class)
     public void nullチェック() {
         new ContentType(null);
     }

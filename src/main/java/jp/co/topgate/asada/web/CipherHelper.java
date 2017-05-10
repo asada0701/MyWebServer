@@ -72,12 +72,12 @@ class CipherHelper {
      *
      * @param encrypt 複合したい文字
      * @return 複合された文字
-     * @throws NoSuchAlgorithmException           ある暗号アルゴリズムが現在の環境で使用できない場合発生する
-     * @throws NoSuchPaddingException             あるパディング・メカニズムが現在の環境で使用できない場合発生する
-     * @throws InvalidKeyException                無効な鍵に対する例外
-     * @throws IllegalBlockSizeException          提供されたデータの長さが暗号のブロック・サイズと一致しない場合発生する
-     * @throws BadPaddingException                データが適切にパディングされない場合に発生する(暗号キーと複合キーが同じかチェックすること
-     * @throws InvalidAlgorithmParameterException 無効なアルゴリズム・パラメータの例外
+     * @throws NoSuchAlgorithmException           上に同じ
+     * @throws NoSuchPaddingException             上に同じ
+     * @throws InvalidKeyException                上に同じ
+     * @throws IllegalBlockSizeException          上に同じ
+     * @throws BadPaddingException                上に同じ
+     * @throws InvalidAlgorithmParameterException 上に同じ
      * @throws NullPointerException               引数がnullの場合
      */
     static String decrypt(String encrypt) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
