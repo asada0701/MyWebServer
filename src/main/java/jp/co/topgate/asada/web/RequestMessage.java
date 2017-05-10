@@ -134,11 +134,7 @@ class RequestMessage {
      * @return ヘッダ値を返す。ヘッダーフィールドに含まれていなかった場合はNullを返す
      */
     String findHeaderByName(String fieldName) {
-        if (fieldName != null) {
-            return headerFieldUri.get(fieldName);
-        } else {
-            return null;
-        }
+        return headerFieldUri.get(fieldName);
     }
 
     /**
@@ -148,10 +144,6 @@ class RequestMessage {
      * @return Query値を返す。URIに含まれていなかった場合はNullを返す
      */
     String findMessageBody(String key) {
-        if (key != null) {
-            return messageBody.get(key);
-        } else {
-            return null;
-        }
+        return messageBody.get(key);
     }
 }

@@ -22,13 +22,13 @@ public class CipherHelperTest {
         @Test
         public void 空チェック() throws Exception {
             assertThat(CipherHelper.encrypt(""),
-                    is("IhtXErS0+ZoF1hhWZSll8A=="));
+                    is("0QKsxhjpm/+eVac5lo3Jbw=="));
         }
 
         @Test
         public void 正しく暗号化できるか() throws Exception {
             assertThat(CipherHelper.encrypt("正しく暗号化できるか"),
-                    is("w2YZ69B3kqQzmNcnIGKxbygnKf7cvzGKG5tDwU04OiU="));
+                    is("4tZb8SxYjuKq+vzVOaAtQxZj7bvgK1eioZHcogvZMfQ="));
         }
     }
 
@@ -40,13 +40,13 @@ public class CipherHelperTest {
 
         @Test
         public void 空チェック() throws Exception {
-            assertThat(CipherHelper.decrypt("IhtXErS0+ZoF1hhWZSll8A=="),
+            assertThat(CipherHelper.decrypt("0QKsxhjpm/+eVac5lo3Jbw=="),
                     is(""));
         }
 
         @Test
         public void 正しく暗号化できるか() throws Exception {
-            assertThat(CipherHelper.decrypt("w2YZ69B3kqQzmNcnIGKxbygnKf7cvzGKG5tDwU04OiU="),
+            assertThat(CipherHelper.decrypt("4tZb8SxYjuKq+vzVOaAtQxZj7bvgK1eioZHcogvZMfQ="),
                     is("正しく暗号化できるか"));
         }
     }

@@ -10,6 +10,7 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Base64;
+import java.util.Objects;
 
 /**
  * パスワード暗号化クラス
@@ -27,13 +28,18 @@ class CipherHelper {
     /**
      * 暗号化方式「AES」の場合、キーは16文字
      */
-    private static final String secretKey = "1234567890123456";
+    private static final String secretKey = "aifharnkgarhoeig";
 
     /**
      * 暗号化方式「AES」の場合、初期化ベクトルは16文字
      */
-    private static final String initializationVector = "abcdefghijklmnop";
+    private static final String initializationVector = "guienarczxifpreo";
 
+    /**
+     * transformation
+     * Cipherアルゴリズム・モード:CBC(Cipher Block Chaining Mode)
+     * Cipherアルゴリズム・パディング:PKCS5Pading
+     */
     private static final String FORMAT_OF_TRANSFORMATION = "%s/CBC/PKCS5Padding";
 
     /**
@@ -48,10 +54,13 @@ class CipherHelper {
      * @throws IllegalBlockSizeException          提供されたデータの長さが暗号のブロック・サイズと一致しない場合発生する
      * @throws BadPaddingException                データが適切にパディングされない場合に発生する(暗号キーと複合キーが同じかチェックすること
      * @throws InvalidAlgorithmParameterException 無効なアルゴリズム・パラメータの例外
+     * @throws NullPointerException               引数がnullの場合
      */
     static String encrypt(String original)
             throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IllegalBlockSizeException,
-            BadPaddingException, InvalidAlgorithmParameterException {
+            BadPaddingException, InvalidAlgorithmParameterException, NullPointerException {
+
+        Objects.requireNonNull(original);
 
         byte[] originalBytes = original.getBytes();
         byte[] encryptBytes = CipherHelper.cipher(originalBytes, true);
@@ -63,15 +72,18 @@ class CipherHelper {
      *
      * @param encrypt 複合したい文字
      * @return 複合された文字
-     * @throws NoSuchAlgorithmException           ある暗号アルゴリズムが現在の環境で使用できない場合発生する
-     * @throws NoSuchPaddingException             あるパディング・メカニズムが現在の環境で使用できない場合発生する
-     * @throws InvalidKeyException                無効な鍵に対する例外
-     * @throws IllegalBlockSizeException          提供されたデータの長さが暗号のブロック・サイズと一致しない場合発生する
-     * @throws BadPaddingException                データが適切にパディングされない場合に発生する(暗号キーと複合キーが同じかチェックすること
-     * @throws InvalidAlgorithmParameterException 無効なアルゴリズム・パラメータの例外
+     * @throws NoSuchAlgorithmException           上に同じ
+     * @throws NoSuchPaddingException             上に同じ
+     * @throws InvalidKeyException                上に同じ
+     * @throws IllegalBlockSizeException          上に同じ
+     * @throws BadPaddingException                上に同じ
+     * @throws InvalidAlgorithmParameterException 上に同じ
+     * @throws NullPointerException               引数がnullの場合
      */
     static String decrypt(String encrypt) throws NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException,
-            IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {
+            IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException, NullPointerException {
+
+        Objects.requireNonNull(encrypt);
 
         byte[] encryptBytes = Base64.getDecoder().decode(encrypt);
         byte[] originalBytes = CipherHelper.cipher(encryptBytes, false);

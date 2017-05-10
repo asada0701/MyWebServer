@@ -13,15 +13,9 @@ package jp.co.topgate.asada.web.exception;
  *
  * @author asada
  */
-public class EncryptionRuntimeException extends RuntimeException {
-    private String msg;
-
-    public EncryptionRuntimeException(String msg) {
-        this.msg = msg;
-    }
-
+public class CsvRuntimeException extends RuntimeException {
     @Override
     public String getMessage() {
-        return msg;
+        return "CSVファイルに書き込めできませんでした。CSVファイルを確認してください。";
     }
 }

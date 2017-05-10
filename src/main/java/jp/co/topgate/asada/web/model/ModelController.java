@@ -17,14 +17,14 @@ public class ModelController {
     private static List<Message> messageList = new ArrayList<>();
 
     /**
-     *
+     * メッセージIDのインデックス
      */
     private static int messageID = 1;
 
     /**
      * コンストクタ
      *
-     * @param messageList
+     * @param messageList CSVファイルから読み込んだデータ
      */
     public ModelController(List<Message> messageList) {
         ModelController.messageList = messageList;
@@ -35,7 +35,7 @@ public class ModelController {
     }
 
     /**
-     * メッセージリストにメッセージクラスを追加する
+     * messageListにメッセージクラスを追加する
      */
     public static void addMessage(String name, String title, String text, String password) {
         Message message = new Message();

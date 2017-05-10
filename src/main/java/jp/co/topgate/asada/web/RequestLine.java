@@ -102,15 +102,16 @@ class RequestLine {
     private void uriQueryParse() throws RequestParseException {
         String[] s1 = uri.split(URI_QUERY_SEPARATOR);
         uri = s1[0];
-        if (s1.length > 1) {
-            String[] s2 = s1[1].split(URI_EACH_QUERY_SEPARATOR);
-            for (String aS2 : s2) {
-                String[] s3 = aS2.split(URI_QUERY_NAME_VALUE_SEPARATOR);
-                if (s3.length == URI_QUERY_NUM_ITEMS) {
-                    uriQuery.put(s3[0], s3[1]);
-                } else {
-                    throw new RequestParseException("URIのクエリーが不正なものだった");
-                }
+        if (s1.length < 2) {
+            throw new RequestParseException("URIのクエリーが不正なものだった");
+        }
+        String[] s2 = s1[1].split(URI_EACH_QUERY_SEPARATOR);
+        for (String aS2 : s2) {
+            String[] s3 = aS2.split(URI_QUERY_NAME_VALUE_SEPARATOR);
+            if (s3.length == URI_QUERY_NUM_ITEMS) {
+                uriQuery.put(s3[0], s3[1]);
+            } else {
+                throw new RequestParseException("URIのクエリーが不正なものだった");
             }
         }
     }

@@ -94,7 +94,7 @@ class ResponseMessage {
                 ContentType ct = new ContentType(filePath);
                 addHeader("Content-Type", ct.getContentType());
 
-            } catch (NullPointerException e) {
+            } catch (IllegalArgumentException e) {
                 addHeader("Content-Type", ContentType.defaultFileType);
             }
 

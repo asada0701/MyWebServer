@@ -1,7 +1,8 @@
 package jp.co.topgate.asada.web;
 
 import jp.co.topgate.asada.web.exception.BindRuntimeException;
-import jp.co.topgate.asada.web.exception.EncryptionRuntimeException;
+import jp.co.topgate.asada.web.exception.CipherRuntimeException;
+import jp.co.topgate.asada.web.exception.CsvRuntimeException;
 import jp.co.topgate.asada.web.model.ModelController;
 
 import javax.crypto.BadPaddingException;
@@ -37,8 +38,23 @@ class Server extends Thread {
 
     /**
      * サーバーを立ち上げるメソッド
+     *
+     * @throws CsvRuntimeException    CSVファイルの読み込み中か、読み込む段階で例外が発生した
+     * @throws CipherRuntimeException 読み込んだデータの複合に失敗した
      */
-    void startServer() {
+    void startServer() throws CsvRuntimeException, CipherRuntimeException {
+        try {
+            //CSVファイル読み込み
+            new ModelController(CsvWriter.read());
+
+        } catch (IOException e) {
+            throw new CsvRuntimeException();
+
+        } catch (NoSuchPaddingException | InvalidAlgorithmParameterException | IllegalBlockSizeException |
+                NoSuchAlgorithmException | InvalidKeyException | BadPaddingException e) {
+
+            throw new CipherRuntimeException(e.toString());
+        }
         this.start();
     }
 
@@ -61,21 +77,35 @@ class Server extends Thread {
      * サーバーの緊急停止を行うメソッド、サーバーが通信中でも停止できる
      * サーバーを停止する前に、データを保存する必要がある。
      *
-     * @throws IOException サーバーソケットでエラーが発生しました
+     * @throws IOException            サーバーソケットでエラーが発生しました
+     * @throws CsvRuntimeException    CSVファイルの読み込み中か、読み込む段階で例外が発生した
+     * @throws CipherRuntimeException 読み込んだデータの複合に失敗した
      */
-    void endServer() throws IOException {
+    void endServer() throws IOException, CsvRuntimeException, CipherRuntimeException {
         if (socket != null) {
             socket.close();
         }
         serverSocket.close();
+
+        try {
+            //CSVファイルに書き込む
+            CsvWriter.write(ModelController.getAllMessage());
+
+        } catch (IOException e) {
+            throw new CsvRuntimeException();
+
+        } catch (NoSuchPaddingException | InvalidAlgorithmParameterException | NoSuchAlgorithmException |
+                IllegalBlockSizeException | BadPaddingException | InvalidKeyException e) {
+
+            throw new CipherRuntimeException(e.toString());
+        }
     }
 
     /**
      * Threadクラスのrunメソッドのオーバーライドメソッド
      *
-     * @throws BindRuntimeException       ポートが使用中であるが、要求されたローカル・アドレスの割り当てに失敗しました
-     * @throws EncryptionRuntimeException 暗号化、複合中の例外が発生した
-     * @throws RuntimeException           ソケットの入出力でエラーが発生しました
+     * @throws BindRuntimeException ポートが使用中であるが、要求されたローカル・アドレスの割り当てに失敗しました
+     * @throws RuntimeException     ソケットの入出力でエラーが発生しました
      */
     public void run() {
         try {
@@ -96,21 +126,14 @@ class Server extends Thread {
                 socket.close();
                 socket = null;
             }
+
         } catch (BindException e) {
             throw new BindRuntimeException(e.toString());
 
         } catch (SocketException e) {
 
-        } catch (RuntimeException | IOException e) {
-            try {
-                CsvWriter.write(ModelController.getAllMessage());
-
-            } catch (NoSuchPaddingException | InvalidAlgorithmParameterException | NoSuchAlgorithmException |
-                    IllegalBlockSizeException | BadPaddingException | InvalidKeyException | IOException e2) {
-
-                throw new EncryptionRuntimeException(e2.toString());
-            }
-            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException();
         }
     }
 }
