@@ -20,12 +20,10 @@ TG社の課題
 
 * URIで「/」と指定することでディレクトリ内のindex.htmlが呼ばれます。
 
+*「/program/board/」にアクセスすると掲示板システムが利用できます。
+
 * リクエストを同時に処理はできません。先にきたリクエストのレスポンスを返し終わると、次のリクエストの処理へ移ります。
 
 * ファイルの文字コードはUTF-8を使用してください。
-
-* urlのパターンの注意点
-  * /program/board/」と「/program/」は同じ扱いとなります。どちらのパスが優先されるかの保証はできません。
-  * /program3/board/」と「/program/board/」は別扱いとなります。
 
 [![CircleCI](https://circleci.com/gh/asada0701/MyWebServer.svg?style=svg)](https://circleci.com/gh/asada0701/MyWebServer)

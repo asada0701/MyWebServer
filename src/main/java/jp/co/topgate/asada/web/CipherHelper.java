@@ -68,10 +68,10 @@ class CipherHelper {
     }
 
     /**
-     * 複合メソッド
+     * 復号メソッド
      *
-     * @param encrypt 複合したい文字
-     * @return 複合された文字
+     * @param encrypt 復号したい文字
+     * @return 復号された文字
      * @throws NoSuchAlgorithmException           上に同じ
      * @throws NoSuchPaddingException             上に同じ
      * @throws InvalidKeyException                上に同じ
@@ -100,7 +100,7 @@ class CipherHelper {
      * 一番最初のブロックには前のブロックの暗号化データがないので、初期化ベクトルを用意する。
      *
      * @param source    対象となるバイト列
-     * @param isEncrypt trueの場合、暗号化。falseの場合、複合。
+     * @param isEncrypt trueの場合、暗号化。falseの場合、復号。
      */
     private static byte[] cipher(byte[] source, boolean isEncrypt) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchPaddingException,
             IllegalBlockSizeException, BadPaddingException, InvalidAlgorithmParameterException {

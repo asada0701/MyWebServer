@@ -1,21 +1,12 @@
 package jp.co.topgate.asada.web;
 
 import jp.co.topgate.asada.web.exception.BindRuntimeException;
-import jp.co.topgate.asada.web.exception.CipherRuntimeException;
-import jp.co.topgate.asada.web.exception.CsvRuntimeException;
-import jp.co.topgate.asada.web.model.ModelController;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import java.io.*;
 import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 
 /**
  * サーバークラス
@@ -38,23 +29,8 @@ class Server extends Thread {
 
     /**
      * サーバーを立ち上げるメソッド
-     *
-     * @throws CsvRuntimeException    CSVファイルの読み込み中か、読み込む段階で例外が発生した
-     * @throws CipherRuntimeException 読み込んだデータの複合に失敗した
      */
-    void startServer() throws CsvRuntimeException, CipherRuntimeException {
-        try {
-            //CSVファイル読み込み
-            new ModelController(CsvWriter.read());
-
-        } catch (IOException e) {
-            throw new CsvRuntimeException();
-
-        } catch (NoSuchPaddingException | InvalidAlgorithmParameterException | IllegalBlockSizeException |
-                NoSuchAlgorithmException | InvalidKeyException | BadPaddingException e) {
-
-            throw new CipherRuntimeException(e.toString());
-        }
+    void startServer() {
         this.start();
     }
 
@@ -77,28 +53,13 @@ class Server extends Thread {
      * サーバーの緊急停止を行うメソッド、サーバーが通信中でも停止できる
      * サーバーを停止する前に、データを保存する必要がある。
      *
-     * @throws IOException            サーバーソケットでエラーが発生しました
-     * @throws CsvRuntimeException    CSVファイルの読み込み中か、読み込む段階で例外が発生した
-     * @throws CipherRuntimeException 読み込んだデータの複合に失敗した
+     * @throws IOException サーバーソケットでエラーが発生しました
      */
-    void endServer() throws IOException, CsvRuntimeException, CipherRuntimeException {
+    void endServer() throws IOException {
         if (socket != null) {
             socket.close();
         }
         serverSocket.close();
-
-        try {
-            //CSVファイルに書き込む
-            CsvWriter.write(ModelController.getAllMessage());
-
-        } catch (IOException e) {
-            throw new CsvRuntimeException();
-
-        } catch (NoSuchPaddingException | InvalidAlgorithmParameterException | NoSuchAlgorithmException |
-                IllegalBlockSizeException | BadPaddingException | InvalidKeyException e) {
-
-            throw new CipherRuntimeException(e.toString());
-        }
     }
 
     /**
@@ -112,12 +73,12 @@ class Server extends Thread {
             while (true) {
                 socket = serverSocket.accept();
 
+                HtmlEditor he = new HtmlEditor();
+
                 BufferedInputStream bis = new BufferedInputStream(socket.getInputStream());
                 bis.mark(bis.available());
 
                 Handler handler = Handler.getHandler(bis);
-
-                bis.reset();
 
                 handler.requestComes(bis);
 
@@ -125,6 +86,8 @@ class Server extends Thread {
 
                 socket.close();
                 socket = null;
+
+                he.allInitialization();
             }
 
         } catch (BindException e) {

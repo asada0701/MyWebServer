@@ -4,6 +4,7 @@ import jp.co.topgate.asada.web.exception.BindRuntimeException;
 import jp.co.topgate.asada.web.exception.CipherRuntimeException;
 import jp.co.topgate.asada.web.exception.CsvRuntimeException;
 import jp.co.topgate.asada.web.exception.ServerStateException;
+import jp.co.topgate.asada.web.model.ModelController;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -28,6 +29,10 @@ public class App {
             Server server = new Server();
             String choices;
             Scanner scan = new Scanner(System.in);
+
+            ModelController.setMessageList(CsvWriter.readToMessage());   //CSVファイル読み込み
+            HtmlEditor he = new HtmlEditor();                            //HTMLファイル読み込み
+
             do {
                 System.out.println("--------------------");
                 System.out.println(START_NUM + ": START");
@@ -46,6 +51,9 @@ public class App {
                     choices = "";
                 }
             } while (!choices.equals(END_NUM));
+
+            CsvWriter.write(CsvMode.MESSAGE_MODE, ModelController.getAllMessage());   //CSVファイルに書き込み
+            he.allInitialization();                                                   //HTMLファイルの初期化
 
         } catch (BindRuntimeException | ServerStateException | CsvRuntimeException |
                 CipherRuntimeException | NullPointerException e) {

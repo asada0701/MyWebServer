@@ -1,6 +1,8 @@
 package jp.co.topgate.asada.web;
 
 import com.google.common.base.Strings;
+import jp.co.topgate.asada.web.exception.CipherRuntimeException;
+import jp.co.topgate.asada.web.exception.CsvRuntimeException;
 import jp.co.topgate.asada.web.model.Message;
 
 import javax.crypto.BadPaddingException;
@@ -11,7 +13,9 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * CSVファイルの読み書きを行うクラス
@@ -23,7 +27,11 @@ class CsvWriter {
     /**
      * CSVファイルのパス
      */
-    private static String filePath = "./src/main/resources/data/message.csv";
+    private static Map<CsvMode, String> filePath = new HashMap<>();
+
+    static {
+        filePath.put(CsvMode.MESSAGE_MODE, "./src/main/resources/data/message.csv");
+    }
 
     /**
      * CSVファイルの項目を分割する
@@ -31,30 +39,25 @@ class CsvWriter {
     private static final String CSV_SEPARATOR = ",";
 
     /**
+     * CSVに書き込むメッセージの項目数
+     */
+    private static final int MESSAGE_NUM_ITEMS = 6;
+
+    /**
      * 過去のMessageListを、CSVファイルから読み出すメソッド
      *
      * @return 過去に投稿された文をメッセージクラスのListに格納して返す
-     * @throws IOException                        読み出し中の例外
-     * @throws FileNotFoundException              CSVファイルが存在しない
-     * @throws NoSuchAlgorithmException           ある暗号アルゴリズムが現在の環境で使用できない場合発生する
-     * @throws NoSuchPaddingException             あるパディング・メカニズムが現在の環境で使用できない場合発生する
-     * @throws InvalidKeyException                無効な鍵に対する例外
-     * @throws IllegalBlockSizeException          提供されたデータの長さが暗号のブロック・サイズと一致しない場合発生する
-     * @throws BadPaddingException                データが適切にパディングされない場合に発生する(暗号キーと複合キーが同じかチェックすること
-     * @throws InvalidAlgorithmParameterException 無効なアルゴリズム・パラメータの例外
+     * @throws CsvRuntimeException    CSVファイルの読み込み中か、読み込む段階で例外が発生した
+     * @throws CipherRuntimeException 読み込んだデータの復号に失敗した
      */
-    static List<Message> read() throws IOException, NoSuchPaddingException,
-            InvalidAlgorithmParameterException, NoSuchAlgorithmException, IllegalBlockSizeException,
-            BadPaddingException, InvalidKeyException {
-
+    static List<Message> readToMessage() throws CsvRuntimeException, CipherRuntimeException {
         List<Message> list = new ArrayList<>();
-
-        try (BufferedReader br = new BufferedReader(new FileReader(new File(filePath)))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(new File(filePath.get(CsvMode.MESSAGE_MODE))))) {
             String str;
             while (!Strings.isNullOrEmpty(str = br.readLine())) {
 
                 String[] s = str.split(CSV_SEPARATOR);
-                if (s.length == 6) {
+                if (s.length == MESSAGE_NUM_ITEMS) {
                     Message message = new Message();
                     message.setMessageID(Integer.parseInt(s[0]));
 
@@ -70,8 +73,13 @@ class CsvWriter {
                     throw new IOException("指定されたCSVが規定の形にそっていないため読み込めません。");
                 }
             }
-        } catch (FileNotFoundException e) {
-            throw new FileNotFoundException("CSVファイルが見つかりません。");
+        } catch (IOException e) {
+            throw new CsvRuntimeException(e.getMessage());
+
+        } catch (NoSuchAlgorithmException | InvalidKeyException | NoSuchPaddingException |
+                InvalidAlgorithmParameterException | BadPaddingException | IllegalBlockSizeException e) {
+
+            throw new CipherRuntimeException(e.getMessage());
         }
         return list;
     }
@@ -79,47 +87,62 @@ class CsvWriter {
     /**
      * 現在のMessageListを、CSVファイルに書き出すメソッド
      *
-     * @param list CSVに書き込むメッセージクラスのListを渡す。
-     * @throws IOException                        ファイルに書き込み中に例外発生
-     * @throws FileNotFoundException              CSVファイルが存在しない
-     * @throws NoSuchAlgorithmException           ある暗号アルゴリズムが現在の環境で使用できない場合発生する
-     * @throws NoSuchPaddingException             あるパディング・メカニズムが現在の環境で使用できない場合発生する
-     * @throws InvalidKeyException                無効な鍵に対する例外
-     * @throws IllegalBlockSizeException          提供されたデータの長さが暗号のブロック・サイズと一致しない場合発生する
-     * @throws BadPaddingException                データが適切にパディングされない場合に発生する(暗号キーと複合キーが同じかチェックすること
-     * @throws InvalidAlgorithmParameterException 無効なアルゴリズム・パラメータの例外
+     * @param list CSVに書き込みたいListを渡す
+     * @throws CsvRuntimeException    CSVファイルの読み込み中か、読み込む段階で例外が発生した
+     * @throws CipherRuntimeException 読み込んだデータの復号に失敗した
      */
-    static void write(List<Message> list) throws IOException, NoSuchPaddingException, InvalidAlgorithmParameterException,
-            NoSuchAlgorithmException, IllegalBlockSizeException, BadPaddingException, InvalidKeyException {
+    static void write(CsvMode csvMode, List<?> list) throws CsvRuntimeException, CipherRuntimeException {
+        try (OutputStream os = new FileOutputStream(new File(filePath.get(csvMode)))) {
+            switch (csvMode) {
+                case MESSAGE_MODE:
+                    List<Message> messagesList = autoCast(list);
+                    for (Message m : messagesList) {
+                        String messageID = String.valueOf(m.getMessageID());
 
-        try (OutputStream os = new FileOutputStream(new File(filePath))) {
-            for (Message m : list) {
-                String messageID = String.valueOf(m.getMessageID());
+                        String password = CipherHelper.encrypt(m.getPassword());    //パスワード暗号化
 
-                String password = CipherHelper.encrypt(m.getPassword());    //パスワード暗号化
+                        String name = m.getName();
+                        String title = m.getTitle();
+                        String text = m.getText();
+                        String date = m.getDate();
 
-                String name = m.getName();
-                String title = m.getTitle();
-                String text = m.getText();
-                String date = m.getDate();
+                        String[] strings = {messageID, password, name, title, text, date};
 
-                String[] strings = {messageID, password, name, title, text, date};
+                        String line = String.join(CSV_SEPARATOR, strings) + "\n";
 
-                String line = String.join(CSV_SEPARATOR, strings) + "\n";
+                        os.write(line.getBytes());
+                    }
 
-                os.write(line.getBytes());
+                default:
             }
             os.flush();
 
-        } catch (FileNotFoundException e) {
-            throw new FileNotFoundException("CSVファイルが見つかりません。");
+        } catch (IOException e) {
+            throw new CsvRuntimeException(e.getMessage());
+
+        } catch (NoSuchAlgorithmException | InvalidKeyException | NoSuchPaddingException |
+                InvalidAlgorithmParameterException | BadPaddingException | IllegalBlockSizeException e) {
+
+            throw new CipherRuntimeException(e.getMessage());
         }
+    }
+
+    /**
+     * 戻り値の型に合わせてキャストするメソッド
+     *
+     * @param obj キャストしたいオブジェクト
+     * @param <T> 目的の型
+     * @return キャストされたオブジェクト
+     */
+    @SuppressWarnings("unchecked")
+    private static <T> T autoCast(Object obj) {
+        return (T) obj;
     }
 
     /**
      * テスト用ファイルパスのセッター
      */
     static void setFilePath(String path) {
-        filePath = path;
+        filePath.put(CsvMode.MESSAGE_MODE, path);
     }
 }

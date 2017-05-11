@@ -76,12 +76,8 @@ class RequestLine {
             uri = URLDecoder.decode(requestLine[1], "UTF-8");
             protocolVersion = requestLine[2];
 
-            if ("GET".equals(method)) {
-                try {
-                    uriQueryParse();
-                } catch (RequestParseException e) {
-                    throw e;
-                }
+            if ("GET".equals(method) && uri.contains(URI_EACH_QUERY_SEPARATOR)) {
+                uriQueryParse();
             }
 
             if (uri.endsWith("/")) {

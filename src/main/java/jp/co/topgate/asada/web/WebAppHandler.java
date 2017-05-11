@@ -1,18 +1,10 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.exception.CsvRuntimeException;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 import jp.co.topgate.asada.web.model.Message;
 import jp.co.topgate.asada.web.model.ModelController;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import java.io.*;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.List;
 
 /**
  * WebAppの処理を行うハンドラークラス
@@ -21,31 +13,23 @@ import java.util.List;
  */
 public class WebAppHandler extends Handler {
 
-    private HtmlEditor he;
-
     /**
      * リクエストが来たときに呼び出すメソッド
      *
      * @param bis SocketのInputStreamをBufferedInputStreamにラップして渡す
      */
     @Override
-    public void requestComes(BufferedInputStream bis) {
+    public void requestComes(BufferedInputStream bis) throws IOException {
         super.requestComes(bis);
 
         try {
             if (statusCode == ResponseMessage.OK) {
                 if ("POST".equals(requestLine.getMethod())) {
-                    doPost(new RequestMessage(bis, requestLine));   //リクエストメッセージのパース
+                    bis.reset();
+                    doPost(new RequestMessage(bis, requestLine));
 
                 } else if ("GET".equals(requestLine.getMethod())) {
-                    //index.htmlをGETされたときにデータを仕込む
-                    he = new HtmlEditor(requestLine);
-
-                    List<Message> list = null;
-
-                    he.contribution(list);
-
-                    new ModelController(list);
+                    HtmlEditor.writeIndexHtml();
                 }
             }
         } catch (RequestParseException e) {
@@ -65,7 +49,6 @@ public class WebAppHandler extends Handler {
         String param = requestMessage.findMessageBody("param");
         if (param != null && requestLine.getUri().startsWith("/program/board/")) {
             Message message;
-            he = new HtmlEditor(requestLine);
 
             switch (param) {
                 case "contribution":
@@ -76,54 +59,42 @@ public class WebAppHandler extends Handler {
 
                     ModelController.addMessage(name, title, text, password);
 
-                    he.contribution(ModelController.getAllMessage());
+                    HtmlEditor.writeIndexHtml();
                     break;
 
                 case "search":
-                    //投稿した人で絞り込む
-                    //メッセージリストからメッセージオブジェクトを特定して、ユーザーオブジェクトの特定をする
                     requestLine.setUri("/program/board/search.html");
-
-                    List<Message> list = ModelController.findSameNameMessage(Integer.parseInt(requestMessage.findMessageBody("number")));
-                    he.search(list);
+                    HtmlEditor.writeSearchHtml(Integer.parseInt(requestMessage.findMessageBody("number")));
                     break;
 
                 case "delete1":
-                    //投稿した文の削除をする
-                    //メッセージリストからメッセージオブジェクトを特定する。
-                    //delete.htmlにメッセージを書いて渡す。
-
                     requestLine.setUri("/program/board/delete.html");
                     message = ModelController.findMessage(Integer.parseInt(requestMessage.findMessageBody("number")));
-                    he.delete1(message);
+                    HtmlEditor.writeDeleteHtml(message);
                     break;
 
                 case "delete2":
-                    //投稿した文の削除をする
-                    //メッセージリストからメッセージオブジェクトを特定する。ユーザーオブジェクトの特定をする
-                    //パスワードが一致した場合、削除する
-
                     int num = Integer.parseInt(requestMessage.findMessageBody("number"));
                     password = requestMessage.findMessageBody("password");
 
                     if (ModelController.deleteMessage(num, password)) {
-                        //削除成功
                         requestLine.setUri("/program/board/result.html");
 
                     } else {
-                        //削除失敗
-                        requestLine.setUri("/program/board/delete.html");
+                        requestLine.setUri("/program/board/result.html");
                         message = ModelController.findMessage(Integer.parseInt(requestMessage.findMessageBody("number")));
-                        he.delete1(message);
+                        HtmlEditor.writeDeleteHtml(message);
                     }
                     break;
 
                 case "back":
                     requestLine.setUri("/program/board/index.html");
+                    HtmlEditor.writeIndexHtml();
                     break;
 
                 default:
                     requestLine.setUri("/program/board/index.html");
+                    HtmlEditor.writeIndexHtml();
             }
         }
     }
@@ -143,12 +114,6 @@ public class WebAppHandler extends Handler {
             }
             new ResponseMessage(os, statusCode, path);
 
-            if (he != null) {
-                //htmlファイルの初期化
-                he.indexInitialization();
-                he.searchInitialization();
-                he.deleteInitialization();
-            }
         } catch (IOException e) {
             /*
             ソケットにレスポンスを書き出す段階で、例外が出た。

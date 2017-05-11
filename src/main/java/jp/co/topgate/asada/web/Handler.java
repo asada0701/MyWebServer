@@ -20,6 +20,9 @@ public abstract class Handler {
 
     /**
      * URIとファイルパスのハッシュマップ
+     * urlPatternを使用する上での注意点
+     * /program/board/」と「/program/」は同じ扱いとなります。どちらのパスが優先されるかの保証はできません。
+     * /program3/board/」と「/program/board/」は別扱いとなります。
      */
     private static Map<String, String> urlPattern = new HashMap<>();
 
@@ -28,12 +31,12 @@ public abstract class Handler {
     }
 
     /**
-     * HTTPレスポンスメッセージのステータスコード
+     * 継承関係があるクラスに渡すステータスコード
      */
     protected int statusCode;
 
     /**
-     * リクエストライン
+     * 継承関係があるクラスに渡すRequestLineのオブジェクト
      */
     protected RequestLine requestLine;
 
@@ -45,28 +48,18 @@ public abstract class Handler {
      */
     static Handler getHandler(BufferedInputStream bis) {
         Handler handler;
-        RequestLine requestLine;
         try {
-            requestLine = new RequestLine(bis);
-            String uri = requestLine.getUri();
+            String uri = new RequestLine(bis).getUri();
 
             handler = new StaticHandler();
-
             for (String s : urlPattern.keySet()) {
                 if (uri.startsWith(s)) {
                     handler = new WebAppHandler();
                 }
             }
 
-            //リクエストラインに問題ない場合はハンドラーにリクエストラインを渡す。
-            handler.requestLine = requestLine;
-
         } catch (RequestParseException e) {
-            //リクエストラインのパースの失敗:400
             handler = new StaticHandler();
-            handler.statusCode = ResponseMessage.BAD_REQUEST;
-
-            //ハンドラーにリクエストラインを渡せないのでnullになるので注意
         }
 
         return handler;
@@ -77,9 +70,14 @@ public abstract class Handler {
      *
      * @param bis SocketのInputStreamをBufferedInputStreamにラップして渡す
      */
-    public void requestComes(BufferedInputStream bis) {
-        if (requestLine != null) {
-            String method = requestLine.getMethod();        //サーバーをスタートする前にアクセスすると、ここでヌルポする
+    public void requestComes(BufferedInputStream bis) throws IOException {
+        RequestLine requestLine;
+        try {
+            bis.reset();
+            requestLine = new RequestLine(bis);
+            this.requestLine = requestLine;
+
+            String method = requestLine.getMethod();
             String uri = requestLine.getUri();
             String protocolVersion = requestLine.getProtocolVersion();
 
@@ -97,6 +95,8 @@ public abstract class Handler {
                     statusCode = ResponseMessage.OK;
                 }
             }
+        } catch (RequestParseException e) {
+            statusCode = ResponseMessage.BAD_REQUEST;
         }
     }
 
@@ -116,23 +116,21 @@ public abstract class Handler {
      * が返ってくる
      *
      * @param uri リクエストラインクラスのURI
-     * @retur リクエストされたファイルのパス
+     * @return リクエストされたファイルのパス
      */
     static String getFilePath(String uri) {
         if (Strings.isNullOrEmpty(uri)) {
-            uri = "/";
+            return FILE_PATH + "/";
         }
 
         for (String s : urlPattern.keySet()) {
-            String[] s1 = s.split("/");
-            String[] s2 = uri.split("/");
-            int i1 = s1.length;
-            int i2 = s2.length;
+            String[] uriRegistered = s.split("/");
+            String[] actualUri = uri.split("/");
 
             boolean isMatch = true;
-            if (i2 >= i1) {
-                for (int i = 0; i < i1; i++) {
-                    if (!s1[i].equals(s2[i])) {
+            if (actualUri.length >= uriRegistered.length) {
+                for (int i = 0; i < uriRegistered.length; i++) {
+                    if (!uriRegistered[i].equals(actualUri[i])) {
                         isMatch = false;
                     }
                 }
@@ -141,28 +139,26 @@ public abstract class Handler {
             }
 
             if (isMatch) {
-                StringBuffer buffer = new StringBuffer();
-                buffer.append(FILE_PATH).append(urlPattern.get(s)).append(s2[i1]);
+                StringBuilder builder = new StringBuilder();
+                builder.append(FILE_PATH).append(urlPattern.get(s)).append(actualUri[uriRegistered.length]);
 
-                for (int i = i1 + 1; i < i2; i++) {
-                    buffer.append("/").append(s2[i]);
+                for (int i = uriRegistered.length + 1; i < actualUri.length; i++) {
+                    builder.append("/").append(actualUri[i]);
                 }
-                return buffer.toString();
+                return builder.toString();
             }
         }
         return FILE_PATH + uri;
     }
 
-    /**
-     * テスト用メソッド
-     */
     void setStatusCode(int statusCode) {
         this.statusCode = statusCode;
     }
 
-    /**
-     * テスト用メソッド
-     */
+    int getStatusCode() {
+        return this.statusCode;
+    }
+
     void setRequestLine(RequestLine requestLine) {
         this.requestLine = requestLine;
     }

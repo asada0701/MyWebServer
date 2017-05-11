@@ -7,14 +7,7 @@ package jp.co.topgate.asada.web.exception;
  * @author asada
  */
 public class RequestParseException extends RuntimeException {
-    private String msg;
-
     public RequestParseException(String msg) {
-        this.msg = msg;
-    }
-
-    @Override
-    public String getMessage() {
-        return msg;
+        super(msg);
     }
 }
