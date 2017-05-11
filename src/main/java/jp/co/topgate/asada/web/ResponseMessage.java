@@ -84,10 +84,10 @@ class ResponseMessage {
         if (os == null || filePath == null) {
             throw new IOException();
         }
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder builder = new StringBuilder();
 
-        buffer.append(protocolVersion).append(" ").append(statusCode).append(" ").append(reasonPhrase.get(statusCode));
-        buffer.append("\n");
+        builder.append(protocolVersion).append(" ").append(statusCode).append(" ").append(reasonPhrase.get(statusCode));
+        builder.append("\n");
 
         if (statusCode == OK) {
             try {
@@ -103,11 +103,11 @@ class ResponseMessage {
         }
 
         for (String s : headerField) {
-            buffer.append(s).append("\n");
+            builder.append(s).append("\n");
         }
-        buffer.append("\n");
+        builder.append("\n");
 
-        os.write(buffer.toString().getBytes());
+        os.write(builder.toString().getBytes());
 
         if (statusCode == OK) {
             try (InputStream in = new FileInputStream(new File(filePath))) {

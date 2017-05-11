@@ -65,7 +65,6 @@ class RequestMessage {
                 throw new RequestParseException("BufferedReaderのreadLineメソッドの戻り値がnullだった");
             }
 
-            //ヘッダーフィールドの処理
             while (!Strings.isNullOrEmpty(str = br.readLine())) {
 
                 String[] header = str.split(HEADER_FIELD_NAME_VALUE_SEPARATOR);
@@ -80,7 +79,6 @@ class RequestMessage {
                 }
             }
 
-            //POSTの場合のみ、メッセージボディの処理
             if ("POST".equals(rl.getMethod())) {
                 messageBodyParse(br);
             }
@@ -101,10 +99,9 @@ class RequestMessage {
         if (br == null) {
             throw new RequestParseException("引数BufferedReaderがnullだった");
         }
-        String str = null;
         String contentLengthS = findHeaderByName("Content-Length");
         if (contentLengthS != null) {
-            //Content-Lengthが含まれている
+            String str = null;
             int contentLength = Integer.parseInt(contentLengthS);
             if (0 < contentLength) {
                 char[] c = new char[contentLength];
@@ -124,6 +121,8 @@ class RequestMessage {
                     throw new RequestParseException("リクエストのメッセージボディが不正なものだった:" + str);
                 }
             }
+        } else {
+            throw new RequestParseException("ヘッダーフィールドにContent-Lengthの項目が存在しなかった");
         }
     }
 

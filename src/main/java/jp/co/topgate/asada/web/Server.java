@@ -1,9 +1,6 @@
 package jp.co.topgate.asada.web;
 
 import jp.co.topgate.asada.web.exception.BindRuntimeException;
-import jp.co.topgate.asada.web.exception.CipherRuntimeException;
-import jp.co.topgate.asada.web.exception.CsvRuntimeException;
-import jp.co.topgate.asada.web.model.ModelController;
 
 import java.io.*;
 import java.net.BindException;
@@ -32,13 +29,8 @@ class Server extends Thread {
 
     /**
      * サーバーを立ち上げるメソッド
-     *
-     * @throws CsvRuntimeException    CSVファイルの読み込み中か、読み込む段階で例外が発生した
-     * @throws CipherRuntimeException 読み込んだデータの複合に失敗した
      */
-    void startServer() throws CsvRuntimeException, CipherRuntimeException {
-        ModelController.setMessageList(CsvWriter.read(CsvMode.MESSAGE_MODE));   //CSVファイル読み込み
-
+    void startServer() {
         this.start();
     }
 
@@ -61,17 +53,13 @@ class Server extends Thread {
      * サーバーの緊急停止を行うメソッド、サーバーが通信中でも停止できる
      * サーバーを停止する前に、データを保存する必要がある。
      *
-     * @throws IOException            サーバーソケットでエラーが発生しました
-     * @throws CsvRuntimeException    CSVファイルの読み込み中か、読み込む段階で例外が発生した
-     * @throws CipherRuntimeException 読み込んだデータの復号に失敗した
+     * @throws IOException サーバーソケットでエラーが発生しました
      */
-    void endServer() throws IOException, CsvRuntimeException, CipherRuntimeException {
+    void endServer() throws IOException {
         if (socket != null) {
             socket.close();
         }
         serverSocket.close();
-
-        CsvWriter.write(CsvMode.MESSAGE_MODE, ModelController.getAllMessage());   //CSVファイルに書き込み
     }
 
     /**
@@ -91,8 +79,6 @@ class Server extends Thread {
                 bis.mark(bis.available());
 
                 Handler handler = Handler.getHandler(bis);
-
-                bis.reset();
 
                 handler.requestComes(bis);
 

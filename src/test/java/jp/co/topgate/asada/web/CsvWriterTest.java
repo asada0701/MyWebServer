@@ -17,24 +17,24 @@ public class CsvWriterTest {
     @Test
     public void readメソッドのテスト() throws Exception {
         CsvWriter.setFilePath("./src/test/resources/data/message.csv");
-        List<Message> sut = CsvWriter.read();
+        List<Message> sut = CsvWriter.readToMessage();
         Message m;
 
         m = sut.get(0);
-        assertThat(m.getMessageID(), is(2));
-        assertThat(m.getPassword(), is("t"));
+        assertThat(m.getMessageID(), is(1));
+        assertThat(m.getPassword(), is("test"));
         assertThat(m.getName(), is("管理者"));
         assertThat(m.getTitle(), is("test"));
-        assertThat(m.getText(), is("t"));
-        assertThat(m.getDate(), is("2017/5/9 15:47"));
+        assertThat(m.getText(), is("こんにちは"));
+        assertThat(m.getDate(), is("2017/5/11 11:56"));
 
         m = sut.get(2);
-        assertThat(m.getMessageID(), is(5));
-        assertThat(m.getPassword(), is("test"));
-        assertThat(m.getName(), is("電子太郎"));
-        assertThat(m.getTitle(), is("test"));
-        assertThat(m.getText(), is("test"));
-        assertThat(m.getDate(), is("2017/5/9 15:50"));
+        assertThat(m.getMessageID(), is(3));
+        assertThat(m.getPassword(), is("t"));
+        assertThat(m.getName(), is("asada"));
+        assertThat(m.getTitle(), is("t"));
+        assertThat(m.getText(), is("今日は天気がいいですね"));
+        assertThat(m.getDate(), is("2017/5/11 11:57"));
     }
 
     @Test
@@ -51,9 +51,9 @@ public class CsvWriterTest {
         m.setDate("2017/5/9 17:24");
         sut.add(m);
 
-        CsvWriter.write(sut);
+        CsvWriter.write(CsvMode.MESSAGE_MODE, sut);
 
-        sut = CsvWriter.read();
+        sut = CsvWriter.readToMessage();
         Message m2 = sut.get(0);
 
         assertThat(m.getMessageID(), is(m2.getMessageID()));
@@ -67,41 +67,41 @@ public class CsvWriterTest {
         sut = new ArrayList<>();
 
         m = new Message();
-        m.setMessageID(2);
-        m.setPassword("t");
+        m.setMessageID(1);
+        m.setPassword("test");
         m.setName("管理者");
         m.setTitle("test");
-        m.setText("t");
-        m.setDate("2017/5/9 15:47");
+        m.setText("こんにちは");
+        m.setDate("2017/5/11 11:56");
+        sut.add(m);
+
+        m = new Message();
+        m.setMessageID(2);
+        m.setPassword("t");
+        m.setName("asada");
+        m.setTitle("t");
+        m.setText("こんにちは");
+        m.setDate("2017/5/11 11:57");
         sut.add(m);
 
         m = new Message();
         m.setMessageID(3);
-        m.setPassword("TG");
-        m.setName("管理者");
-        m.setTitle("test");
-        m.setText("TG");
-        m.setDate("2017/5/9 15:49");
-        sut.add(m);
-
-        m = new Message();
-        m.setMessageID(5);
-        m.setPassword("test");
-        m.setName("電子太郎");
-        m.setTitle("test");
-        m.setText("test");
-        m.setDate("2017/5/9 15:50");
-        sut.add(m);
-
-        m = new Message();
-        m.setMessageID(6);
-        m.setPassword("1111");
+        m.setPassword("t");
         m.setName("asada");
-        m.setTitle("こんにちは");
-        m.setText("1111");
-        m.setDate("2017/5/9 15:53");
+        m.setTitle("t");
+        m.setText("今日は天気がいいですね");
+        m.setDate("2017/5/11 11:57");
         sut.add(m);
 
-        CsvWriter.write(sut);
+        m = new Message();
+        m.setMessageID(4);
+        m.setPassword("t");
+        m.setName("管理者");
+        m.setTitle("t");
+        m.setText("そうですね");
+        m.setDate("2017/5/11 11:57");
+        sut.add(m);
+
+        CsvWriter.write(CsvMode.MESSAGE_MODE, sut);
     }
 }

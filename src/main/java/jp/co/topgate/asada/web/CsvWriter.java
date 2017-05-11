@@ -50,34 +50,27 @@ class CsvWriter {
      * @throws CsvRuntimeException    CSVファイルの読み込み中か、読み込む段階で例外が発生した
      * @throws CipherRuntimeException 読み込んだデータの復号に失敗した
      */
-    static List<Message> read(CsvMode csvMode) throws CsvRuntimeException, CipherRuntimeException {
+    static List<Message> readToMessage() throws CsvRuntimeException, CipherRuntimeException {
         List<Message> list = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(new File(filePath.get(csvMode))))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(new File(filePath.get(CsvMode.MESSAGE_MODE))))) {
             String str;
             while (!Strings.isNullOrEmpty(str = br.readLine())) {
 
                 String[] s = str.split(CSV_SEPARATOR);
+                if (s.length == MESSAGE_NUM_ITEMS) {
+                    Message message = new Message();
+                    message.setMessageID(Integer.parseInt(s[0]));
 
-                switch (csvMode) {
-                    case MESSAGE_MODE:
-                        if (s.length == MESSAGE_NUM_ITEMS) {
-                            Message message = new Message();
-                            message.setMessageID(Integer.parseInt(s[0]));
+                    message.setPassword(CipherHelper.decrypt(s[1]));    //パスワードの複合
 
-                            message.setPassword(CipherHelper.decrypt(s[1]));    //パスワードの複合
+                    message.setName(s[2]);
+                    message.setTitle(s[3]);
+                    message.setText(s[4]);
+                    message.setDate(s[5]);
 
-                            message.setName(s[2]);
-                            message.setTitle(s[3]);
-                            message.setText(s[4]);
-                            message.setDate(s[5]);
-
-                            list.add(message);
-                        } else {
-                            throw new IOException("指定されたCSVが規定の形にそっていないため読み込めません。");
-                        }
-                        break;
-
-                    default:
+                    list.add(message);
+                } else {
+                    throw new IOException("指定されたCSVが規定の形にそっていないため読み込めません。");
                 }
             }
         } catch (IOException e) {

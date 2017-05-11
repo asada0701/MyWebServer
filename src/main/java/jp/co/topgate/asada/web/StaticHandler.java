@@ -23,8 +23,9 @@ public class StaticHandler extends Handler {
                 path = Handler.getFilePath(requestLine.getUri());
             }
             new ResponseMessage(os, statusCode, path);
+
         } catch (IOException e) {
-            //SocketがCloseすると発生する。
+
         }
     }
 }
