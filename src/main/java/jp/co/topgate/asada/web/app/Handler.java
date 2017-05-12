@@ -1,9 +1,15 @@
-package jp.co.topgate.asada.web;
+package jp.co.topgate.asada.web.app;
 
 import com.google.common.base.Strings;
+import jp.co.topgate.asada.web.RequestMessage;
+import jp.co.topgate.asada.web.ResponseMessage;
+import jp.co.topgate.asada.web.StaticHandler;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -31,35 +37,21 @@ public abstract class Handler {
     }
 
     /**
-     * 継承関係があるクラスに渡すステータスコード
-     */
-    protected int statusCode;
-
-    /**
-     * 継承関係があるクラスに渡すRequestLineのオブジェクト
-     */
-    protected RequestLine requestLine;
-
-    /**
      * ハンドラーのファクトリーメソッド
      *
      * @param bis ソケットの入力ストリーム
      * @return 今回の接続を担当するハンドラーのオブジェクト
      */
-    static Handler getHandler(BufferedInputStream bis) {
-        Handler handler;
-        try {
-            String uri = new RequestLine(bis).getUri();
+    public static Handler getHandler(BufferedInputStream bis) throws RequestParseException {
+        RequestMessage requestMessage = new RequestMessage(bis);
 
-            handler = new StaticHandler();
-            for (String s : urlPattern.keySet()) {
-                if (uri.startsWith(s)) {
-                    handler = new WebAppHandler();
-                }
+        Handler handler = new StaticHandler();
+
+        String uri = requestMessage.getUri();
+        for (String s : urlPattern.keySet()) {
+            if (uri.startsWith(s)) {
+                handler = new ProgramBoardHandler(requestMessage);
             }
-
-        } catch (RequestParseException e) {
-            handler = new StaticHandler();
         }
 
         return handler;
@@ -70,35 +62,7 @@ public abstract class Handler {
      *
      * @param bis SocketのInputStreamをBufferedInputStreamにラップして渡す
      */
-    public void requestComes(BufferedInputStream bis) throws IOException {
-        RequestLine requestLine;
-        try {
-            bis.reset();
-            requestLine = new RequestLine(bis);
-            this.requestLine = requestLine;
-
-            String method = requestLine.getMethod();
-            String uri = requestLine.getUri();
-            String protocolVersion = requestLine.getProtocolVersion();
-
-            if (!"HTTP/1.1".equals(protocolVersion)) {
-                statusCode = ResponseMessage.HTTP_VERSION_NOT_SUPPORTED;
-
-            } else if (!"GET".equals(method) && !"POST".equals(method)) {
-                statusCode = ResponseMessage.NOT_IMPLEMENTED;
-
-            } else {
-                File file = new File(Handler.getFilePath(uri));
-                if (!file.exists() || !file.isFile()) {
-                    statusCode = ResponseMessage.NOT_FOUND;
-                } else {
-                    statusCode = ResponseMessage.OK;
-                }
-            }
-        } catch (RequestParseException e) {
-            statusCode = ResponseMessage.BAD_REQUEST;
-        }
-    }
+    public abstract void requestComes(BufferedInputStream bis) throws IOException;
 
     /**
      * 抽象メソッド、レスポンスを返すときに呼び出すメソッド
@@ -118,7 +82,7 @@ public abstract class Handler {
      * @param uri リクエストラインクラスのURI
      * @return リクエストされたファイルのパス
      */
-    static String getFilePath(String uri) {
+    public static String getFilePath(String uri) {
         if (Strings.isNullOrEmpty(uri)) {
             return FILE_PATH + "/";
         }
@@ -149,17 +113,5 @@ public abstract class Handler {
             }
         }
         return FILE_PATH + uri;
-    }
-
-    void setStatusCode(int statusCode) {
-        this.statusCode = statusCode;
-    }
-
-    int getStatusCode() {
-        return this.statusCode;
-    }
-
-    void setRequestLine(RequestLine requestLine) {
-        this.requestLine = requestLine;
     }
 }

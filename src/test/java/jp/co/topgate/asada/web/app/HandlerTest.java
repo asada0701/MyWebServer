@@ -1,13 +1,18 @@
-package jp.co.topgate.asada.web;
+package jp.co.topgate.asada.web.app;
 
+import jp.co.topgate.asada.web.StaticHandler;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.Assert.assertThat;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
 
-import java.io.*;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 /**
  * Created by yusuke-pc on 2017/05/09.
@@ -33,7 +38,7 @@ public class HandlerTest {
 
                 Handler sut = Handler.getHandler(bis);
 
-                assertThat(sut, is(instanceOf(WebAppHandler.class)));
+                assertThat(sut, is(instanceOf(ProgramBoardHandler.class)));
             }
         }
 

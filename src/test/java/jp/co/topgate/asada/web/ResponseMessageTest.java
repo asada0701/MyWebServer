@@ -1,11 +1,9 @@
 package jp.co.topgate.asada.web;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
-
 
 import java.io.*;
 

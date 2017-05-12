@@ -1,4 +1,4 @@
-package jp.co.topgate.asada.web;
+package jp.co.topgate.asada.web.app;
 
 import jp.co.topgate.asada.web.model.Message;
 import jp.co.topgate.asada.web.model.ModelController;
@@ -8,28 +8,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static jp.co.topgate.asada.web.HtmlListToEdit.INDEX_HTML;
-import static jp.co.topgate.asada.web.HtmlListToEdit.SEARCH_HTML;
-import static jp.co.topgate.asada.web.HtmlListToEdit.DELETE_HTML;
-
 /**
  * HTMLを編集するクラス
  *
  * @author asada
  */
-class HtmlEditor {
-
-    /**
-     * 編集したいhtmlファイルのパスのリスト
-     */
-    private static Map<Integer, String> filePath = new HashMap<>();
-
-    static {
-        filePath.put(INDEX_HTML.getId(), "./src/main/resources/2/index.html");
-        filePath.put(SEARCH_HTML.getId(), "./src/main/resources/2/search.html");
-        filePath.put(DELETE_HTML.getId(), "./src/main/resources/2/delete.html");
-    }
-
+public class HtmlEditor {
     /**
      * 編集するhtmlの初期状態を保存するリスト
      */
@@ -41,15 +25,15 @@ class HtmlEditor {
      *
      * @throws IOException HTMLファイルに書き込み中にエラー発生
      */
-    HtmlEditor() throws IOException {
-        for (int i = 0; i < filePath.size(); i++) {
-            try (BufferedReader br = new BufferedReader(new FileReader(new File(filePath.get(i))))) {
+    public HtmlEditor() throws IOException {
+        for (HtmlListToEdit hlte : HtmlListToEdit.values()) {
+            try (BufferedReader br = new BufferedReader(new FileReader(new File(hlte.getPath())))) {
                 String str;
-                StringBuffer buffer = new StringBuffer();
+                StringBuilder builder = new StringBuilder();
                 while ((str = br.readLine()) != null) {
-                    buffer.append(str).append("\n");
+                    builder.append(str).append("\n");
                 }
-                htmlContent.put(i, buffer.toString());
+                htmlContent.put(hlte.getId(), builder.toString());
             }
         }
     }
@@ -59,10 +43,10 @@ class HtmlEditor {
      *
      * @throws IOException HTMLファイルに書き込み中にエラー発生
      */
-    void allInitialization() throws IOException {
-        for (int i = 0; i < filePath.size(); i++) {
-            try (OutputStream os = new FileOutputStream(new File(filePath.get(i)))) {
-                os.write(htmlContent.get(i).getBytes());
+    public void allInitialization() throws IOException {
+        for (HtmlListToEdit hlte : HtmlListToEdit.values()) {
+            try (OutputStream os = new FileOutputStream(new File(hlte.getPath()))) {
+                os.write(htmlContent.get(hlte.getId()).getBytes());
                 os.flush();
             }
         }
@@ -75,7 +59,7 @@ class HtmlEditor {
      */
     static void writeIndexHtml() throws IOException {
         List<Message> list = ModelController.getAllMessage();
-        String path = filePath.get(INDEX_HTML.getId());
+        String path = HtmlListToEdit.INDEX_HTML.getPath();
 
         try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
             String str;
@@ -89,7 +73,7 @@ class HtmlEditor {
                     } while (!str.endsWith("</tr>"));
 
                     for (int i = list.size() - 1; i > -1; i--) {
-                        builder.append(messageChangeToHtml(INDEX_HTML, list.get(i)));
+                        builder.append(messageChangeToHtml(HtmlListToEdit.INDEX_HTML, list.get(i)));
                         builder.append(str).append("\n");
                     }
                 }
@@ -102,13 +86,13 @@ class HtmlEditor {
     /**
      * 投稿した人で抽出する
      *
-     * @param messageID 抽出したいメッセージのIDを渡す
+     * @param name 探したい投稿者の名前を渡す
      * @throws IOException HTMLファイルに書き込み中にエラー発生
      */
-    static void writeSearchHtml(int messageID) throws IOException {
-        List<Message> list = ModelController.findSameNameMessage(messageID);
+    static void writeSearchHtml(String name) throws IOException {
+        List<Message> list = ModelController.findSameNameMessage(name);
 
-        String path = filePath.get(SEARCH_HTML.getId());
+        String path = HtmlListToEdit.SEARCH_HTML.getPath();
 
         try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
             String str;
@@ -123,7 +107,7 @@ class HtmlEditor {
 
                     assert list != null;
                     for (int i = list.size() - 1; i > -1; i--) {
-                        builder.append(messageChangeToHtml(SEARCH_HTML, list.get(i)));
+                        builder.append(messageChangeToHtml(HtmlListToEdit.SEARCH_HTML, list.get(i)));
                         builder.append(str).append("\n");
                     }
                 }
@@ -140,7 +124,7 @@ class HtmlEditor {
      * @throws IOException HTMLファイルに書き込み中にエラー発生
      */
     static void writeDeleteHtml(Message message) throws IOException {
-        String path = filePath.get(DELETE_HTML.getId());
+        String path = HtmlListToEdit.DELETE_HTML.getPath();
 
         try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
             String str;
@@ -153,7 +137,7 @@ class HtmlEditor {
                         builder.append(str).append("\n");
                     } while (!str.endsWith("</tr>"));
 
-                    builder.append(messageChangeToHtml(DELETE_HTML, message));
+                    builder.append(messageChangeToHtml(HtmlListToEdit.DELETE_HTML, message));
                 }
                 if (str.endsWith("<input type=\"hidden\" name=\"number\" value=\"\">")) {
                     builder.append("            <input type=\"hidden\" name=\"number\" value=\"");
@@ -231,11 +215,6 @@ class HtmlEditor {
             os.flush();
         }
     }
-
-    //テスト用
-    public static void setFilePath(int index, String path) {
-        filePath.put(index, path);
-    }
 }
 
 /**
@@ -244,17 +223,23 @@ class HtmlEditor {
  * @author asada
  */
 enum HtmlListToEdit {
-    INDEX_HTML(0),
-    SEARCH_HTML(1),
-    DELETE_HTML(2);
+    INDEX_HTML(0, "./src/main/resources/2/index.html"),
+    SEARCH_HTML(1, "./src/main/resources/2/search.html"),
+    DELETE_HTML(2, "./src/main/resources/2/delete.html");
 
     private final int id;
+    private final String path;
 
-    HtmlListToEdit(final int id) {
+    HtmlListToEdit(final int id, final String path) {
         this.id = id;
+        this.path = path;
     }
 
     public int getId() {
         return id;
+    }
+
+    public String getPath() {
+        return path;
     }
 }
