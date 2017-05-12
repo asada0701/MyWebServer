@@ -1,5 +1,9 @@
 package jp.co.topgate.asada.web.model;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.Nullable;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +54,7 @@ public class ModelController {
         message.setName(name);
         message.setTitle(title);
         message.setText(text);
-        message.setPassword(password);
+        message.setPassword(new BCryptPasswordEncoder().encode(password));  //パスワードハッシュ化
         message.setDate(getNowDate());
         messageList.add(message);
 
@@ -84,19 +88,13 @@ public class ModelController {
     /**
      * messageListの中のname属性が同じものを返す
      *
-     * @param messageID 探したいメッセージのIDを渡す
+     * @param name 探したい投稿者の名前を渡す
      * @return 見つからない場合はnull、見つかった場合はListで返す
      */
-    public static List<Message> findSameNameMessage(int messageID) {
+    public static List<Message> findSameNameMessage(String name) {
         List<Message> al = new ArrayList<>();
-
-        Message message = findMessage(messageID);
-        if (message == null) {
-            return null;
-        }
-
         for (Message m : messageList) {
-            if (message.getName().equals(m.getName())) {
+            if (m.getName().equals(name)) {
                 al.add(m);
             }
         }
@@ -110,17 +108,30 @@ public class ModelController {
      * @param password  削除したいメッセージのPW
      * @return 削除に成功するとtrueを返す
      */
+    @Contract("_, null -> false")
     public static boolean deleteMessage(int messageID, String password) {
         if (password == null) {
             return false;
         }
+
         for (Message m : messageList) {
-            if (messageID == m.getMessageID() && password.equals(m.getPassword())) {
+            BCryptPasswordEncoder bcrypt = new BCryptPasswordEncoder();
+            if (messageID == m.getMessageID() && bcrypt.matches(password, m.getPassword())) {
                 messageList.remove(m);
                 return true;
             }
         }
         return false;
+    }
+
+    @Nullable
+    public static String getName(int messageID) {
+        for (Message m : messageList) {
+            if (messageID == m.getMessageID()) {
+                return m.getName();
+            }
+        }
+        return null;
     }
 
     /**
@@ -138,6 +149,7 @@ public class ModelController {
     /**
      * テスト用、メッセージIDのゲッター
      */
+    @Contract(pure = true)
     static int getMessageID() {
         return messageID;
     }

@@ -86,11 +86,11 @@ public class HtmlEditor {
     /**
      * 投稿した人で抽出する
      *
-     * @param messageID 抽出したいメッセージのIDを渡す
+     * @param name 探したい投稿者の名前を渡す
      * @throws IOException HTMLファイルに書き込み中にエラー発生
      */
-    static void writeSearchHtml(int messageID) throws IOException {
-        List<Message> list = ModelController.findSameNameMessage(messageID);
+    static void writeSearchHtml(String name) throws IOException {
+        List<Message> list = ModelController.findSameNameMessage(name);
 
         String path = HtmlListToEdit.SEARCH_HTML.getPath();
 

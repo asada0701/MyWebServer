@@ -1,13 +1,16 @@
 package jp.co.topgate.asada.web;
 
 import com.google.common.base.Strings;
-import jp.co.topgate.asada.web.app.RequestLine;
 import jp.co.topgate.asada.web.exception.RequestParseException;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,6 +23,36 @@ import java.util.Map;
  * @author asada
  */
 public class RequestMessage {
+    /**
+     * リクエストラインを分割する
+     */
+    private static final String REQUEST_LINE_SEPARATOR = " ";
+
+    /**
+     * リクエスト行の項目数
+     */
+    private static final int REQUEST_LINE_NUM_ITEMS = 3;
+
+    /**
+     * URIのクエリーをクエリー毎に分割する
+     */
+    private static final String URI_EACH_QUERY_SEPARATOR = "&";
+
+    /**
+     * クエリー名とクエリー値を分割する
+     */
+    private static final String URI_QUERY_NAME_VALUE_SEPARATOR = "=";
+
+    /**
+     * URIのクエリーの項目数
+     */
+    private static final int URI_QUERY_NUM_ITEMS = 2;
+
+    private String method = null;
+    private String uri = null;
+    private Map<String, String> uriQuery = new HashMap<>();
+    private String protocolVersion = null;
+
     /**
      * ヘッダーフィールドのフィールド名とフィールド値を分割する（その後のスペースは自由のため注意）
      */
@@ -54,9 +87,36 @@ public class RequestMessage {
      * @param bis サーバーソケットのInputStream
      * @throws RequestParseException パースに失敗した場合に投げられる
      */
-    public RequestMessage(BufferedInputStream bis, RequestLine rl) throws RequestParseException {
-        if (bis == null || rl == null) {
-            throw new RequestParseException("引数のどちらかがnullだった");
+    public RequestMessage(@NotNull BufferedInputStream bis) throws RequestParseException {
+
+        try {
+            BufferedReader br = new BufferedReader(new InputStreamReader(bis, "UTF-8"));
+            String str = br.readLine();
+            if (Strings.isNullOrEmpty(str)) {
+                throw new RequestParseException("BufferedReaderの中身がnullもしくは空である");
+            }
+            String[] requestLine = str.split(REQUEST_LINE_SEPARATOR);
+            if (requestLine.length != REQUEST_LINE_NUM_ITEMS) {
+                throw new RequestParseException("リクエストラインが不正なものだった:" + str);
+            }
+
+            method = requestLine[0];
+
+            String[] s = uriSeparator(requestLine[1]);
+            uri = s[0];
+            if (s[1] != null) {
+                uriQuery = uriQueryParse(s[1]);
+            }
+
+            protocolVersion = requestLine[2];
+
+            if (uri.endsWith("/")) {
+                uri = uri + "index.html";
+            }
+
+        } catch (IOException e) {
+            throw new RequestParseException("BufferedReaderで発生した例外:" + e.toString());
+
         }
 
         try {
@@ -80,7 +140,7 @@ public class RequestMessage {
                 }
             }
 
-            if ("POST".equals(rl.getMethod())) {
+            if ("POST".equals(method)) {
                 messageBodyParse(br);
             }
         } catch (IOException e) {
@@ -145,5 +205,89 @@ public class RequestMessage {
      */
     public String findMessageBody(String key) {
         return messageBody.get(key);
+    }
+
+    /**
+     * URIをパスとクエリーに分割するメソッド
+     *
+     * @param rawUri 分割したいURIを渡す
+     * @return Stringの配列を返す
+     * @throws RequestParseException リクエストのURIが正しい形式に沿っていない場合発生する
+     */
+    static String[] uriSeparator(String rawUri) throws RequestParseException {
+        String[] str = new String[URI_QUERY_NUM_ITEMS];
+        try {
+            URI uri = new URI(rawUri);
+            str[0] = uri.getPath();
+            str[1] = uri.getQuery();
+
+            return str;
+        } catch (URISyntaxException e) {
+            throw new RequestParseException(e.getMessage());
+        }
+    }
+
+    /**
+     * URIのクエリーのパースを行うメソッド
+     *
+     * @throws RequestParseException クエリーに問題があった場合発生する
+     */
+    static Map<String, String> uriQueryParse(String strUri) throws RequestParseException {
+        Map<String, String> uriQuery = new HashMap<>();
+        String[] s = strUri.split(URI_EACH_QUERY_SEPARATOR);
+        for (String s2 : s) {
+            String[] s3 = s2.split(URI_QUERY_NAME_VALUE_SEPARATOR);
+            if (s3.length == 2) {
+                uriQuery.put(s3[0], s3[1]);
+            } else {
+                throw new RequestParseException("URIのクエリーが不正なものだった");
+            }
+        }
+        return uriQuery;
+    }
+
+    /**
+     * リクエストメッセージのメソッドを返す
+     *
+     * @return HTTPメソッドを返す
+     */
+    public String getMethod() {
+        return method;
+    }
+
+    /**
+     * リクエストメッセージのURIを返す
+     *
+     * @return URIを返す
+     */
+    public String getUri() {
+        return uri;
+    }
+
+    /**
+     * リクエストメッセージURIに含まれていたQuery名を元にQuery値を返す
+     *
+     * @param name 探したいQuery名
+     * @return Query値を返す。URIに含まれていなかった場合はNullを返す
+     */
+    String findUriQuery(@Nullable String name) {
+        if (name != null) {
+            return uriQuery.get(name);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * リクエストメッセージのプロトコルバージョンを返す
+     *
+     * @return プロトコルバージョンを返す
+     */
+    String getProtocolVersion() {
+        return protocolVersion;
+    }
+
+    void setUri(String uri) {
+        this.uri = uri;
     }
 }

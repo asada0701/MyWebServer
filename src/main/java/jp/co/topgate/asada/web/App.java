@@ -1,10 +1,8 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.app.CsvMode;
 import jp.co.topgate.asada.web.app.CsvWriter;
 import jp.co.topgate.asada.web.app.HtmlEditor;
 import jp.co.topgate.asada.web.exception.BindRuntimeException;
-import jp.co.topgate.asada.web.exception.CipherRuntimeException;
 import jp.co.topgate.asada.web.exception.CsvRuntimeException;
 import jp.co.topgate.asada.web.exception.ServerStateException;
 import jp.co.topgate.asada.web.model.ModelController;
@@ -51,11 +49,11 @@ public class App {
                 }
             } while (!choices.equals(String.valueOf(Choices.END.getId())));
 
-            CsvWriter.write(CsvMode.MESSAGE_MODE, ModelController.getAllMessage());   //CSVファイルに書き込み
+            CsvWriter.writeMessage(ModelController.getAllMessage());   //CSVファイルに書き込み
             he.allInitialization();                                                   //HTMLファイルの初期化
 
         } catch (BindRuntimeException | ServerStateException | CsvRuntimeException |
-                CipherRuntimeException | NullPointerException | IOException e) {
+                NullPointerException | IOException e) {
 
             System.out.println(e.getMessage());
             System.exit(1);
@@ -92,19 +90,17 @@ public class App {
      *
      * @param choices 選択した文字
      * @return サーバーの状態をメッセージで返す
-     * @throws IOException            サーバークラスで発生した入出力エラー
-     * @throws BindRuntimeException   サーバークラスで発生したバインド例外
-     * @throws ServerStateException   サーバークラスの状態が予期しないものになった場合に発生する
-     * @throws CsvRuntimeException    CSVファイルの読み込み中か、読み込む段階で例外が発生した
-     * @throws CipherRuntimeException 読み込んだデータの複合に失敗した
-     * @throws NullPointerException   引数がnullの場合
+     * @throws IOException          サーバークラスで発生した入出力エラー{@link Server}を参照
+     * @throws BindRuntimeException サーバークラスで発生したバインド例外{@link Server#endServer()}を参照
+     * @throws ServerStateException サーバークラスの状態が予期しないものになった場合に発生する
+     * @throws CsvRuntimeException  CSVファイルの読み込み中か、読み込む段階で例外が発生した
+     * @throws NullPointerException 引数がnullの場合
      */
     static String controlServer(Server server, Choices choices) throws IOException, BindRuntimeException,
-            ServerStateException, CsvRuntimeException, CipherRuntimeException, NullPointerException {
+            ServerStateException, CsvRuntimeException, NullPointerException {
 
         Objects.requireNonNull(server);
 
-        String msg;
         switch (choices) {
 
             case START:
@@ -114,50 +110,42 @@ public class App {
 
                     case NEW:
                         server.startServer();
-                        msg = "start up http server..";
-                        break;
+                        return "start up http server..";
 
                     case RUNNABLE:
-                        msg = "http server is already running..";
-                        break;
+                        return "http server is already running..";
 
                     default:
                         server.endServer();
                         throw new ServerStateException(server.getState());
                 }
-                break;
 
             case STOP:
                 switch (server.getState()) {
                     case NEW:
 
                     case TERMINATED:
-                        msg = "http server is not running..";
-                        break;
+                        return "http server is not running..";
 
                     case RUNNABLE:
                         if (server.stopServer()) {
-                            msg = "http server stops..";
+                            return "http server stops..";
                         } else {
-                            msg = "wait a second, http server is returning a response..";
+                            return "wait a second, http server is returning a response..";
                         }
-                        break;
 
                     default:
                         server.endServer();
                         throw new ServerStateException(server.getState());
                 }
-                break;
 
             case END:
                 server.endServer();
-                msg = "bye..";
-                break;
+                return "bye..";
 
             default:
                 return null;
         }
-        return msg;
     }
 }
 

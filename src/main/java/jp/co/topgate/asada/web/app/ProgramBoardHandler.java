@@ -15,7 +15,11 @@ import java.io.OutputStream;
  *
  * @author asada
  */
-public class WebAppHandler extends Handler {
+public class ProgramBoardHandler extends Handler {
+
+    public ProgramBoardHandler(RequestMessage requestMessage){
+
+    }
 
     /**
      * リクエストが来たときに呼び出すメソッド
@@ -70,7 +74,9 @@ public class WebAppHandler extends Handler {
 
                 case "search":
                     requestLine.setUri("/program/board/search.html");
-                    HtmlEditor.writeSearchHtml(Integer.parseInt(requestMessage.findMessageBody("number")));
+                    int number = Integer.parseInt(requestMessage.findMessageBody("number"));
+                    String nameToFind = ModelController.getName(number);
+                    HtmlEditor.writeSearchHtml(nameToFind);
                     break;
 
                 case "delete1":

@@ -3,6 +3,7 @@ package jp.co.topgate.asada.web;
 import jp.co.topgate.asada.web.app.Handler;
 import jp.co.topgate.asada.web.app.HtmlEditor;
 import jp.co.topgate.asada.web.exception.BindRuntimeException;
+import jp.co.topgate.asada.web.exception.RequestParseException;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -81,7 +82,12 @@ class Server extends Thread {
                 BufferedInputStream bis = new BufferedInputStream(socket.getInputStream());
                 bis.mark(bis.available());
 
-                Handler handler = Handler.getHandler(bis);
+                Handler handler = null;
+                try {
+                    handler = Handler.getHandler(bis);
+                } catch (RequestParseException e) {
+                    //リクエストに問題があったのだからそのままレスポンスする
+                }
 
                 handler.requestComes(bis);
 

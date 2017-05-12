@@ -38,7 +38,7 @@ public class HandlerTest {
 
                 Handler sut = Handler.getHandler(bis);
 
-                assertThat(sut, is(instanceOf(WebAppHandler.class)));
+                assertThat(sut, is(instanceOf(ProgramBoardHandler.class)));
             }
         }
 
