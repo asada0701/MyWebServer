@@ -1,4 +1,4 @@
-package jp.co.topgate.asada.web;
+package jp.co.topgate.asada.web.app;
 
 /**
  * Created by yusuke-pc on 2017/05/09.
@@ -45,7 +45,7 @@ public class CipherHelperTest {
         }
 
         @Test
-        public void 正しく暗号化できるか() throws Exception {
+        public void 正しく復号できるか() throws Exception {
             assertThat(CipherHelper.decrypt("4tZb8SxYjuKq+vzVOaAtQxZj7bvgK1eioZHcogvZMfQ="),
                     is("正しく暗号化できるか"));
         }

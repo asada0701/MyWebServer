@@ -1,6 +1,9 @@
-package jp.co.topgate.asada.web;
+package jp.co.topgate.asada.web.app;
 
 import jp.co.topgate.asada.web.exception.RequestParseException;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -15,7 +18,7 @@ import java.util.Map;
  *
  * @author asada
  */
-class RequestLine {
+public class RequestLine {
     /**
      * リクエストラインを分割する
      */
@@ -57,7 +60,7 @@ class RequestLine {
      * @param bis サーバーソケットのInputStream
      * @throws RequestParseException パースに失敗した場合に投げられる
      */
-    RequestLine(BufferedInputStream bis) throws RequestParseException {
+    public RequestLine(BufferedInputStream bis) throws RequestParseException {
         if (bis == null) {
             throw new RequestParseException("引数がnullだった");
         }
@@ -117,7 +120,7 @@ class RequestLine {
      *
      * @return HTTPメソッドを返す
      */
-    String getMethod() {
+    public String getMethod() {
         return method;
     }
 
@@ -126,7 +129,7 @@ class RequestLine {
      *
      * @return URIを返す
      */
-    String getUri() {
+    public String getUri() {
         return uri;
     }
 
@@ -136,7 +139,7 @@ class RequestLine {
      * @param name 探したいQuery名
      * @return Query値を返す。URIに含まれていなかった場合はNullを返す
      */
-    String findUriQuery(String name) {
+    String findUriQuery(@Nullable String name) {
         if (name != null) {
             return uriQuery.get(name);
         } else {
@@ -153,9 +156,7 @@ class RequestLine {
         return protocolVersion;
     }
 
-    void setUri(String uri) {
-        if (uri != null) {
-            this.uri = uri;
-        }
+    void setUri(@NotNull String uri) {
+        this.uri = uri;
     }
 }

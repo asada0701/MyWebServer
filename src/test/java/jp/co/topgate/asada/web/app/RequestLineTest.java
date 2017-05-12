@@ -1,12 +1,15 @@
-package jp.co.topgate.asada.web;
+package jp.co.topgate.asada.web.app;
 
 import jp.co.topgate.asada.web.exception.RequestParseException;
-import org.junit.*;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;

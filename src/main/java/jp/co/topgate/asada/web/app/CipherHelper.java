@@ -1,4 +1,4 @@
-package jp.co.topgate.asada.web;
+package jp.co.topgate.asada.web.app;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;

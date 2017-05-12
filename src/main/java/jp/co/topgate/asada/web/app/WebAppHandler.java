@@ -1,10 +1,14 @@
-package jp.co.topgate.asada.web;
+package jp.co.topgate.asada.web.app;
 
+import jp.co.topgate.asada.web.RequestMessage;
+import jp.co.topgate.asada.web.ResponseMessage;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 import jp.co.topgate.asada.web.model.Message;
 import jp.co.topgate.asada.web.model.ModelController;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 
 /**
  * WebAppの処理を行うハンドラークラス
@@ -57,9 +61,11 @@ public class WebAppHandler extends Handler {
                     String text = requestMessage.findMessageBody("text");
                     String password = requestMessage.findMessageBody("password");
 
-                    ModelController.addMessage(name, title, text, password);
+                    if (messageCheck(name, title, text)) {
+                        ModelController.addMessage(name, title, text, password);
 
-                    HtmlEditor.writeIndexHtml();
+                        HtmlEditor.writeIndexHtml();
+                    }
                     break;
 
                 case "search":
@@ -97,6 +103,13 @@ public class WebAppHandler extends Handler {
                     HtmlEditor.writeIndexHtml();
             }
         }
+    }
+
+    private static boolean messageCheck(String name, String title, String text) {
+        if ("<script>".equals(name) || "<script>".equals(title)) {
+            return false;
+        }
+        return true;
     }
 
     /**

@@ -1,4 +1,4 @@
-package jp.co.topgate.asada.web;
+package jp.co.topgate.asada.web.app;
 
 /**
  * Created by yusuke-pc on 2017/05/09.

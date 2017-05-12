@@ -1,4 +1,4 @@
-package jp.co.topgate.asada.web;
+package jp.co.topgate.asada.web.app;
 
 import jp.co.topgate.asada.web.model.ModelController;
 import org.junit.Before;

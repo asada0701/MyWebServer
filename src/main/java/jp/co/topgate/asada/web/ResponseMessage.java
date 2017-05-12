@@ -11,7 +11,7 @@ import java.util.Map;
  *
  * @author asada
  */
-class ResponseMessage {
+public class ResponseMessage {
     /**
      * ヘッダーフィールドのコロン
      */
@@ -20,32 +20,32 @@ class ResponseMessage {
     /**
      * HTTPステータスコード:200
      */
-    static final int OK = 200;
+    public static final int OK = 200;
 
     /**
      * HTTPステータスコード:400
      */
-    static final int BAD_REQUEST = 400;
+    public static final int BAD_REQUEST = 400;
 
     /**
      * HTTPステータスコード:404
      */
-    static final int NOT_FOUND = 404;
+    public static final int NOT_FOUND = 404;
 
     /**
      * HTTPステータスコード:500
      */
-    static final int INTERNAL_SERVER_ERROR = 500;
+    public static final int INTERNAL_SERVER_ERROR = 500;
 
     /**
      * HTTPステータスコード:501
      */
-    static final int NOT_IMPLEMENTED = 501;
+    public static final int NOT_IMPLEMENTED = 501;
 
     /**
      * HTTPステータスコード:505
      */
-    static final int HTTP_VERSION_NOT_SUPPORTED = 505;
+    public static final int HTTP_VERSION_NOT_SUPPORTED = 505;
 
     /**
      * プロトコルバージョン
@@ -80,7 +80,7 @@ class ResponseMessage {
      * @param statusCode レスポンスメッセージのステータスコード
      * @param filePath   リソースファイルのパス
      */
-    ResponseMessage(OutputStream os, int statusCode, String filePath) throws IOException {
+    public ResponseMessage(OutputStream os, int statusCode, String filePath) throws IOException {
         if (os == null || filePath == null) {
             throw new IOException();
         }
@@ -166,7 +166,7 @@ class ResponseMessage {
     /**
      * プロトコルバージョンの設定をするメソッド
      */
-    void setProtocolVersion(String protocolVersion) {
+    public void setProtocolVersion(String protocolVersion) {
         if (protocolVersion != null) {
             this.protocolVersion = protocolVersion;
         }
@@ -175,7 +175,7 @@ class ResponseMessage {
     /**
      * ヘッダーフィールドにヘッダ名とヘッダ値を追加するメソッド
      */
-    void addHeader(String name, String value) {
+    public void addHeader(String name, String value) {
         if (name != null && value != null) {
             headerField.add(name + HEADER_FIELD_COLON + value);
         }

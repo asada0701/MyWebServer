@@ -1,4 +1,4 @@
-package jp.co.topgate.asada.web;
+package jp.co.topgate.asada.web.app;
 
 import com.google.common.base.Strings;
 import jp.co.topgate.asada.web.exception.CipherRuntimeException;
@@ -22,7 +22,7 @@ import java.util.Map;
  *
  * @author asada
  */
-class CsvWriter {
+public class CsvWriter {
 
     /**
      * CSVファイルのパス
@@ -50,7 +50,7 @@ class CsvWriter {
      * @throws CsvRuntimeException    CSVファイルの読み込み中か、読み込む段階で例外が発生した
      * @throws CipherRuntimeException 読み込んだデータの復号に失敗した
      */
-    static List<Message> readToMessage() throws CsvRuntimeException, CipherRuntimeException {
+    public static List<Message> readToMessage() throws CsvRuntimeException, CipherRuntimeException {
         List<Message> list = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(new File(filePath.get(CsvMode.MESSAGE_MODE))))) {
             String str;
@@ -91,7 +91,7 @@ class CsvWriter {
      * @throws CsvRuntimeException    CSVファイルの読み込み中か、読み込む段階で例外が発生した
      * @throws CipherRuntimeException 読み込んだデータの復号に失敗した
      */
-    static void write(CsvMode csvMode, List<?> list) throws CsvRuntimeException, CipherRuntimeException {
+    public static void write(CsvMode csvMode, List<?> list) throws CsvRuntimeException, CipherRuntimeException {
         try (OutputStream os = new FileOutputStream(new File(filePath.get(csvMode)))) {
             switch (csvMode) {
                 case MESSAGE_MODE:

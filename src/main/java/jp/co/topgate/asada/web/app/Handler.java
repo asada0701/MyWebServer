@@ -1,9 +1,14 @@
-package jp.co.topgate.asada.web;
+package jp.co.topgate.asada.web.app;
 
 import com.google.common.base.Strings;
+import jp.co.topgate.asada.web.ResponseMessage;
+import jp.co.topgate.asada.web.StaticHandler;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,7 +51,7 @@ public abstract class Handler {
      * @param bis ソケットの入力ストリーム
      * @return 今回の接続を担当するハンドラーのオブジェクト
      */
-    static Handler getHandler(BufferedInputStream bis) {
+    public static Handler getHandler(BufferedInputStream bis) {
         Handler handler;
         try {
             String uri = new RequestLine(bis).getUri();
@@ -118,7 +123,7 @@ public abstract class Handler {
      * @param uri リクエストラインクラスのURI
      * @return リクエストされたファイルのパス
      */
-    static String getFilePath(String uri) {
+    public static String getFilePath(String uri) {
         if (Strings.isNullOrEmpty(uri)) {
             return FILE_PATH + "/";
         }
@@ -151,7 +156,7 @@ public abstract class Handler {
         return FILE_PATH + uri;
     }
 
-    void setStatusCode(int statusCode) {
+    public void setStatusCode(int statusCode) {
         this.statusCode = statusCode;
     }
 
@@ -159,7 +164,7 @@ public abstract class Handler {
         return this.statusCode;
     }
 
-    void setRequestLine(RequestLine requestLine) {
+    public void setRequestLine(RequestLine requestLine) {
         this.requestLine = requestLine;
     }
 }

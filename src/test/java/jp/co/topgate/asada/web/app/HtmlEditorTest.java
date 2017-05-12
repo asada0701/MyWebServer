@@ -1,4 +1,4 @@
-package jp.co.topgate.asada.web;
+package jp.co.topgate.asada.web.app;
 
 import jp.co.topgate.asada.web.model.Message;
 import jp.co.topgate.asada.web.model.ModelController;
@@ -20,20 +20,15 @@ public class HtmlEditorTest {
 
     @Before
     public void setUp() throws Exception {
-        HtmlEditor.setFilePath(0, "./src/test/resources/2/index.html");
-        HtmlEditor.setFilePath(1, "./src/test/resources/2/search.html");
-        HtmlEditor.setFilePath(2, "./src/test/resources/2/delete.html");
-
         CsvWriter.setFilePath("./src/test/resources/data/message.csv");
         ModelController.setMessageList(CsvWriter.readToMessage());
-
         sut = new HtmlEditor();
     }
 
     @Test
     public void コンストラクとallInitializationメソッドのテスト() throws Exception {
         sut.allInitialization();
-        try (InputStream is = new FileInputStream(new File("./src/test/resources/2/index.html"));
+        try (InputStream is = new FileInputStream(new File("./src/main/resources/2/index.html"));
              BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
 
             assertThat(br.readLine(), is("<!DOCTYPE html>"));
@@ -93,7 +88,7 @@ public class HtmlEditorTest {
     @Test
     public void writeIndexHtmlメソッドのテスト() throws Exception {
         HtmlEditor.writeIndexHtml();
-        try (InputStream is = new FileInputStream(new File("./src/test/resources/2/index.html"));
+        try (InputStream is = new FileInputStream(new File("./src/main/resources/2/index.html"));
              BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
 
             assertThat(br.readLine(), is("<!DOCTYPE html>"));
@@ -167,7 +162,7 @@ public class HtmlEditorTest {
     @Test
     public void writeSearchHtmlメソッドのテスト() throws Exception {
         HtmlEditor.writeSearchHtml(4);
-        try (InputStream is = new FileInputStream(new File("./src/test/resources/2/search.html"));
+        try (InputStream is = new FileInputStream(new File("./src/main/resources/2/search.html"));
              BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
 
             assertThat(br.readLine(), is("<!DOCTYPE html>"));
@@ -242,7 +237,7 @@ public class HtmlEditorTest {
 
         HtmlEditor.writeDeleteHtml(m);
 
-        try (InputStream is = new FileInputStream(new File("./src/test/resources/2/delete.html"));
+        try (InputStream is = new FileInputStream(new File("./src/main/resources/2/delete.html"));
              BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
 
             assertThat(br.readLine(), is("<!DOCTYPE html>"));

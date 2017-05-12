@@ -1,6 +1,7 @@
 package jp.co.topgate.asada.web;
 
 import com.google.common.base.Strings;
+import jp.co.topgate.asada.web.app.RequestLine;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 
 import java.io.BufferedInputStream;
@@ -18,7 +19,7 @@ import java.util.Map;
  *
  * @author asada
  */
-class RequestMessage {
+public class RequestMessage {
     /**
      * ヘッダーフィールドのフィールド名とフィールド値を分割する（その後のスペースは自由のため注意）
      */
@@ -53,7 +54,7 @@ class RequestMessage {
      * @param bis サーバーソケットのInputStream
      * @throws RequestParseException パースに失敗した場合に投げられる
      */
-    RequestMessage(BufferedInputStream bis, RequestLine rl) throws RequestParseException {
+    public RequestMessage(BufferedInputStream bis, RequestLine rl) throws RequestParseException {
         if (bis == null || rl == null) {
             throw new RequestParseException("引数のどちらかがnullだった");
         }
@@ -132,7 +133,7 @@ class RequestMessage {
      * @param fieldName 探したいヘッダ名
      * @return ヘッダ値を返す。ヘッダーフィールドに含まれていなかった場合はNullを返す
      */
-    String findHeaderByName(String fieldName) {
+    public String findHeaderByName(String fieldName) {
         return headerFieldUri.get(fieldName);
     }
 
@@ -142,7 +143,7 @@ class RequestMessage {
      * @param key 探したいQuery名
      * @return Query値を返す。URIに含まれていなかった場合はNullを返す
      */
-    String findMessageBody(String key) {
+    public String findMessageBody(String key) {
         return messageBody.get(key);
     }
 }
