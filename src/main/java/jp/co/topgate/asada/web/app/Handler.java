@@ -45,7 +45,7 @@ public abstract class Handler {
     public static Handler getHandler(BufferedInputStream bis) throws RequestParseException {
         RequestMessage requestMessage = new RequestMessage(bis);
 
-        Handler handler = new StaticHandler();
+        Handler handler = new StaticHandler(requestMessage);
 
         String uri = requestMessage.getUri();
         for (String s : urlPattern.keySet()) {
@@ -114,4 +114,5 @@ public abstract class Handler {
         }
         return FILE_PATH + uri;
     }
+
 }

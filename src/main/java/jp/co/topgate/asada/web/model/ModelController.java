@@ -1,6 +1,7 @@
 package jp.co.topgate.asada.web.model;
 
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
@@ -139,11 +140,11 @@ public class ModelController {
      *
      * @return （例)2017/5/5 17:20
      */
+    @NotNull
     private static String getNowDate() {
         LocalDateTime ldt = LocalDateTime.now();
-        String s = String.valueOf(ldt.getYear()) + "/" + ldt.getMonthValue() + "/" + ldt.getDayOfMonth() +
+        return String.valueOf(ldt.getYear()) + "/" + ldt.getMonthValue() + "/" + ldt.getDayOfMonth() +
                 " " + ldt.getHour() + ":" + ldt.getMinute();
-        return s;
     }
 
     /**

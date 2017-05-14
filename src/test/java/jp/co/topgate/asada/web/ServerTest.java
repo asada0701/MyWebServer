@@ -12,7 +12,7 @@ import static org.junit.Assert.assertThat;
  * Created by yusuke-pc on 2017/04/13.
  */
 public class ServerTest {
-    @Test(expected = BindException.class)
+    @Test
     public void startServerメソッドのテスト() throws IOException {
         Server sut = new Server();
         sut.startServer();

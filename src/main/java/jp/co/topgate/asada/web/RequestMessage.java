@@ -287,7 +287,7 @@ public class RequestMessage {
         return protocolVersion;
     }
 
-    void setUri(String uri) {
+    public void setUri(String uri) {
         this.uri = uri;
     }
 }

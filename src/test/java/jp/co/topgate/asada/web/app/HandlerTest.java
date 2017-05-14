@@ -19,107 +19,107 @@ import static org.junit.Assert.assertThat;
  */
 @RunWith(Enclosed.class)
 public class HandlerTest {
-    public static class getHandlerメソッドのテスト {
-        @Test
-        public void 正しいリクエストメッセージを送る() throws Exception {
-            try (InputStream is = new FileInputStream(new File("./src/test/resources/requestMessage.txt"));
-                 BufferedInputStream bis = new BufferedInputStream(is)) {
+//    public static class getHandlerメソッドのテスト {
+//        @Test
+//        public void 正しいリクエストメッセージを送る() throws Exception {
+//            try (InputStream is = new FileInputStream(new File("./src/test/resources/requestMessage.txt"));
+//                 BufferedInputStream bis = new BufferedInputStream(is)) {
+//
+//                Handler sut = Handler.getHandler(bis);
+//
+//                assertThat(sut, is(instanceOf(StaticHandler.class)));
+//            }
+//        }
+//
+//        @Test
+//        public void WebAppHandlerが返されるテスト() throws Exception {
+//            try (InputStream is = new FileInputStream(new File("./src/test/resources/samplePostRequest.txt"));
+//                 BufferedInputStream bis = new BufferedInputStream(is)) {
+//
+//                Handler sut = Handler.getHandler(bis);
+//
+//                assertThat(sut, is(instanceOf(ProgramBoardHandler.class)));
+//            }
+//        }
+//
+//        @Test
+//        public void 誤ったリクエストメッセージを送る() throws Exception {
+//            try (InputStream is = new FileInputStream(new File("./src/test/resources/empty.txt"));
+//                 BufferedInputStream bis = new BufferedInputStream(is)) {
+//
+//                Handler sut = Handler.getHandler(bis);
+//
+//                assertThat(sut, is(instanceOf(StaticHandler.class)));
+//            }
+//        }
+//    }
 
-                Handler sut = Handler.getHandler(bis);
-
-                assertThat(sut, is(instanceOf(StaticHandler.class)));
-            }
-        }
-
-        @Test
-        public void WebAppHandlerが返されるテスト() throws Exception {
-            try (InputStream is = new FileInputStream(new File("./src/test/resources/samplePostRequest.txt"));
-                 BufferedInputStream bis = new BufferedInputStream(is)) {
-
-                Handler sut = Handler.getHandler(bis);
-
-                assertThat(sut, is(instanceOf(ProgramBoardHandler.class)));
-            }
-        }
-
-        @Test
-        public void 誤ったリクエストメッセージを送る() throws Exception {
-            try (InputStream is = new FileInputStream(new File("./src/test/resources/empty.txt"));
-                 BufferedInputStream bis = new BufferedInputStream(is)) {
-
-                Handler sut = Handler.getHandler(bis);
-
-                assertThat(sut, is(instanceOf(StaticHandler.class)));
-            }
-        }
-    }
-
-    public static class requestComesメソッドのテスト {
-        @Test
-        public void ステータスコード200のテスト() throws Exception {
-            try (InputStream is = new FileInputStream(new File("./src/test/resources/requestMessage.txt"));
-                 BufferedInputStream bis = new BufferedInputStream(is)) {
-
-                bis.mark(bis.available());
-                Handler sut = Handler.getHandler(bis);
-                bis.reset();
-                sut.requestComes(bis);
-                assertThat(sut.getStatusCode(), is(200));
-            }
-        }
-
-        @Test
-        public void ステータスコード400のテスト() throws Exception {
-            try (InputStream is = new FileInputStream(new File("./src/test/resources/empty.txt"));
-                 BufferedInputStream bis = new BufferedInputStream(is)) {
-
-                bis.mark(bis.available());
-                Handler sut = Handler.getHandler(bis);
-                bis.reset();
-                sut.requestComes(bis);
-                assertThat(sut.getStatusCode(), is(400));
-            }
-        }
-
-        @Test
-        public void ステータスコード404のテスト() throws Exception {
-            try (InputStream is = new FileInputStream(new File("./src/test/resources/NotExistTest.txt"));
-                 BufferedInputStream bis = new BufferedInputStream(is)) {
-
-                bis.mark(bis.available());
-                Handler sut = Handler.getHandler(bis);
-                bis.reset();
-                sut.requestComes(bis);
-                assertThat(sut.getStatusCode(), is(404));
-            }
-        }
-
-        @Test
-        public void ステータスコード501のテスト() throws Exception {
-            try (InputStream is = new FileInputStream(new File("./src/test/resources/HTTPMethodTest.txt"));
-                 BufferedInputStream bis = new BufferedInputStream(is)) {
-
-                bis.mark(bis.available());
-                Handler sut = Handler.getHandler(bis);
-                bis.reset();
-                sut.requestComes(bis);
-                assertThat(sut.getStatusCode(), is(501));
-            }
-        }
-
-        @Test
-        public void ステータスコード505のテスト() throws Exception {
-            try (InputStream is = new FileInputStream(new File("./src/test/resources/HTTPVersionTest.txt"));
-                 BufferedInputStream bis = new BufferedInputStream(is)) {
-
-                bis.mark(bis.available());
-                Handler sut = Handler.getHandler(bis);
-                bis.reset();
-                sut.requestComes(bis);
-                assertThat(sut.getStatusCode(), is(505));
-            }
-        }
-    }
+//    public static class requestComesメソッドのテスト {
+//        @Test
+//        public void ステータスコード200のテスト() throws Exception {
+//            try (InputStream is = new FileInputStream(new File("./src/test/resources/requestMessage.txt"));
+//                 BufferedInputStream bis = new BufferedInputStream(is)) {
+//
+//                bis.mark(bis.available());
+//                Handler sut = Handler.getHandler(bis);
+//                bis.reset();
+//                sut.requestComes(bis);
+//                assertThat(sut.getStatusCode(), is(200));
+//            }
+//        }
+//
+//        @Test
+//        public void ステータスコード400のテスト() throws Exception {
+//            try (InputStream is = new FileInputStream(new File("./src/test/resources/empty.txt"));
+//                 BufferedInputStream bis = new BufferedInputStream(is)) {
+//
+//                bis.mark(bis.available());
+//                Handler sut = Handler.getHandler(bis);
+//                bis.reset();
+//                sut.requestComes(bis);
+//                assertThat(sut.getStatusCode(), is(400));
+//            }
+//        }
+//
+//        @Test
+//        public void ステータスコード404のテスト() throws Exception {
+//            try (InputStream is = new FileInputStream(new File("./src/test/resources/NotExistTest.txt"));
+//                 BufferedInputStream bis = new BufferedInputStream(is)) {
+//
+//                bis.mark(bis.available());
+//                Handler sut = Handler.getHandler(bis);
+//                bis.reset();
+//                sut.requestComes(bis);
+//                assertThat(sut.getStatusCode(), is(404));
+//            }
+//        }
+//
+//        @Test
+//        public void ステータスコード501のテスト() throws Exception {
+//            try (InputStream is = new FileInputStream(new File("./src/test/resources/HTTPMethodTest.txt"));
+//                 BufferedInputStream bis = new BufferedInputStream(is)) {
+//
+//                bis.mark(bis.available());
+//                Handler sut = Handler.getHandler(bis);
+//                bis.reset();
+//                sut.requestComes(bis);
+//                assertThat(sut.getStatusCode(), is(501));
+//            }
+//        }
+//
+//        @Test
+//        public void ステータスコード505のテスト() throws Exception {
+//            try (InputStream is = new FileInputStream(new File("./src/test/resources/HTTPVersionTest.txt"));
+//                 BufferedInputStream bis = new BufferedInputStream(is)) {
+//
+//                bis.mark(bis.available());
+//                Handler sut = Handler.getHandler(bis);
+//                bis.reset();
+//                sut.requestComes(bis);
+//                assertThat(sut.getStatusCode(), is(505));
+//            }
+//        }
+//    }
 
     public static class getFilePathメソッドのテスト {
         @Test

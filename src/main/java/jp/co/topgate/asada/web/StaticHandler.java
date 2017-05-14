@@ -15,8 +15,12 @@ import java.io.OutputStream;
  */
 public class StaticHandler extends Handler {
 
-    public StaticHandler(RequestMessage requestMessage) {
+    private RequestMessage requestMessage;
 
+    private int statusCode;
+
+    public StaticHandler(RequestMessage requestMessage) {
+        this.requestMessage = requestMessage;
     }
 
     /**
@@ -25,15 +29,12 @@ public class StaticHandler extends Handler {
      * @param bis SocketのInputStreamをBufferedInputStreamにラップして渡す
      */
     public void requestComes(BufferedInputStream bis) throws IOException {
-        RequestLine requestLine;
         try {
             bis.reset();
-            requestLine = new RequestLine(bis);
-            this.requestLine = requestLine;
 
-            String method = requestLine.getMethod();
-            String uri = requestLine.getUri();
-            String protocolVersion = requestLine.getProtocolVersion();
+            String method = requestMessage.getMethod();
+            String uri = requestMessage.getUri();
+            String protocolVersion = requestMessage.getProtocolVersion();
 
             if (!"HTTP/1.1".equals(protocolVersion)) {
                 statusCode = ResponseMessage.HTTP_VERSION_NOT_SUPPORTED;
@@ -63,8 +64,8 @@ public class StaticHandler extends Handler {
     public void returnResponse(OutputStream os) {
         try {
             String path = "";
-            if (requestLine != null) {
-                path = Handler.getFilePath(requestLine.getUri());
+            if (requestMessage != null) {
+                path = Handler.getFilePath(requestMessage.getUri());
             }
             new ResponseMessage(os, statusCode, path);
 
