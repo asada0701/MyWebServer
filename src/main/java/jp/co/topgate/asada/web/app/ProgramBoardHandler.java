@@ -17,8 +17,12 @@ import java.io.OutputStream;
  */
 public class ProgramBoardHandler extends Handler {
 
-    public ProgramBoardHandler(RequestMessage requestMessage){
+    private int statusCode;
 
+    private RequestMessage requestMessage;
+
+    public ProgramBoardHandler(RequestMessage requestMessage) {
+        this.requestMessage = requestMessage;
     }
 
     /**
@@ -28,15 +32,14 @@ public class ProgramBoardHandler extends Handler {
      */
     @Override
     public void requestComes(BufferedInputStream bis) throws IOException {
-        super.requestComes(bis);
 
         try {
             if (statusCode == ResponseMessage.OK) {
-                if ("POST".equals(requestLine.getMethod())) {
+                if ("POST".equals(requestMessage.getMethod())) {
                     bis.reset();
-                    doPost(new RequestMessage(bis, requestLine));
+                    doPost(requestMessage);
 
-                } else if ("GET".equals(requestLine.getMethod())) {
+                } else if ("GET".equals(requestMessage.getMethod())) {
                     HtmlEditor.writeIndexHtml();
                 }
             }
@@ -55,7 +58,7 @@ public class ProgramBoardHandler extends Handler {
      */
     private void doPost(RequestMessage requestMessage) throws IOException {
         String param = requestMessage.findMessageBody("param");
-        if (param != null && requestLine.getUri().startsWith("/program/board/")) {
+        if (param != null && requestMessage.getUri().startsWith("/program/board/")) {
             Message message;
 
             switch (param) {
@@ -73,14 +76,14 @@ public class ProgramBoardHandler extends Handler {
                     break;
 
                 case "search":
-                    requestLine.setUri("/program/board/search.html");
+                    requestMessage.setUri("/program/board/search.html");
                     int number = Integer.parseInt(requestMessage.findMessageBody("number"));
                     String nameToFind = ModelController.getName(number);
                     HtmlEditor.writeSearchHtml(nameToFind);
                     break;
 
                 case "delete1":
-                    requestLine.setUri("/program/board/delete.html");
+                    requestMessage.setUri("/program/board/delete.html");
                     message = ModelController.findMessage(Integer.parseInt(requestMessage.findMessageBody("number")));
                     HtmlEditor.writeDeleteHtml(message);
                     break;
@@ -90,22 +93,22 @@ public class ProgramBoardHandler extends Handler {
                     password = requestMessage.findMessageBody("password");
 
                     if (ModelController.deleteMessage(num, password)) {
-                        requestLine.setUri("/program/board/result.html");
+                        requestMessage.setUri("/program/board/result.html");
 
                     } else {
-                        requestLine.setUri("/program/board/result.html");
+                        requestMessage.setUri("/program/board/result.html");
                         message = ModelController.findMessage(Integer.parseInt(requestMessage.findMessageBody("number")));
                         HtmlEditor.writeDeleteHtml(message);
                     }
                     break;
 
                 case "back":
-                    requestLine.setUri("/program/board/index.html");
+                    requestMessage.setUri("/program/board/index.html");
                     HtmlEditor.writeIndexHtml();
                     break;
 
                 default:
-                    requestLine.setUri("/program/board/index.html");
+                    requestMessage.setUri("/program/board/index.html");
                     HtmlEditor.writeIndexHtml();
             }
         }
@@ -128,8 +131,8 @@ public class ProgramBoardHandler extends Handler {
     public void returnResponse(OutputStream os) throws RuntimeException {
         try {
             String path = "";
-            if (requestLine != null) {
-                path = Handler.getFilePath(requestLine.getUri());
+            if (requestMessage != null) {
+                path = Handler.getFilePath(requestMessage.getUri());
             }
             new ResponseMessage(os, statusCode, path);
 
