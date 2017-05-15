@@ -3,7 +3,6 @@ package jp.co.topgate.asada.web;
 import jp.co.topgate.asada.web.app.Handler;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -15,43 +14,38 @@ import java.io.OutputStream;
  */
 public class StaticHandler extends Handler {
 
-    private RequestMessage requestMessage;
-
-    private int statusCode;
-
+    /**
+     * コンストラクタ
+     *
+     * @param requestMessage リクエストメッセージのオブジェクト
+     */
     public StaticHandler(RequestMessage requestMessage) {
         this.requestMessage = requestMessage;
     }
 
-    /**
-     * リクエストが来たときに呼び出すメソッド
-     *
-     * @param bis SocketのInputStreamをBufferedInputStreamにラップして渡す
-     */
-    public void requestComes(BufferedInputStream bis) throws IOException {
+    @Override
+    public StatusLine requestComes() {
         try {
-            bis.reset();
-
             String method = requestMessage.getMethod();
             String uri = requestMessage.getUri();
             String protocolVersion = requestMessage.getProtocolVersion();
 
             if (!"HTTP/1.1".equals(protocolVersion)) {
-                statusCode = ResponseMessage.HTTP_VERSION_NOT_SUPPORTED;
+                return StatusLine.HTTP_VERSION_NOT_SUPPORTED;
 
             } else if (!"GET".equals(method) && !"POST".equals(method)) {
-                statusCode = ResponseMessage.NOT_IMPLEMENTED;
+                return StatusLine.NOT_IMPLEMENTED;
 
             } else {
                 File file = new File(Handler.getFilePath(uri));
                 if (!file.exists() || !file.isFile()) {
-                    statusCode = ResponseMessage.NOT_FOUND;
+                    return StatusLine.NOT_FOUND;
                 } else {
-                    statusCode = ResponseMessage.OK;
+                    return StatusLine.OK;
                 }
             }
         } catch (RequestParseException e) {
-            statusCode = ResponseMessage.BAD_REQUEST;
+            return StatusLine.BAD_REQUEST;
         }
     }
 
@@ -61,13 +55,13 @@ public class StaticHandler extends Handler {
      * @param os SocketのOutputStream
      */
     @Override
-    public void returnResponse(OutputStream os) {
+    public void returnResponse(OutputStream os, StatusLine sl) {
         try {
             String path = "";
             if (requestMessage != null) {
                 path = Handler.getFilePath(requestMessage.getUri());
             }
-            new ResponseMessage(os, statusCode, path);
+            new ResponseMessage(os, sl, path);
 
         } catch (IOException e) {
 

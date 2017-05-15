@@ -2,13 +2,17 @@ package jp.co.topgate.asada.web.app;
 
 import jp.co.topgate.asada.web.RequestMessage;
 import jp.co.topgate.asada.web.ResponseMessage;
+import jp.co.topgate.asada.web.StatusLine;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 import jp.co.topgate.asada.web.model.Message;
 import jp.co.topgate.asada.web.model.ModelController;
+import org.jetbrains.annotations.NotNull;
 
-import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * WebAppの処理を行うハンドラークラス
@@ -17,37 +21,62 @@ import java.io.OutputStream;
  */
 public class ProgramBoardHandler extends Handler {
 
-    private int statusCode;
+    /**
+     * 不正な入力値を置き換える
+     */
+    private static Map<String, String> invalidChar = new HashMap<>();
 
-    private RequestMessage requestMessage;
-
-    public ProgramBoardHandler(RequestMessage requestMessage) {
-        this.requestMessage = requestMessage;
+    static {
+        invalidChar.put("<", "&lt;");
+        invalidChar.put(">", "&gt;");
+        invalidChar.put("&", "&amp;");
+        invalidChar.put("\"", "&quot;");
+        invalidChar.put("\'", "&#39;");
     }
 
     /**
-     * リクエストが来たときに呼び出すメソッド
+     * コンストラクタ
      *
-     * @param bis SocketのInputStreamをBufferedInputStreamにラップして渡す
+     * @param requestMessage リクエストメッセージのオブジェクト
      */
+    ProgramBoardHandler(RequestMessage requestMessage) {
+        this.requestMessage = requestMessage;
+    }
+
     @Override
-    public void requestComes(BufferedInputStream bis) throws IOException {
-
+    public StatusLine requestComes() {
         try {
-            if (statusCode == ResponseMessage.OK) {
-                if ("POST".equals(requestMessage.getMethod())) {
-                    bis.reset();
-                    doPost(requestMessage);
+            String method = requestMessage.getMethod();
+            String uri = requestMessage.getUri();
+            String protocolVersion = requestMessage.getProtocolVersion();
 
-                } else if ("GET".equals(requestMessage.getMethod())) {
-                    HtmlEditor.writeIndexHtml();
+            if (!"HTTP/1.1".equals(protocolVersion)) {
+                return StatusLine.HTTP_VERSION_NOT_SUPPORTED;
+
+            } else if (!"GET".equals(method) && !"POST".equals(method)) {
+                return StatusLine.NOT_IMPLEMENTED;
+
+            } else {
+                File file = new File(Handler.getFilePath(uri));
+                if (!file.exists() || !file.isFile()) {
+                    return StatusLine.NOT_FOUND;
+                } else {
+
+                    if ("POST".equals(requestMessage.getMethod())) {
+                        doPost(requestMessage);
+
+                    } else if ("GET".equals(requestMessage.getMethod())) {
+                        HtmlEditor.writeIndexHtml();
+                    }
+                    return StatusLine.OK;
                 }
             }
+
         } catch (RequestParseException e) {
-            statusCode = ResponseMessage.BAD_REQUEST;
+            return StatusLine.BAD_REQUEST;
 
         } catch (IOException e) {
-            statusCode = ResponseMessage.INTERNAL_SERVER_ERROR;
+            return StatusLine.INTERNAL_SERVER_ERROR;
         }
     }
 
@@ -68,11 +97,12 @@ public class ProgramBoardHandler extends Handler {
                     String text = requestMessage.findMessageBody("text");
                     String password = requestMessage.findMessageBody("password");
 
-                    if (messageCheck(name, title, text)) {
-                        ModelController.addMessage(name, title, text, password);
+                    name = replaceInputValue(name);
+                    title = replaceInputValue(title);
+                    text = replaceInputValue(text);
 
-                        HtmlEditor.writeIndexHtml();
-                    }
+                    ModelController.addMessage(name, title, text, password);
+                    HtmlEditor.writeIndexHtml();
                     break;
 
                 case "search":
@@ -114,11 +144,18 @@ public class ProgramBoardHandler extends Handler {
         }
     }
 
-    private static boolean messageCheck(String name, String title, String text) {
-        if ("<script>".equals(name) || "<script>".equals(title)) {
-            return false;
+    /**
+     * セキュリティに問題のある入力値(<script></script>など)をHTMLの特殊文字に置き換えるメソッド
+     *
+     * @param str 生の文字列
+     * @return 置き換えた文字列
+     */
+    @NotNull
+    static String replaceInputValue(String str) {
+        for (String key : invalidChar.keySet()) {
+            str = str.replaceAll(key, invalidChar.get(key));
         }
-        return true;
+        return str;
     }
 
     /**
@@ -128,13 +165,13 @@ public class ProgramBoardHandler extends Handler {
      * @throws RuntimeException データを保存しているCSVファイルに異常が見つかった場合に発生する
      */
     @Override
-    public void returnResponse(OutputStream os) throws RuntimeException {
+    public void returnResponse(OutputStream os, StatusLine sl) throws RuntimeException {
         try {
             String path = "";
             if (requestMessage != null) {
                 path = Handler.getFilePath(requestMessage.getUri());
             }
-            new ResponseMessage(os, statusCode, path);
+            new ResponseMessage(os, sl, path);
 
         } catch (IOException e) {
             /*

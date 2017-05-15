@@ -2,13 +2,12 @@ package jp.co.topgate.asada.web.app;
 
 import com.google.common.base.Strings;
 import jp.co.topgate.asada.web.RequestMessage;
-import jp.co.topgate.asada.web.ResponseMessage;
 import jp.co.topgate.asada.web.StaticHandler;
+import jp.co.topgate.asada.web.StatusLine;
 import jp.co.topgate.asada.web.exception.RequestParseException;
+import org.jetbrains.annotations.Nullable;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
@@ -36,14 +35,16 @@ public abstract class Handler {
         urlPattern.put("/program/board/", "/2/");
     }
 
+    protected RequestMessage requestMessage;
+
     /**
      * ハンドラーのファクトリーメソッド
      *
-     * @param bis ソケットの入力ストリーム
+     * @param is ソケットの入力ストリーム
      * @return 今回の接続を担当するハンドラーのオブジェクト
      */
-    public static Handler getHandler(BufferedInputStream bis) throws RequestParseException {
-        RequestMessage requestMessage = new RequestMessage(bis);
+    public static Handler getHandler(InputStream is) throws RequestParseException {
+        RequestMessage requestMessage = new RequestMessage(is);
 
         Handler handler = new StaticHandler(requestMessage);
 
@@ -58,18 +59,16 @@ public abstract class Handler {
     }
 
     /**
-     * リクエストが来たときに呼び出すメソッド
-     *
-     * @param bis SocketのInputStreamをBufferedInputStreamにラップして渡す
+     * 抽象メソッド、リクエストの処理を行うメソッド
      */
-    public abstract void requestComes(BufferedInputStream bis) throws IOException;
+    public abstract StatusLine requestComes();
 
     /**
      * 抽象メソッド、レスポンスを返すときに呼び出すメソッド
      *
      * @param os SocketのOutputStream
      */
-    public abstract void returnResponse(OutputStream os);
+    public abstract void returnResponse(OutputStream os, StatusLine sl);
 
 
     /**
@@ -82,7 +81,7 @@ public abstract class Handler {
      * @param uri リクエストラインクラスのURI
      * @return リクエストされたファイルのパス
      */
-    public static String getFilePath(String uri) {
+    public static String getFilePath(@Nullable String uri) {
         if (Strings.isNullOrEmpty(uri)) {
             return FILE_PATH + "/";
         }

@@ -18,7 +18,7 @@ public class StaticHandlerTest {
 //    public void returnResponseメソッドのテスト() throws Exception {
 //
 //        try (OutputStream os = new FileOutputStream(new File("./src/test/resources/responseMessage.txt"));
-//             InputStream is = new FileInputStream(new File("./src/test/resources/requestMessage.txt"));
+//             InputStream is = new FileInputStream(new File("./src/test/resources/GetRequestMessage.txt"));
 //             BufferedInputStream bis = new BufferedInputStream(is)) {
 //
 //            Handler sut = new StaticHandler();

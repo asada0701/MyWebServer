@@ -18,6 +18,8 @@ repositories {
     // You can declare any Maven/Ivy/file repository here.
     jcenter()
 
+    mavenCentral()
+
     maven {
         url 'https://repo.spring.io/libs-milestone'
     }
@@ -32,6 +34,9 @@ dependencies {
 
     //スプリングのBCrypt
     compile 'org.springframework.security:spring-security-web:5.0.0.M1'
+
+    //セキュリティ、POSTのメッセージボディ
+    compile 'org.apache.commons:commons-lang3:3.1'
 
     // Use JUnit test framework
     testCompile 'junit:junit:4.12'

@@ -79,19 +79,14 @@ class Server extends Thread {
 
                 HtmlEditor he = new HtmlEditor();
 
-                BufferedInputStream bis = new BufferedInputStream(socket.getInputStream());
-                bis.mark(bis.available());
-
-                Handler handler = null;
                 try {
-                    handler = Handler.getHandler(bis);
+                    Handler handler = Handler.getHandler(socket.getInputStream());
+                    StatusLine sl = handler.requestComes();
+                    handler.returnResponse(socket.getOutputStream(), sl);
+
                 } catch (RequestParseException e) {
-                    //リクエストに問題があったのだからそのままレスポンスする
+                    new ResponseMessage(socket.getOutputStream(), StatusLine.BAD_REQUEST, "");
                 }
-
-                handler.requestComes(bis);
-
-                handler.returnResponse(socket.getOutputStream());
 
                 socket.close();
                 socket = null;
