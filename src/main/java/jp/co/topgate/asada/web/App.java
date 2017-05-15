@@ -27,7 +27,7 @@ public class App {
             String choices;
             Scanner scan = new Scanner(System.in);
 
-            ModelController.setMessageList(CsvWriter.readToMessage());   //CSVファイル読み込み
+            ModelController.setMessageList(CsvWriter.readMessage(CsvWriter.messageCsvPath));   //CSVファイル読み込み
             HtmlEditor he = new HtmlEditor();                            //HTMLファイル読み込み
 
             do {
@@ -49,7 +49,7 @@ public class App {
                 }
             } while (!choices.equals(String.valueOf(Choices.END.getId())));
 
-            CsvWriter.writeMessage(ModelController.getAllMessage());   //CSVファイルに書き込み
+            CsvWriter.writeMessage(ModelController.getAllMessage(), CsvWriter.messageCsvPath);   //CSVファイルに書き込み
             he.allInitialization();                                                   //HTMLファイルの初期化
 
         } catch (BindRuntimeException | ServerStateException | CsvRuntimeException |
@@ -71,8 +71,9 @@ public class App {
      *
      * @param choices ユーザーが入力した文字
      * @return Choicesの列挙型で返す
+     * @throws NullPointerException 引数が例外の場合
      */
-    private static Choices getChoicesEnum(String choices) {
+    static Choices getChoicesEnum(String choices) throws NullPointerException {
         switch (choices) {
             case "1":
                 return Choices.START;
@@ -89,17 +90,18 @@ public class App {
      * サーバーを操作するメソッド
      *
      * @param choices 選択した文字
-     * @return サーバーの状態をメッセージで返す
-     * @throws IOException          サーバークラスで発生した入出力エラー{@link Server}を参照
-     * @throws BindRuntimeException サーバークラスで発生したバインド例外{@link Server#endServer()}を参照
+     * @return サーバーの状態を文字列で返す
+     * @throws IOException          {@link Server}を参照
+     * @throws BindRuntimeException {@link Server#run()}を参照
      * @throws ServerStateException サーバークラスの状態が予期しないものになった場合に発生する
-     * @throws CsvRuntimeException  CSVファイルの読み込み中か、読み込む段階で例外が発生した
+     * @throws CsvRuntimeException  {@link CsvWriter}を参照
      * @throws NullPointerException 引数がnullの場合
      */
     static String controlServer(Server server, Choices choices) throws IOException, BindRuntimeException,
             ServerStateException, CsvRuntimeException, NullPointerException {
 
         Objects.requireNonNull(server);
+        Objects.requireNonNull(choices);
 
         switch (choices) {
 
@@ -155,8 +157,19 @@ public class App {
  * @author asada
  */
 enum Choices {
+    /**
+     * Serverを立ち上げる
+     */
     START(1),
+
+    /**
+     * Serverを停止させる
+     */
     STOP(2),
+
+    /**
+     * Serveを終了させる
+     */
     END(3);
 
     private final int id;

@@ -3,16 +3,15 @@ package jp.co.topgate.asada.web.app;
 import jp.co.topgate.asada.web.RequestMessage;
 import jp.co.topgate.asada.web.ResponseMessage;
 import jp.co.topgate.asada.web.StatusLine;
-import jp.co.topgate.asada.web.exception.RequestParseException;
 import jp.co.topgate.asada.web.model.Message;
 import jp.co.topgate.asada.web.model.ModelController;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * WebAppの処理を行うハンドラークラス
@@ -45,47 +44,35 @@ public class ProgramBoardHandler extends Handler {
 
     @Override
     public StatusLine requestComes() {
+        String method = requestMessage.getMethod();
+        String uri = requestMessage.getUri();
+        String protocolVersion = requestMessage.getProtocolVersion();
+        StatusLine sl = StatusLine.getStatusLine(method, uri, protocolVersion);
+
         try {
-            String method = requestMessage.getMethod();
-            String uri = requestMessage.getUri();
-            String protocolVersion = requestMessage.getProtocolVersion();
+            if ("POST".equals(requestMessage.getMethod())) {
+                doPost(requestMessage);
 
-            if (!"HTTP/1.1".equals(protocolVersion)) {
-                return StatusLine.HTTP_VERSION_NOT_SUPPORTED;
-
-            } else if (!"GET".equals(method) && !"POST".equals(method)) {
-                return StatusLine.NOT_IMPLEMENTED;
-
-            } else {
-                File file = new File(Handler.getFilePath(uri));
-                if (!file.exists() || !file.isFile()) {
-                    return StatusLine.NOT_FOUND;
-                } else {
-
-                    if ("POST".equals(requestMessage.getMethod())) {
-                        doPost(requestMessage);
-
-                    } else if ("GET".equals(requestMessage.getMethod())) {
-                        HtmlEditor.writeIndexHtml();
-                    }
-                    return StatusLine.OK;
-                }
+            } else if ("GET".equals(requestMessage.getMethod())) {
+                HtmlEditor.writeIndexHtml();
             }
-
-        } catch (RequestParseException e) {
-            return StatusLine.BAD_REQUEST;
-
         } catch (IOException e) {
             return StatusLine.INTERNAL_SERVER_ERROR;
         }
+
+        return sl;
     }
 
     /**
      * POSTの場合の処理
      *
      * @param requestMessage リクエストメッセージクラスのオブジェクトを渡す
+     * @throws IOException
+     * @throws NullPointerException
      */
-    private void doPost(RequestMessage requestMessage) throws IOException {
+    private void doPost(RequestMessage requestMessage) throws IOException, NullPointerException {
+        Objects.requireNonNull(requestMessage);
+
         String param = requestMessage.findMessageBody("param");
         if (param != null && requestMessage.getUri().startsWith("/program/board/")) {
             Message message;
@@ -149,9 +136,11 @@ public class ProgramBoardHandler extends Handler {
      *
      * @param str 生の文字列
      * @return 置き換えた文字列
+     * @throws NullPointerException
      */
-    @NotNull
-    static String replaceInputValue(String str) {
+    static String replaceInputValue(String str) throws NullPointerException {
+        Objects.requireNonNull(str);
+
         for (String key : invalidChar.keySet()) {
             str = str.replaceAll(key, invalidChar.get(key));
         }
@@ -162,10 +151,14 @@ public class ProgramBoardHandler extends Handler {
      * レスポンスを返すときに呼び出すメソッド
      *
      * @param os SocketのOutputStream
-     * @throws RuntimeException データを保存しているCSVファイルに異常が見つかった場合に発生する
+     * @throws RuntimeException     データを保存しているCSVファイルに異常が見つかった場合に発生する
+     * @throws NullPointerException
      */
     @Override
-    public void returnResponse(OutputStream os, StatusLine sl) throws RuntimeException {
+    public void returnResponse(OutputStream os, StatusLine sl) throws RuntimeException, NullPointerException {
+        Objects.requireNonNull(os);
+        Objects.requireNonNull(sl);
+
         try {
             String path = "";
             if (requestMessage != null) {

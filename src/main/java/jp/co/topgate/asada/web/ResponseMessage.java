@@ -1,10 +1,11 @@
 package jp.co.topgate.asada.web;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * レスポンスメッセージクラス
@@ -34,35 +35,24 @@ public class ResponseMessage {
      * @param os       ソケットの出力ストリーム
      * @param sl       ステータスライン
      * @param filePath リソースファイルのパス
+     * @throws IOException
+     * @throws NullPointerException 引数がnull
      */
-    public ResponseMessage(OutputStream os, StatusLine sl, String filePath) throws IOException {
-        if (os == null || filePath == null) {
-            throw new IOException();
-        }
-        StringBuilder builder = new StringBuilder();
-
-        builder.append(protocolVersion).append(" ").append(sl.getStatusCode()).append(" ").append(sl.getReasonPhrase());
-        builder.append("\n");
+    public ResponseMessage(OutputStream os, StatusLine sl, String filePath) throws IOException, NullPointerException {
+        Objects.requireNonNull(os);
+        Objects.requireNonNull(sl);
+        Objects.requireNonNull(filePath);
 
         if (sl.equals(StatusLine.OK)) {
-            try {
-                ContentType ct = new ContentType(filePath);
-                addHeader("Content-Type", ct.getContentType());
-
-            } catch (IllegalArgumentException e) {
-                addHeader("Content-Type", ContentType.defaultFileType);
-            }
+            ContentType ct = new ContentType(filePath);
+            addHeader("Content-Type", ct.getContentType());
 
         } else {
             addHeader("Content-Type", "text/html; charset=UTF-8");
         }
 
-        for (String s : headerField) {
-            builder.append(s).append("\n");
-        }
-        builder.append("\n");
-
-        os.write(builder.toString().getBytes());
+        os.write(getResponseLine(protocolVersion, sl).getBytes());
+        os.write(getHeader(headerField).getBytes());
 
         if (sl.equals(StatusLine.OK)) {
             try (InputStream in = new FileInputStream(new File(filePath))) {
@@ -83,8 +73,11 @@ public class ResponseMessage {
      *
      * @param sl ステータスライン
      * @return エラーの場合のレスポンスメッセージの内容
+     * @throws NullPointerException 引数がnull
      */
-    private String getErrorMessageBody(StatusLine sl) {
+    @NotNull
+    @Contract(pure = true)
+    static String getErrorMessageBody(StatusLine sl) throws NullPointerException {
         switch (sl) {
             case BAD_REQUEST:
                 return "<html><head><title>400 Bad Request</title></head>" +
@@ -113,7 +106,42 @@ public class ResponseMessage {
     }
 
     /**
+     * レスポンスラインを生成する
+     *
+     * @param protocolVersion プロトコルバージョンを渡す
+     * @param sl              StatusLineを渡す
+     * @return レスポンスラインの文字列が返される
+     * @throws NullPointerException 引数がnull
+     */
+    @NotNull
+    static String getResponseLine(String protocolVersion, StatusLine sl) throws NullPointerException {
+        Objects.requireNonNull(protocolVersion);
+        Objects.requireNonNull(sl);
+
+        String[] str = {protocolVersion, String.valueOf(sl.getStatusCode()), sl.getReasonPhrase()};
+        return String.join(" ", str) + "\n";
+    }
+
+    /**
+     * ヘッダーを生成する
+     *
+     * @param list ヘッダーのリストを渡す
+     * @return ヘッダーの文字列が返される
+     */
+    @NotNull
+    static String getHeader(List<String> list) {
+        StringBuilder builder = new StringBuilder();
+        for (String s : list) {
+            builder.append(s).append("\n");
+        }
+        builder.append("\n");
+        return builder.toString();
+    }
+
+    /**
      * プロトコルバージョンの設定をするメソッド
+     *
+     * @param protocolVersion プロトコルバージョン
      */
     void setProtocolVersion(String protocolVersion) {
         if (protocolVersion != null) {
@@ -123,6 +151,9 @@ public class ResponseMessage {
 
     /**
      * ヘッダーフィールドにヘッダ名とヘッダ値を追加するメソッド
+     *
+     * @param name  ヘッダ名
+     * @param value ヘッダ値
      */
     void addHeader(String name, String value) {
         if (name != null && value != null) {

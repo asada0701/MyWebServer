@@ -5,7 +5,6 @@ import jp.co.topgate.asada.web.app.HtmlEditor;
 import jp.co.topgate.asada.web.exception.BindRuntimeException;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.net.BindException;
 import java.net.ServerSocket;

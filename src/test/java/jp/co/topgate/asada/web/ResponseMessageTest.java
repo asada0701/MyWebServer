@@ -22,11 +22,8 @@ public class ResponseMessageTest {
         @Before
         public void setUp() throws Exception {
             File file = new File("./src/test/resources/responseMessage.txt");
-            if (file.exists()) {
-                file.delete();
-            }
             FileOutputStream fos = new FileOutputStream(file);
-            sut = new ResponseMessage(fos, 200, "./src/main/resources/index.html");
+            sut = new ResponseMessage(fos, StatusLine.OK, "./src/main/resources/index.html");
         }
 
         @Test
@@ -41,13 +38,11 @@ public class ResponseMessageTest {
         }
 
         @Test
-        public void プロトコルバージョンを設定してみる() throws Exception{
+        public void プロトコルバージョンを設定してみる() throws Exception {
             File file = new File("./src/test/resources/responseMessage.txt");
-            if (file.exists()) {
-                file.delete();
-            }
+
             FileOutputStream fos = new FileOutputStream(file);
-            ResponseMessage sut2 = new ResponseMessage(fos, 200, "./src/main/resources/index.html");
+            ResponseMessage sut2 = new ResponseMessage(fos, StatusLine.OK, "./src/main/resources/index.html");
             sut2.setProtocolVersion("HTTP/2");
             assertThat(sut2.getProtocolVersion(), is("HTTP/2"));
         }
@@ -59,11 +54,9 @@ public class ResponseMessageTest {
         @Before
         public void setUp() throws Exception {
             File file = new File("./src/test/resources/responseMessage.txt");
-            if (file.exists()) {
-                file.delete();
-            }
+
             FileOutputStream fos = new FileOutputStream(file);
-            sut = new ResponseMessage(fos, 200, "./src/main/resources/index.html");
+            sut = new ResponseMessage(fos, StatusLine.OK, "./src/main/resources/index.html");
         }
 
         @Test
@@ -85,100 +78,36 @@ public class ResponseMessageTest {
 
     public static class returnResponseメソッドのテスト {
         @Test
-        public void レスポンスメッセージの生成テスト() {
-            File file = new File("./src/test/resources/responseMessage.txt");
-            if (file.exists()) {
-                file.delete();
-            }
-            FileOutputStream fos = null;
-            InputStream is = null;
-            BufferedReader br = null;
-            try {
-                fos = new FileOutputStream(file);
-                new ResponseMessage(fos, 200, "./src/main/resources/index.html");
+        public void レスポンスメッセージの生成テスト() throws Exception {
+            String path = "./src/test/resources/responseMessage.txt";
+            try (FileOutputStream fos = new FileOutputStream(path);
+                 BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(path))))) {
+                new ResponseMessage(fos, StatusLine.OK, "./src/main/resources/index.html");
 
-                is = new FileInputStream(file);
-                br = new BufferedReader(new InputStreamReader(is));
                 assertThat(br.readLine(), is("HTTP/1.1 200 OK"));
                 assertThat(br.readLine(), is("Content-Type: text/html; charset=UTF-8"));
                 assertThat(br.readLine(), is(""));
                 assertThat(br.readLine(), is("<!DOCTYPE html>"));
                 assertThat(br.readLine(), is("<html>"));
                 assertThat(br.readLine(), is("<head>"));
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                if (fos != null) {
-                    try {
-                        fos.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                if (is != null) {
-                    try {
-                        is.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                if (br != null) {
-                    try {
-                        br.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
             }
         }
     }
 
     public static class returnErrorResponseメソッドのテスト {
         @Test
-        public void バッドリクエストのテスト() {
-            File file = new File("./src/test/resources/responseMessage.txt");
-            if (file.exists()) {
-                file.delete();
-            }
-            FileOutputStream fos = null;
-            InputStream is = null;
-            BufferedReader br = null;
-            try {
-                fos = new FileOutputStream(file);
-                new ResponseMessage(fos, 400, "");
+        public void バッドリクエストのテスト() throws Exception {
+            String path = "./src/test/resources/responseMessage.txt";
+            try (FileOutputStream fos = new FileOutputStream(path);
+                 BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(path))))) {
+                new ResponseMessage(fos, StatusLine.BAD_REQUEST, "");
 
-                is = new FileInputStream(file);
-                br = new BufferedReader(new InputStreamReader(is));
                 assertThat(br.readLine(), is("HTTP/1.1 400 Bad Request"));
                 assertThat(br.readLine(), is("Content-Type: text/html; charset=UTF-8"));
                 assertThat(br.readLine(), is(""));
                 assertThat(br.readLine(), is("<html><head><title>400 Bad Request</title></head>" +
                         "<body><h1>Bad Request</h1>" +
                         "<p>Your browser sent a request that this server could not understand.<br /></p></body></html>"));
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                if (fos != null) {
-                    try {
-                        fos.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                if (is != null) {
-                    try {
-                        is.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                if (br != null) {
-                    try {
-                        br.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
             }
         }
     }

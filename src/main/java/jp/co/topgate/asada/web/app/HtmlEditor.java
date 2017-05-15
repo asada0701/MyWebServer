@@ -7,6 +7,7 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * HTMLを編集するクラス
@@ -87,9 +88,12 @@ public class HtmlEditor {
      * 投稿した人で抽出する
      *
      * @param name 探したい投稿者の名前を渡す
-     * @throws IOException HTMLファイルに書き込み中にエラー発生
+     * @throws IOException          HTMLファイルに書き込み中にエラー発生
+     * @throws NullPointerException 引数がnull
      */
-    static void writeSearchHtml(String name) throws IOException {
+    static void writeSearchHtml(String name) throws IOException, NullPointerException {
+        Objects.requireNonNull(name);
+
         List<Message> list = ModelController.findSameNameMessage(name);
 
         String path = HtmlListToEdit.SEARCH_HTML.getPath();
@@ -121,9 +125,12 @@ public class HtmlEditor {
      * 削除確認画面に削除したいメッセージを表示する
      *
      * @param message メッセージのオブジェクト
-     * @throws IOException HTMLファイルに書き込み中にエラー発生
+     * @throws IOException          HTMLファイルに書き込み中にエラー発生
+     * @throws NullPointerException 引数がnull
      */
-    static void writeDeleteHtml(Message message) throws IOException {
+    static void writeDeleteHtml(Message message) throws IOException, NullPointerException {
+        Objects.requireNonNull(message);
+
         String path = HtmlListToEdit.DELETE_HTML.getPath();
 
         try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
@@ -158,8 +165,12 @@ public class HtmlEditor {
      * @param htmlListToEdit どのHTMLファイルに書き込むか
      * @param message        書き込みたいMessageのオブジェクト
      * @return HTMLの構文に沿った文字列
+     * @throws NullPointerException 引数がnull
      */
-    private static String messageChangeToHtml(HtmlListToEdit htmlListToEdit, Message message) {
+    private static String messageChangeToHtml(HtmlListToEdit htmlListToEdit, Message message) throws NullPointerException {
+        Objects.requireNonNull(htmlListToEdit);
+        Objects.requireNonNull(message);
+
         if (message.getText().contains("\r\n")) {
             message.setText(message.getText().replaceAll("\r\n", "<br>"));
         } else if (message.getText().contains("\n")) {

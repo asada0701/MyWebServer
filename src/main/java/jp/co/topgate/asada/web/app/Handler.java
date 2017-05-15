@@ -5,12 +5,12 @@ import jp.co.topgate.asada.web.RequestMessage;
 import jp.co.topgate.asada.web.StaticHandler;
 import jp.co.topgate.asada.web.StatusLine;
 import jp.co.topgate.asada.web.exception.RequestParseException;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * ハンドラー抽象クラス
@@ -42,19 +42,20 @@ public abstract class Handler {
      *
      * @param is ソケットの入力ストリーム
      * @return 今回の接続を担当するハンドラーのオブジェクト
+     * @throws RequestParseException {@link RequestMessage}を参照
+     * @throws NullPointerException  引数がnull
      */
-    public static Handler getHandler(InputStream is) throws RequestParseException {
+    public static Handler getHandler(InputStream is) throws RequestParseException, NullPointerException {
+        Objects.requireNonNull(is);
+
         RequestMessage requestMessage = new RequestMessage(is);
-
         Handler handler = new StaticHandler(requestMessage);
-
         String uri = requestMessage.getUri();
         for (String s : urlPattern.keySet()) {
             if (uri.startsWith(s)) {
                 handler = new ProgramBoardHandler(requestMessage);
             }
         }
-
         return handler;
     }
 
@@ -70,7 +71,6 @@ public abstract class Handler {
      */
     public abstract void returnResponse(OutputStream os, StatusLine sl);
 
-
     /**
      * URIを元にファイルパスを返すメソッド
      * （例）/program/board/css/style.css
@@ -81,7 +81,7 @@ public abstract class Handler {
      * @param uri リクエストラインクラスのURI
      * @return リクエストされたファイルのパス
      */
-    public static String getFilePath(@Nullable String uri) {
+    public static String getFilePath(String uri) {
         if (Strings.isNullOrEmpty(uri)) {
             return FILE_PATH + "/";
         }
@@ -113,5 +113,4 @@ public abstract class Handler {
         }
         return FILE_PATH + uri;
     }
-
 }

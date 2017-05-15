@@ -2,8 +2,6 @@ package jp.co.topgate.asada.web;
 
 import com.google.common.base.Strings;
 import jp.co.topgate.asada.web.exception.RequestParseException;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.net.URI;
@@ -11,6 +9,7 @@ import java.net.URISyntaxException;
 import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * リクエストメッセージクラス
@@ -82,8 +81,11 @@ public class RequestMessage {
      *
      * @param is サーバーソケットのInputStream
      * @throws RequestParseException パースに失敗した場合に投げられる
+     * @throws NullPointerException  引数がnull
      */
-    public RequestMessage(@NotNull InputStream is) throws RequestParseException {
+    public RequestMessage(InputStream is) throws RequestParseException, NullPointerException {
+        Objects.requireNonNull(is);
+
         try {
             BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
             String str = br.readLine();
@@ -96,8 +98,13 @@ public class RequestMessage {
             }
 
             method = requestLine[0];
+
             String[] s = splitUri(requestLine[1]);
             uri = s[0];
+            if (s[1] != null) {
+                uriQuery = uriQueryParse(s[1]);
+            }
+
             protocolVersion = requestLine[2];
 
             if (uri.endsWith("/")) {
@@ -114,13 +121,16 @@ public class RequestMessage {
                 }
             }
 
-            if (s[1] != null) {
-                uriQuery = uriQueryParse(s[1]);
-            }
             if ("POST".equals(method)) {
                 String contentType = findHeaderByName("Content-Type");
+                String contentLength = findHeaderByName("Content-Length");
+
+                if (contentType == null || contentLength == null) {
+                    throw new RequestParseException("予期していないContent-Type");
+                }
+
                 if ("application/x-www-form-urlencoded".equals(contentType)) {
-                    charMessageBody = messageBodyParse(br);
+                    charMessageBody = charMessageBodyParse(br, Integer.parseInt(contentLength));
 
                 } else if ("multipart/form-data".equals(contentType)) {
                     throw new RequestParseException("ファイルアップロード未実装");
@@ -128,10 +138,10 @@ public class RequestMessage {
                 } else if ("application/json".equals(contentType)) {
                     throw new RequestParseException("json未実装");
 
-                } else {
-                    throw new RequestParseException("予期していないContent-Type");
                 }
             }
+        } catch (NumberFormatException e) {
+            throw new RequestParseException("コンテンツレングスが数字ではなかった");
 
         } catch (IOException e) {
             throw new RequestParseException("BufferedReaderで発生した例外:" + e.toString());
@@ -144,9 +154,11 @@ public class RequestMessage {
      * @param rawUri 分割したいURIを渡す
      * @return Stringの配列を返す
      * @throws RequestParseException リクエストのURIが正しい形式に沿っていない場合発生する
+     * @throws NullPointerException  引数がnull
      */
-    @NotNull
-    static String[] splitUri(String rawUri) throws RequestParseException {
+    static String[] splitUri(String rawUri) throws RequestParseException, NullPointerException {
+        Objects.requireNonNull(rawUri);
+
         String[] str = new String[URI_QUERY_NUM_ITEMS];
         try {
             URI uri = new URI(rawUri);
@@ -163,9 +175,11 @@ public class RequestMessage {
      * URIのクエリーのパースを行うメソッド
      *
      * @throws RequestParseException クエリーに問題があった場合発生する
+     * @throws NullPointerException  引数がnull
      */
-    @NotNull
-    static Map<String, String> uriQueryParse(String strUri) throws RequestParseException {
+    static Map<String, String> uriQueryParse(String strUri) throws RequestParseException, NullPointerException {
+        Objects.requireNonNull(strUri);
+
         Map<String, String> uriQuery = new HashMap<>();
         String[] s = strUri.split(URI_EACH_QUERY_SEPARATOR);
         for (String s2 : s) {
@@ -185,34 +199,30 @@ public class RequestMessage {
      * @param br コンストラクタで作成したBufferedReaderのオブジェクト
      * @throws IOException           BufferedReaderから発生した例外
      * @throws RequestParseException リクエストになんらかの異常があった
+     * @throws NullPointerException  引数がnull
      */
-    @NotNull
-    Map<String, String> messageBodyParse(BufferedReader br) throws IOException, RequestParseException {
+    private static Map<String, String> charMessageBodyParse(BufferedReader br, int contentLength) throws IOException, RequestParseException, NullPointerException {
+        Objects.requireNonNull(br);
+
         Map<String, String> messageBody = new HashMap<>();
-        String contentLengthS = findHeaderByName("Content-Length");
-        if (contentLengthS != null) {
-            String str = null;
-            int contentLength = Integer.parseInt(contentLengthS);
-            if (0 < contentLength) {
-                char[] c = new char[contentLength];
-                int i = br.read(c);
-                str = new String(c);
+        String str = null;
+        if (0 < contentLength) {
+            char[] c = new char[contentLength];
+            int i = br.read(c);
+            str = new String(c);
+        }
+        if (str == null) {
+            throw new RequestParseException("POSTなのにメッセージボディが空だった");
+        }
+        str = URLDecoder.decode(str, "UTF-8");
+        String[] s1 = str.split(MESSAGE_BODY_EACH_QUERY_SEPARATOR);
+        for (String aS1 : s1) {
+            String[] s2 = aS1.split(MESSAGE_BODY_NAME_VALUE_SEPARATOR);
+            if (s2.length == MESSAGE_BODY_NUM_ITEMS) {
+                messageBody.put(s2[0], s2[1]);
+            } else {
+                throw new RequestParseException("リクエストのメッセージボディが不正なものだった:" + str);
             }
-            if (str == null) {
-                throw new RequestParseException("POSTなのにメッセージボディが空だった");
-            }
-            str = URLDecoder.decode(str, "UTF-8");
-            String[] s1 = str.split(MESSAGE_BODY_EACH_QUERY_SEPARATOR);
-            for (String aS1 : s1) {
-                String[] s2 = aS1.split(MESSAGE_BODY_NAME_VALUE_SEPARATOR);
-                if (s2.length == MESSAGE_BODY_NUM_ITEMS) {
-                    messageBody.put(s2[0], s2[1]);
-                } else {
-                    throw new RequestParseException("リクエストのメッセージボディが不正なものだった:" + str);
-                }
-            }
-        } else {
-            throw new RequestParseException("ヘッダーフィールドにContent-Lengthの項目が存在しなかった");
         }
         return messageBody;
     }
@@ -259,13 +269,8 @@ public class RequestMessage {
      * @param name 探したいQuery名
      * @return Query値を返す。URIに含まれていなかった場合はNullを返す
      */
-    @Nullable
     String findUriQuery(String name) {
-        if (name != null) {
-            return uriQuery.get(name);
-        } else {
-            return null;
-        }
+        return uriQuery.getOrDefault(name, null);
     }
 
     /**
