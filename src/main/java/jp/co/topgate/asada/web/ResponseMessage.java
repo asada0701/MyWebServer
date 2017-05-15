@@ -1,8 +1,8 @@
 package jp.co.topgate.asada.web;
 
+import jp.co.topgate.asada.web.app.StatusLine;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.util.*;

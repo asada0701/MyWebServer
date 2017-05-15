@@ -1,6 +1,5 @@
-package jp.co.topgate.asada.web;
+package jp.co.topgate.asada.web.app;
 
-import jp.co.topgate.asada.web.app.Handler;
 import org.jetbrains.annotations.Contract;
 
 import java.io.File;

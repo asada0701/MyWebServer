@@ -18,11 +18,13 @@ repositories {
     // You can declare any Maven/Ivy/file repository here.
     jcenter()
 
-    mavenCentral()
-
     maven {
         url 'https://repo.spring.io/libs-milestone'
     }
+
+//    maven {
+//        url 'https://mvnrepository.com/artifact/commons-fileupload/commons-fileupload'
+//    }
 }
 
 dependencies {
@@ -35,8 +37,8 @@ dependencies {
     //スプリングのBCrypt
     compile 'org.springframework.security:spring-security-web:5.0.0.M1'
 
-    //セキュリティ、POSTのメッセージボディ
-    compile 'org.apache.commons:commons-lang3:3.1'
+    //ファイルアップロード(引数がServlet前提なので中止
+    //compile group: 'commons-fileupload', name: 'commons-fileupload', version: '1.3.1'
 
     // Use JUnit test framework
     testCompile 'junit:junit:4.12'

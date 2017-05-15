@@ -2,14 +2,16 @@ package jp.co.topgate.asada.web;
 
 import com.google.common.base.Strings;
 import jp.co.topgate.asada.web.exception.RequestParseException;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileItemFactory;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLDecoder;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * リクエストメッセージクラス
@@ -138,6 +140,8 @@ public class RequestMessage {
                 } else if ("application/json".equals(contentType)) {
                     throw new RequestParseException("json未実装");
 
+                } else {
+                    throw new RequestParseException(contentType + "は未実装です");
                 }
             }
         } catch (NumberFormatException e) {

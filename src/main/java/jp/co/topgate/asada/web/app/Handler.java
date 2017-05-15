@@ -3,7 +3,6 @@ package jp.co.topgate.asada.web.app;
 import com.google.common.base.Strings;
 import jp.co.topgate.asada.web.RequestMessage;
 import jp.co.topgate.asada.web.StaticHandler;
-import jp.co.topgate.asada.web.StatusLine;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 
 import java.io.InputStream;

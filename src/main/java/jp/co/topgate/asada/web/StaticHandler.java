@@ -1,6 +1,7 @@
 package jp.co.topgate.asada.web;
 
 import jp.co.topgate.asada.web.app.Handler;
+import jp.co.topgate.asada.web.app.StatusLine;
 
 import java.io.IOException;
 import java.io.OutputStream;
