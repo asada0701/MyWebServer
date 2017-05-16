@@ -24,8 +24,6 @@ class Server extends Thread {
     private ServerSocket serverSocket = null;
     private Socket socket = new Socket();
 
-    static int index = 1;
-
     /**
      * コンストラクタ
      *
@@ -88,14 +86,7 @@ class Server extends Thread {
 
                     StatusLine sl = handler.requestComes();
 
-                    System.out.println("ここ");
-                    if (index == 3) {
-                        System.out.println(sl.getStatusCode());
-                    } else {
-                        index++;
-                    }
-                    OutputStream os = socket.getOutputStream();
-                    handler.returnResponse(os, sl);
+                    handler.returnResponse(socket.getOutputStream(), sl);
 
                 } catch (NullPointerException e) {
                     e.printStackTrace();
