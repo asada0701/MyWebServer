@@ -3,10 +3,6 @@ package jp.co.topgate.asada.web;
 import jp.co.topgate.asada.web.app.Handler;
 import jp.co.topgate.asada.web.app.StatusLine;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.Objects;
-
 /**
  * 静的なコンテンツの配信を行うハンドラー
  *
@@ -35,29 +31,5 @@ public class StaticHandler extends Handler {
         String protocolVersion = requestMessage.getProtocolVersion();
 
         return StatusLine.getStatusLine(method, uri, protocolVersion);
-    }
-
-    /**
-     * レスポンスを返すときに呼び出すメソッド
-     *
-     * @param os SocketのOutputStream
-     * @param sl StatusLineを渡す
-     * @throws NullPointerException 引数がnull
-     */
-    @Override
-    public void returnResponse(OutputStream os, StatusLine sl) {
-        Objects.requireNonNull(os);
-        Objects.requireNonNull(sl);
-
-        try {
-            String path = "";
-            if (requestMessage != null) {
-                path = Handler.getFilePath(requestMessage.getUri());
-            }
-            new ResponseMessage(os, sl, path);
-
-        } catch (IOException e) {
-
-        }
     }
 }

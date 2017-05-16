@@ -144,32 +144,4 @@ public class ProgramBoardHandler extends Handler {
         }
         return str;
     }
-
-    /**
-     * レスポンスを返すときに呼び出すメソッド
-     *
-     * @param os SocketのOutputStream
-     * @throws RuntimeException     データを保存しているCSVファイルに異常が見つかった場合に発生する
-     * @throws NullPointerException
-     */
-    @Override
-    public void returnResponse(OutputStream os, StatusLine sl) {
-        Objects.requireNonNull(os);
-        Objects.requireNonNull(sl);
-
-        try {
-            String path = "";
-            if (requestMessage != null) {
-                path = Handler.getFilePath(requestMessage.getUri());
-            }
-            new ResponseMessage(os, sl, path);
-
-        } catch (IOException e) {
-            /*
-            ソケットにレスポンスを書き出す段階で、例外が出た。
-            原因としては、ソケットが閉じてしまった場合などが考えられる。
-            レスポンスを返せない例外なので、発生しても無視する。
-             */
-        }
-    }
 }

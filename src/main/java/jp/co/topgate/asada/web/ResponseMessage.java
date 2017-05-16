@@ -1,8 +1,6 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.app.Handler;
 import jp.co.topgate.asada.web.app.StatusLine;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
@@ -110,13 +108,13 @@ public class ResponseMessage {
      *
      * @param sl ステータスライン
      * @return エラーの場合のレスポンスメッセージの内容
-     * @throws NullPointerException 引数がnull
      */
-    @NotNull
-    @Contract(pure = true)
-    static String getErrorMessageBody(StatusLine sl) throws NullPointerException {
-        Objects.requireNonNull(sl);
-
+    static String getErrorMessageBody(StatusLine sl) {
+        if (sl == null) {
+            return "<html><head><title>500 Internal Server Error</title></head>" +
+                    "<body><h1>Internal Server Error</h1>" +
+                    "<p>サーバー内部のエラーにより表示できません。ごめんなさい。</p></body></html>";
+        }
         switch (sl) {
             case BAD_REQUEST:
                 return "<html><head><title>400 Bad Request</title></head>" +

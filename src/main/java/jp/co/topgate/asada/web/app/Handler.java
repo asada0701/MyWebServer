@@ -2,9 +2,11 @@ package jp.co.topgate.asada.web.app;
 
 import com.google.common.base.Strings;
 import jp.co.topgate.asada.web.RequestMessage;
+import jp.co.topgate.asada.web.ResponseMessage;
 import jp.co.topgate.asada.web.StaticHandler;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
@@ -34,6 +36,9 @@ public abstract class Handler {
         urlPattern.put("/program/board/", "/2/");
     }
 
+    /**
+     * リクエストメッセージ
+     */
     protected RequestMessage requestMessage;
 
     /**
@@ -65,11 +70,37 @@ public abstract class Handler {
     public abstract StatusLine requestComes();
 
     /**
-     * 抽象メソッド、レスポンスを返すときに呼び出すメソッド
+     * レスポンスを返すときに呼び出すメソッド
      *
      * @param os SocketのOutputStream
+     * @param sl StatusLineを渡す
+     * @throws NullPointerException 引数がnull
      */
-    public abstract void returnResponse(OutputStream os, StatusLine sl);
+    /**
+     * レスポンスを返すときに呼び出すメソッド
+     *
+     * @param os SocketのOutputStream
+     * @throws NullPointerException 引数がnull
+     */
+    public void returnResponse(OutputStream os, StatusLine sl) {
+        Objects.requireNonNull(os);
+        Objects.requireNonNull(sl);
+
+        try {
+            String path = "";
+            if (requestMessage != null) {
+                path = Handler.getFilePath(requestMessage.getUri());
+            }
+            new ResponseMessage(os, sl, path);
+
+        } catch (IOException e) {
+            /*
+            ソケットにレスポンスを書き出す段階で、例外が出た。
+            原因としては、ソケットが閉じてしまった場合などが考えられる。
+            レスポンスを返せない例外なので、発生しても無視する。
+             */
+        }
+    }
 
     /**
      * URIを元にファイルパスを返すメソッド
@@ -81,7 +112,7 @@ public abstract class Handler {
      * @param uri リクエストラインクラスのURI
      * @return リクエストされたファイルのパス
      */
-    public static String getFilePath(String uri) {
+    static String getFilePath(String uri) {
         if (Strings.isNullOrEmpty(uri)) {
             return FILE_PATH + "/";
         }

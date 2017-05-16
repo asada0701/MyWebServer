@@ -95,16 +95,14 @@ public class RequestMessage {
             throw new RequestParseException("引数がnullだった");
         }
         BufferedInputStream bis = new BufferedInputStream(is);
-        ByteArrayOutputStream[] baos;
         try {
             bis.mark(bis.available());
-            baos = readRequestLineHeaderField(bis);
+            String[] str = readRequestLineHeaderField(bis);
 
-            String[] requestLine = baos[0].toString().trim().split(REQUEST_LINE_SEPARATOR);
+            String[] requestLine = str[0].split(REQUEST_LINE_SEPARATOR);
             if (requestLine.length != REQUEST_LINE_NUM_ITEMS) {
-                throw new RequestParseException("リクエストラインが不正なものだった:" + baos[0].toString());
+                throw new RequestParseException("リクエストラインが不正なものだった:" + str[0]);
             }
-            String headerFieldStr = baos[1].toString().trim();
 
             method = requestLine[0];
             String[] s = splitUri(requestLine[1]);
@@ -114,7 +112,7 @@ public class RequestMessage {
             }
             protocolVersion = requestLine[2];
 
-            headerField = headerFieldParse(headerFieldStr);
+            headerField = headerFieldParse(str[1]);
 
             if ("POST".equals(method)) {
                 if (!headerField.containsKey("Content-Type") && !headerField.containsKey("Content-Length")) {
@@ -145,16 +143,6 @@ public class RequestMessage {
         } catch (NumberFormatException e) {
             throw new RequestParseException("Content-Lengthに数字以外の文字が含まれています");
         }
-
-//        System.out.println();
-//        System.out.println("リクエストメッセージの確認");
-//        System.out.println(method + " " + uri + " " + protocolVersion);
-//        for (String str : headerField.keySet()) {
-//            System.out.println(str + ": " + headerField.get(str));
-//        }
-//        for (String s : charMessageBody.keySet()) {
-//            System.out.println(s + ": " + charMessageBody.get(s));
-//        }
     }
 
     /**
@@ -165,13 +153,10 @@ public class RequestMessage {
      * となっています
      *
      * @param is サーバーソケットのInputStream
-     * @return ByteArrayOutputSteamの配列で返す
-     * @throws IOException          inputStreamを読んでいる時に発生する例外
-     * @throws NullPointerException 引数がnull
+     * @return Stringの配列で返す
+     * @throws IOException inputStreamを読んでいる時に発生する例外
      */
-    static ByteArrayOutputStream[] readRequestLineHeaderField(InputStream is) throws IOException, NullPointerException {
-        Objects.requireNonNull(is);
-
+    static String[] readRequestLineHeaderField(InputStream is) throws IOException {
         ByteArrayOutputStream[] baos = new ByteArrayOutputStream[REQUEST_LINE_NUM_ITEMS - 1];
         baos[0] = new ByteArrayOutputStream();
         baos[1] = new ByteArrayOutputStream();
@@ -191,7 +176,11 @@ public class RequestMessage {
             moreBefore = before;
             before = now;
         }
-        return baos;
+
+        String[] result = new String[baos.length];
+        result[0] = baos[0].toString().trim();
+        result[1] = baos[1].toString().trim();
+        return result;
     }
 
     /**
@@ -201,18 +190,15 @@ public class RequestMessage {
      * @param contentLength ヘッダーに含まれるContent-Lengthを渡す
      * @return メッセージボディの文字列が返される
      * @throws IOException           inputStreamを読んでいる時に発生する例外
-     * @throws NullPointerException  引数がnull
      * @throws RequestParseException メッセージボディが空
      */
-    static String readCharMessageBody(InputStream is, int contentLength) throws IOException, NullPointerException, RequestParseException {
-        Objects.requireNonNull(is);
-
+    static String readCharMessageBody(InputStream is, int contentLength) throws IOException, RequestParseException {
         BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
         while (!Strings.isNullOrEmpty(br.readLine())) ;
         String str = null;
         if (0 < contentLength) {
             char[] c = new char[contentLength];
-            int i = br.read(c);
+            //int i = br.read(c);
             str = new String(c);
         }
         return str;
