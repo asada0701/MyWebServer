@@ -2,11 +2,13 @@ package jp.co.topgate.asada.web;
 
 import jp.co.topgate.asada.web.app.Handler;
 import jp.co.topgate.asada.web.app.HtmlEditor;
+import jp.co.topgate.asada.web.app.ProgramBoardHandler;
+import jp.co.topgate.asada.web.app.StatusLine;
 import jp.co.topgate.asada.web.exception.BindRuntimeException;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -79,19 +81,20 @@ class Server extends Thread {
 
                 HtmlEditor he = new HtmlEditor();
 
-                BufferedInputStream bis = new BufferedInputStream(socket.getInputStream());
-                bis.mark(bis.available());
-
-                Handler handler = null;
                 try {
-                    handler = Handler.getHandler(bis);
+                    Handler handler = Handler.getHandler(socket.getInputStream());
+
+                    StatusLine sl = handler.requestComes();
+
+                    handler.returnResponse(socket.getOutputStream(), sl);
+
+                } catch (NullPointerException e) {
+                    e.printStackTrace();
+
                 } catch (RequestParseException e) {
-                    //リクエストに問題があったのだからそのままレスポンスする
+                    e.printStackTrace();
+                    new ResponseMessage(socket.getOutputStream(), StatusLine.BAD_REQUEST, "");
                 }
-
-                handler.requestComes(bis);
-
-                handler.returnResponse(socket.getOutputStream());
 
                 socket.close();
                 socket = null;
@@ -103,8 +106,10 @@ class Server extends Thread {
             throw new BindRuntimeException(e.toString());
 
         } catch (SocketException e) {
+            //e.printStackTrace();
 
         } catch (IOException e) {
+            e.printStackTrace();
             throw new RuntimeException();
         }
     }

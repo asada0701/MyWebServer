@@ -2,13 +2,14 @@ package jp.co.topgate.asada.web.app;
 
 import jp.co.topgate.asada.web.RequestMessage;
 import jp.co.topgate.asada.web.ResponseMessage;
-import jp.co.topgate.asada.web.exception.RequestParseException;
 import jp.co.topgate.asada.web.model.Message;
 import jp.co.topgate.asada.web.model.ModelController;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * WebAppの処理を行うハンドラークラス
@@ -17,46 +18,59 @@ import java.io.OutputStream;
  */
 public class ProgramBoardHandler extends Handler {
 
-    private int statusCode;
+    /**
+     * 不正な入力値を置き換える
+     */
+    private static Map<String, String> invalidChar = new HashMap<>();
 
-    private RequestMessage requestMessage;
-
-    public ProgramBoardHandler(RequestMessage requestMessage) {
-        this.requestMessage = requestMessage;
+    static {
+        invalidChar.put("<", "&lt;");
+        invalidChar.put(">", "&gt;");
+        invalidChar.put("&", "&amp;");
+        invalidChar.put("\"", "&quot;");
+        invalidChar.put("\'", "&#39;");
     }
 
     /**
-     * リクエストが来たときに呼び出すメソッド
+     * コンストラクタ
      *
-     * @param bis SocketのInputStreamをBufferedInputStreamにラップして渡す
+     * @param requestMessage リクエストメッセージのオブジェクト
      */
+    ProgramBoardHandler(RequestMessage requestMessage) {
+        this.requestMessage = requestMessage;
+    }
+
     @Override
-    public void requestComes(BufferedInputStream bis) throws IOException {
+    public StatusLine requestComes() {
+        String method = requestMessage.getMethod();
+        String uri = requestMessage.getUri();
+        String protocolVersion = requestMessage.getProtocolVersion();
+        StatusLine sl = StatusLine.getStatusLine(method, uri, protocolVersion);
 
         try {
-            if (statusCode == ResponseMessage.OK) {
-                if ("POST".equals(requestMessage.getMethod())) {
-                    bis.reset();
-                    doPost(requestMessage);
+            if ("POST".equals(requestMessage.getMethod())) {
+                doPost(requestMessage);
 
-                } else if ("GET".equals(requestMessage.getMethod())) {
-                    HtmlEditor.writeIndexHtml();
-                }
+            } else if ("GET".equals(requestMessage.getMethod())) {
+                HtmlEditor.writeIndexHtml();
             }
-        } catch (RequestParseException e) {
-            statusCode = ResponseMessage.BAD_REQUEST;
-
         } catch (IOException e) {
-            statusCode = ResponseMessage.INTERNAL_SERVER_ERROR;
+            return StatusLine.INTERNAL_SERVER_ERROR;
         }
+
+        return sl;
     }
 
     /**
      * POSTの場合の処理
      *
      * @param requestMessage リクエストメッセージクラスのオブジェクトを渡す
+     * @throws IOException
+     * @throws NullPointerException
      */
-    private void doPost(RequestMessage requestMessage) throws IOException {
+    private void doPost(RequestMessage requestMessage) throws IOException, NullPointerException {
+        Objects.requireNonNull(requestMessage);
+
         String param = requestMessage.findMessageBody("param");
         if (param != null && requestMessage.getUri().startsWith("/program/board/")) {
             Message message;
@@ -68,11 +82,12 @@ public class ProgramBoardHandler extends Handler {
                     String text = requestMessage.findMessageBody("text");
                     String password = requestMessage.findMessageBody("password");
 
-                    if (messageCheck(name, title, text)) {
-                        ModelController.addMessage(name, title, text, password);
+                    name = replaceInputValue(name);
+                    title = replaceInputValue(title);
+                    text = replaceInputValue(text);
 
-                        HtmlEditor.writeIndexHtml();
-                    }
+                    ModelController.addMessage(name, title, text, password);
+                    HtmlEditor.writeIndexHtml();
                     break;
 
                 case "search":
@@ -114,27 +129,40 @@ public class ProgramBoardHandler extends Handler {
         }
     }
 
-    private static boolean messageCheck(String name, String title, String text) {
-        if ("<script>".equals(name) || "<script>".equals(title)) {
-            return false;
+    /**
+     * セキュリティに問題のある入力値(<script></script>など)をHTMLの特殊文字に置き換えるメソッド
+     *
+     * @param str 生の文字列
+     * @return 置き換えた文字列
+     * @throws NullPointerException
+     */
+    static String replaceInputValue(String str) throws NullPointerException {
+        Objects.requireNonNull(str);
+
+        for (String key : invalidChar.keySet()) {
+            str = str.replaceAll(key, invalidChar.get(key));
         }
-        return true;
+        return str;
     }
 
     /**
      * レスポンスを返すときに呼び出すメソッド
      *
      * @param os SocketのOutputStream
-     * @throws RuntimeException データを保存しているCSVファイルに異常が見つかった場合に発生する
+     * @throws RuntimeException     データを保存しているCSVファイルに異常が見つかった場合に発生する
+     * @throws NullPointerException
      */
     @Override
-    public void returnResponse(OutputStream os) throws RuntimeException {
+    public void returnResponse(OutputStream os, StatusLine sl) {
+        Objects.requireNonNull(os);
+        Objects.requireNonNull(sl);
+
         try {
             String path = "";
             if (requestMessage != null) {
                 path = Handler.getFilePath(requestMessage.getUri());
             }
-            new ResponseMessage(os, statusCode, path);
+            new ResponseMessage(os, sl, path);
 
         } catch (IOException e) {
             /*

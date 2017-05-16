@@ -2,7 +2,6 @@ package jp.co.topgate.asada.web;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * コンテンツタイプクラス
@@ -14,7 +13,7 @@ class ContentType {
     /**
      * デフォルトコンテンツタイプ
      */
-    static final String defaultFileType = "application/octet-stream";
+    private static final String defaultFileType = "application/octet-stream";
 
     /**
      * ファイル拡張子とコンテンツタイプのマップ
@@ -45,14 +44,13 @@ class ContentType {
      * ファイル拡張子を取得する
      *
      * @param filePath リクエストメッセージで指定されたファイルのパス
-     * @throws NullPointerException 引数がnullの場合
      */
-    ContentType(String filePath) throws NullPointerException {
-        Objects.requireNonNull(filePath);
-
-        for (String key : fileType.keySet()) {
-            if (filePath.endsWith(key)) {
-                extension = key;
+    ContentType(String filePath) {
+        if (filePath != null) {
+            for (String key : fileType.keySet()) {
+                if (filePath.endsWith(key)) {
+                    extension = key;
+                }
             }
         }
     }

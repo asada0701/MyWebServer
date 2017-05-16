@@ -7,6 +7,7 @@ import jp.co.topgate.asada.web.model.Message;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * CSVファイルの読み書きを行うクラス
@@ -18,7 +19,7 @@ public class CsvWriter {
     /**
      * ファイルパス
      */
-    private static final String messageCsvPath = "./src/main/resources/data/message.csv";
+    public static final String messageCsvPath = "./src/main/resources/data/message.csv";
 
     /**
      * CSVファイルの項目を分割する
@@ -34,11 +35,15 @@ public class CsvWriter {
      * 過去のMessageListを、CSVファイルから読み出すメソッド
      *
      * @return 過去に投稿された文をメッセージクラスのListに格納して返す
-     * @throws CsvRuntimeException CSVファイルの読み込み中か、読み込む段階で例外が発生した
+     * @throws CsvRuntimeException  CSVファイルの中身が規定の形になっていない
+     * @throws IOException          CSVファイル読み込みに失敗した
+     * @throws NullPointerException 引数がnull
      */
-    public static List<Message> readToMessage() throws CsvRuntimeException {
+    public static List<Message> readMessage(String path) throws CsvRuntimeException, IOException, NullPointerException {
+        Objects.requireNonNull(path);
+
         List<Message> list = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(new File(messageCsvPath)))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
             String str;
             while (!Strings.isNullOrEmpty(str = br.readLine())) {
 
@@ -55,12 +60,9 @@ public class CsvWriter {
 
                     list.add(m);
                 } else {
-                    throw new IOException("指定されたCSVが規定の形にそっていないため読み込めません。");
+                    throw new CsvRuntimeException("指定されたCSVが規定の形にそっていないため読み込めません。");
                 }
             }
-        } catch (IOException e) {
-            throw new CsvRuntimeException(e.getMessage());
-
         }
         return list;
     }
@@ -69,9 +71,13 @@ public class CsvWriter {
      * MessageListを、CSVファイルに書き出すメソッド
      *
      * @param list CSVに書き込みたいListを渡す
+     * @throws CsvRuntimeException  CSVファイルの中身が規定の形になっていない
+     * @throws NullPointerException 引数がnull
      */
-    public static void writeMessage(List<Message> list) throws CsvRuntimeException {
-        try (OutputStream os = new FileOutputStream(new File(messageCsvPath))) {
+    public static void writeMessage(List<Message> list, String path) throws CsvRuntimeException, NullPointerException {
+        Objects.requireNonNull(path);
+
+        try (OutputStream os = new FileOutputStream(new File(path))) {
             for (Message m : list) {
                 String messageID = String.valueOf(m.getMessageID());
                 String password = m.getPassword();
@@ -90,7 +96,6 @@ public class CsvWriter {
 
         } catch (IOException e) {
             throw new CsvRuntimeException(e.getMessage());
-
         }
     }
 }

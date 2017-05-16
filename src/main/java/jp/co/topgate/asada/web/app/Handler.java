@@ -2,16 +2,14 @@ package jp.co.topgate.asada.web.app;
 
 import com.google.common.base.Strings;
 import jp.co.topgate.asada.web.RequestMessage;
-import jp.co.topgate.asada.web.ResponseMessage;
 import jp.co.topgate.asada.web.StaticHandler;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * ハンドラー抽象クラス
@@ -36,41 +34,42 @@ public abstract class Handler {
         urlPattern.put("/program/board/", "/2/");
     }
 
+    protected RequestMessage requestMessage;
+
     /**
      * ハンドラーのファクトリーメソッド
      *
-     * @param bis ソケットの入力ストリーム
+     * @param is ソケットの入力ストリーム
      * @return 今回の接続を担当するハンドラーのオブジェクト
+     * @throws RequestParseException {@link RequestMessage}を参照
+     * @throws NullPointerException  引数がnull
      */
-    public static Handler getHandler(BufferedInputStream bis) throws RequestParseException {
-        RequestMessage requestMessage = new RequestMessage(bis);
+    public static Handler getHandler(InputStream is) throws RequestParseException, NullPointerException {
+        Objects.requireNonNull(is);
+
+        RequestMessage requestMessage = new RequestMessage(is);
 
         Handler handler = new StaticHandler(requestMessage);
-
         String uri = requestMessage.getUri();
         for (String s : urlPattern.keySet()) {
             if (uri.startsWith(s)) {
                 handler = new ProgramBoardHandler(requestMessage);
             }
         }
-
         return handler;
     }
 
     /**
-     * リクエストが来たときに呼び出すメソッド
-     *
-     * @param bis SocketのInputStreamをBufferedInputStreamにラップして渡す
+     * 抽象メソッド、リクエストの処理を行うメソッド
      */
-    public abstract void requestComes(BufferedInputStream bis) throws IOException;
+    public abstract StatusLine requestComes();
 
     /**
      * 抽象メソッド、レスポンスを返すときに呼び出すメソッド
      *
      * @param os SocketのOutputStream
      */
-    public abstract void returnResponse(OutputStream os);
-
+    public abstract void returnResponse(OutputStream os, StatusLine sl);
 
     /**
      * URIを元にファイルパスを返すメソッド
@@ -114,5 +113,4 @@ public abstract class Handler {
         }
         return FILE_PATH + uri;
     }
-
 }

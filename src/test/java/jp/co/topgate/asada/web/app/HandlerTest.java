@@ -22,7 +22,7 @@ public class HandlerTest {
 //    public static class getHandlerメソッドのテスト {
 //        @Test
 //        public void 正しいリクエストメッセージを送る() throws Exception {
-//            try (InputStream is = new FileInputStream(new File("./src/test/resources/requestMessage.txt"));
+//            try (InputStream is = new FileInputStream(new File("./src/test/resources/GetRequestMessage.txt"));
 //                 BufferedInputStream bis = new BufferedInputStream(is)) {
 //
 //                Handler sut = Handler.getHandler(bis);
@@ -44,7 +44,7 @@ public class HandlerTest {
 //
 //        @Test
 //        public void 誤ったリクエストメッセージを送る() throws Exception {
-//            try (InputStream is = new FileInputStream(new File("./src/test/resources/empty.txt"));
+//            try (InputStream is = new FileInputStream(new File("./src/test/resources/emptyRequestMessage.txt"));
 //                 BufferedInputStream bis = new BufferedInputStream(is)) {
 //
 //                Handler sut = Handler.getHandler(bis);
@@ -57,7 +57,7 @@ public class HandlerTest {
 //    public static class requestComesメソッドのテスト {
 //        @Test
 //        public void ステータスコード200のテスト() throws Exception {
-//            try (InputStream is = new FileInputStream(new File("./src/test/resources/requestMessage.txt"));
+//            try (InputStream is = new FileInputStream(new File("./src/test/resources/GetRequestMessage.txt"));
 //                 BufferedInputStream bis = new BufferedInputStream(is)) {
 //
 //                bis.mark(bis.available());
@@ -70,7 +70,7 @@ public class HandlerTest {
 //
 //        @Test
 //        public void ステータスコード400のテスト() throws Exception {
-//            try (InputStream is = new FileInputStream(new File("./src/test/resources/empty.txt"));
+//            try (InputStream is = new FileInputStream(new File("./src/test/resources/emptyRequestMessage.txt"));
 //                 BufferedInputStream bis = new BufferedInputStream(is)) {
 //
 //                bis.mark(bis.available());

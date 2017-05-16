@@ -1,10 +1,12 @@
 package jp.co.topgate.asada.web;
 
+import jp.co.topgate.asada.web.app.Handler;
+import jp.co.topgate.asada.web.app.StatusLine;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * レスポンスメッセージクラス
@@ -18,54 +20,9 @@ public class ResponseMessage {
     private static final String HEADER_FIELD_COLON = ": ";
 
     /**
-     * HTTPステータスコード:200
-     */
-    public static final int OK = 200;
-
-    /**
-     * HTTPステータスコード:400
-     */
-    public static final int BAD_REQUEST = 400;
-
-    /**
-     * HTTPステータスコード:404
-     */
-    public static final int NOT_FOUND = 404;
-
-    /**
-     * HTTPステータスコード:500
-     */
-    public static final int INTERNAL_SERVER_ERROR = 500;
-
-    /**
-     * HTTPステータスコード:501
-     */
-    public static final int NOT_IMPLEMENTED = 501;
-
-    /**
-     * HTTPステータスコード:505
-     */
-    public static final int HTTP_VERSION_NOT_SUPPORTED = 505;
-
-    /**
      * プロトコルバージョン
      */
     private String protocolVersion = "HTTP/1.1";
-
-
-    /**
-     * リーズンフレーズ
-     */
-    private static Map<Integer, String> reasonPhrase = new HashMap<>();
-
-    static {
-        reasonPhrase.put(OK, "OK");
-        reasonPhrase.put(BAD_REQUEST, "Bad Request");
-        reasonPhrase.put(NOT_FOUND, "Not Found");
-        reasonPhrase.put(INTERNAL_SERVER_ERROR, "Internal Server Error");
-        reasonPhrase.put(NOT_IMPLEMENTED, "Not Implemented");
-        reasonPhrase.put(HTTP_VERSION_NOT_SUPPORTED, "HTTP Version Not Supported");
-    }
 
     /**
      * ヘッダーフィールド
@@ -76,40 +33,24 @@ public class ResponseMessage {
      * コンストラクタ
      * returnResponseメソッドを呼び出し、レスポンスメッセージを書き出す
      *
-     * @param os         ソケットの出力ストリーム
-     * @param statusCode レスポンスメッセージのステータスコード
-     * @param filePath   リソースファイルのパス
+     * @param os       ソケットの出力ストリーム
+     * @param sl       ステータスライン
+     * @param filePath リソースファイルのパス
+     * @throws IOException          出力ストリームに書き出し中に例外発生
+     * @throws NullPointerException 引数がnull
      */
-    public ResponseMessage(OutputStream os, int statusCode, String filePath) throws IOException {
-        if (os == null || filePath == null) {
-            throw new IOException();
-        }
-        StringBuilder builder = new StringBuilder();
+    public ResponseMessage(OutputStream os, StatusLine sl, String filePath) throws IOException, NullPointerException {
+        Objects.requireNonNull(os);
+        Objects.requireNonNull(sl);
+        Objects.requireNonNull(filePath);
 
-        builder.append(protocolVersion).append(" ").append(statusCode).append(" ").append(reasonPhrase.get(statusCode));
-        builder.append("\n");
+        if (sl.equals(StatusLine.OK)) {
+            ContentType ct = new ContentType(filePath);
+            addHeader("Content-Type", ct.getContentType());
 
-        if (statusCode == OK) {
-            try {
-                ContentType ct = new ContentType(filePath);
-                addHeader("Content-Type", ct.getContentType());
+            os.write(getResponseLine(protocolVersion, sl).getBytes());
+            os.write(getHeader(headerField).getBytes());
 
-            } catch (IllegalArgumentException e) {
-                addHeader("Content-Type", ContentType.defaultFileType);
-            }
-
-        } else {
-            addHeader("Content-Type", "text/html; charset=UTF-8");
-        }
-
-        for (String s : headerField) {
-            builder.append(s).append("\n");
-        }
-        builder.append("\n");
-
-        os.write(builder.toString().getBytes());
-
-        if (statusCode == OK) {
             try (InputStream in = new FileInputStream(new File(filePath))) {
                 int num;
                 while ((num = in.read()) != -1) {
@@ -118,55 +59,102 @@ public class ResponseMessage {
                 os.flush();
             }
         } else {
-            os.write(getErrorMessageBody(statusCode).getBytes());
+            addHeader("Content-Type", "text/html; charset=UTF-8");
+
+            os.write(getResponseLine(protocolVersion, sl).getBytes());
+            os.write(getHeader(headerField).getBytes());
+
+            os.write(getErrorMessageBody(sl).getBytes());
             os.flush();
         }
     }
 
     /**
+     * レスポンスラインを生成する
+     *
+     * @param protocolVersion プロトコルバージョンを渡す
+     * @param sl              StatusLineを渡す
+     * @return レスポンスラインの文字列が返される
+     * @throws NullPointerException 引数がnull
+     */
+    @NotNull
+    static String getResponseLine(String protocolVersion, StatusLine sl) throws NullPointerException {
+        Objects.requireNonNull(protocolVersion);
+        Objects.requireNonNull(sl);
+
+        String[] str = {protocolVersion, String.valueOf(sl.getStatusCode()), sl.getReasonPhrase()};
+        return String.join(" ", str) + "\n";
+    }
+
+    /**
+     * ヘッダーを生成する
+     *
+     * @param list ヘッダーのリストを渡す
+     * @return ヘッダーの文字列が返される
+     * @throws NullPointerException 引数がnull
+     */
+    @NotNull
+    static String getHeader(List<String> list) throws NullPointerException {
+        Objects.requireNonNull(list);
+
+        StringBuilder builder = new StringBuilder();
+        for (String s : list) {
+            builder.append(s).append("\n");
+        }
+        builder.append("\n");
+        return builder.toString();
+    }
+
+    /**
      * エラーメッセージを保持しているメソッド
      *
-     * @param statusCode ステータスコード
+     * @param sl ステータスライン
      * @return エラーの場合のレスポンスメッセージの内容
+     * @throws NullPointerException 引数がnull
      */
-    private String getErrorMessageBody(int statusCode) {
-        String s;
-        switch (statusCode) {
+    @NotNull
+    @Contract(pure = true)
+    static String getErrorMessageBody(StatusLine sl) throws NullPointerException {
+        Objects.requireNonNull(sl);
+
+        switch (sl) {
             case BAD_REQUEST:
-                s = "<html><head><title>400 Bad Request</title></head>" +
+                return "<html><head><title>400 Bad Request</title></head>" +
                         "<body><h1>Bad Request</h1>" +
                         "<p>Your browser sent a request that this server could not understand.<br /></p></body></html>";
-                break;
 
             case NOT_FOUND:
-                s = "<html><head><title>404 Not Found</title></head>" +
+                return "<html><head><title>404 Not Found</title></head>" +
                         "<body><h1>Not Found</h1>" +
                         "<p>お探しのページは見つかりませんでした。</p></body></html>";
-                break;
+
+            case INTERNAL_SERVER_ERROR:
+                return "<html><head><title>500 Internal Server Error</title></head>" +
+                        "<body><h1>Internal Server Error</h1>" +
+                        "<p>サーバー内部のエラーにより表示できません。ごめんなさい。</p></body></html>";
 
             case NOT_IMPLEMENTED:
-                s = "<html><head><title>501 Not Implemented</title></head>" +
+                return "<html><head><title>501 Not Implemented</title></head>" +
                         "<body><h1>Not Implemented</h1>" +
                         "<p>Webサーバーでメソッドが実装されていません。</p></body></html>";
-                break;
 
             case HTTP_VERSION_NOT_SUPPORTED:
-                s = "<html><head><title>505 HTTP Version Not Supported</title></head>" +
+                return "<html><head><title>505 HTTP Version Not Supported</title></head>" +
                         "<body><h1>HTTP Version Not Supported</h1></body></html>";
-                break;
 
             default:
-                s = "<html><head><title>500 Internal Server Error</title></head>" +
+                return "<html><head><title>500 Internal Server Error</title></head>" +
                         "<body><h1>Internal Server Error</h1>" +
                         "<p>サーバー内部のエラーにより表示できません。ごめんなさい。</p></body></html>";
         }
-        return s;
     }
 
     /**
      * プロトコルバージョンの設定をするメソッド
+     *
+     * @param protocolVersion プロトコルバージョン
      */
-    public void setProtocolVersion(String protocolVersion) {
+    void setProtocolVersion(String protocolVersion) {
         if (protocolVersion != null) {
             this.protocolVersion = protocolVersion;
         }
@@ -174,13 +162,17 @@ public class ResponseMessage {
 
     /**
      * ヘッダーフィールドにヘッダ名とヘッダ値を追加するメソッド
+     *
+     * @param name  ヘッダ名
+     * @param value ヘッダ値
      */
-    public void addHeader(String name, String value) {
+    void addHeader(String name, String value) {
         if (name != null && value != null) {
             headerField.add(name + HEADER_FIELD_COLON + value);
         }
     }
 
+    //テスト用
     String getProtocolVersion() {
         return this.protocolVersion;
     }

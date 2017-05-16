@@ -14,7 +14,7 @@ import java.util.List;
  *
  * @author asada
  */
-public class ModelController {
+public final class ModelController {
 
     /**
      * 書き込まれたメッセージのリスト
