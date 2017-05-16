@@ -2,10 +2,6 @@ package jp.co.topgate.asada.web;
 
 import com.google.common.base.Strings;
 import jp.co.topgate.asada.web.exception.RequestParseException;
-import org.apache.commons.fileupload.FileItem;
-import org.apache.commons.fileupload.FileItemFactory;
-import org.apache.commons.fileupload.disk.DiskFileItemFactory;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 
 import java.io.*;
 import java.net.URI;
@@ -71,11 +67,21 @@ public class RequestMessage {
      */
     private static final int MESSAGE_BODY_NUM_ITEMS = 2;
 
+    /**
+     * ASCIIコード:13(CR)
+     */
+    private static final int CARRIAGE_RETURN = 13;
+
+    /**
+     * ASCIIコード:10(LF)
+     */
+    private static final int LINE_FEED = 10;
+
     private String method = null;
     private String uri = null;
     private Map<String, String> uriQuery = new HashMap<>();
     private String protocolVersion = null;
-    private Map<String, String> headerFieldUri = new HashMap<>();
+    private Map<String, String> headerField = new HashMap<>();
     private Map<String, String> charMessageBody = new HashMap<>();
 
     /**
@@ -83,56 +89,44 @@ public class RequestMessage {
      *
      * @param is サーバーソケットのInputStream
      * @throws RequestParseException パースに失敗した場合に投げられる
-     * @throws NullPointerException  引数がnull
      */
-    public RequestMessage(InputStream is) throws RequestParseException, NullPointerException {
-        Objects.requireNonNull(is);
-
+    public RequestMessage(InputStream is) throws RequestParseException {
+        if (is == null) {
+            throw new RequestParseException("引数がnullだった");
+        }
+        BufferedInputStream bis = new BufferedInputStream(is);
+        ByteArrayOutputStream[] baos;
         try {
-            BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-            String str = br.readLine();
-            if (Strings.isNullOrEmpty(str)) {
-                throw new RequestParseException("BufferedReaderの中身がnullもしくは空である");
-            }
-            String[] requestLine = str.split(REQUEST_LINE_SEPARATOR);
+            bis.mark(bis.available());
+            baos = readRequestLineHeaderField(bis);
+
+            String[] requestLine = baos[0].toString().trim().split(REQUEST_LINE_SEPARATOR);
             if (requestLine.length != REQUEST_LINE_NUM_ITEMS) {
-                throw new RequestParseException("リクエストラインが不正なものだった:" + str);
+                throw new RequestParseException("リクエストラインが不正なものだった:" + baos[0].toString());
             }
+            String headerFieldStr = baos[1].toString().trim();
 
             method = requestLine[0];
-
             String[] s = splitUri(requestLine[1]);
             uri = s[0];
             if (s[1] != null) {
                 uriQuery = uriQueryParse(s[1]);
             }
-
             protocolVersion = requestLine[2];
 
-            if (uri.endsWith("/")) {
-                uri = uri + "index.html";
-            }
-
-            while (!Strings.isNullOrEmpty(str = br.readLine())) {
-                String[] header = str.split(HEADER_FIELD_NAME_VALUE_SEPARATOR, 2);
-                if (header.length >= HEADER_FIELD_NUM_ITEMS) {
-                    header[1] = header[1].trim();
-                    headerFieldUri.put(header[0], header[1]);
-                } else {
-                    throw new RequestParseException("ヘッダーフィールドが不正なものだった:" + str);
-                }
-            }
+            headerField = headerFieldParse(headerFieldStr);
 
             if ("POST".equals(method)) {
-                String contentType = findHeaderByName("Content-Type");
-                String contentLength = findHeaderByName("Content-Length");
-
-                if (contentType == null || contentLength == null) {
-                    throw new RequestParseException("予期していないContent-Type");
+                if (!headerField.containsKey("Content-Type") && !headerField.containsKey("Content-Length")) {
+                    throw new RequestParseException("Content-TypeかContent-Lengthがリクエストに含まれていません");
                 }
 
+                String contentType = findHeaderByName("Content-Type");
+                int contentLength = Integer.parseInt(findHeaderByName("Content-Length"));
+
+                bis.reset();
                 if ("application/x-www-form-urlencoded".equals(contentType)) {
-                    charMessageBody = charMessageBodyParse(br, Integer.parseInt(contentLength));
+                    charMessageBody = messageBodyParse(readCharMessageBody(bis, contentLength));
 
                 } else if ("multipart/form-data".equals(contentType)) {
                     throw new RequestParseException("ファイルアップロード未実装");
@@ -144,12 +138,84 @@ public class RequestMessage {
                     throw new RequestParseException(contentType + "は未実装です");
                 }
             }
-        } catch (NumberFormatException e) {
-            throw new RequestParseException("コンテンツレングスが数字ではなかった");
 
         } catch (IOException e) {
-            throw new RequestParseException("BufferedReaderで発生した例外:" + e.toString());
+            throw new RequestParseException("bufferedInputStream周りでの例外");
+
+        } catch (NumberFormatException e) {
+            throw new RequestParseException("Content-Lengthに数字以外の文字が含まれています");
         }
+
+//        System.out.println();
+//        System.out.println("リクエストメッセージの確認");
+//        System.out.println(method + " " + uri + " " + protocolVersion);
+//        for (String str : headerField.keySet()) {
+//            System.out.println(str + ": " + headerField.get(str));
+//        }
+//        for (String s : charMessageBody.keySet()) {
+//            System.out.println(s + ": " + charMessageBody.get(s));
+//        }
+    }
+
+    /**
+     * InputStreamを読み、ByteArrayOutputStreamの配列で返す
+     * 添え字について
+     * [0].リクエストライン
+     * [1].ヘッダーフィールド
+     * となっています
+     *
+     * @param is サーバーソケットのInputStream
+     * @return ByteArrayOutputSteamの配列で返す
+     * @throws IOException          inputStreamを読んでいる時に発生する例外
+     * @throws NullPointerException 引数がnull
+     */
+    static ByteArrayOutputStream[] readRequestLineHeaderField(InputStream is) throws IOException, NullPointerException {
+        Objects.requireNonNull(is);
+
+        ByteArrayOutputStream[] baos = new ByteArrayOutputStream[REQUEST_LINE_NUM_ITEMS - 1];
+        baos[0] = new ByteArrayOutputStream();
+        baos[1] = new ByteArrayOutputStream();
+
+        int index = 0, now, before = 0, moreBefore = 0, moremoreBefore = 0;
+        while ((now = is.read()) != -1) {
+            baos[index].write(now);
+
+            if (index == 0 && before == CARRIAGE_RETURN && now == LINE_FEED) {    //リクエストラインを読み終わる
+                index = 1;
+            }
+            if (index == 1 && moremoreBefore == CARRIAGE_RETURN && moreBefore == LINE_FEED
+                    && before == CARRIAGE_RETURN && now == LINE_FEED) {           //ヘッダーフィールドを読み終わる
+                break;
+            }
+            moremoreBefore = moreBefore;
+            moreBefore = before;
+            before = now;
+        }
+        return baos;
+    }
+
+    /**
+     * 文字列の場合のメッセージボディの取得メソッド
+     *
+     * @param is            サーバーソケットのInputStream
+     * @param contentLength ヘッダーに含まれるContent-Lengthを渡す
+     * @return メッセージボディの文字列が返される
+     * @throws IOException           inputStreamを読んでいる時に発生する例外
+     * @throws NullPointerException  引数がnull
+     * @throws RequestParseException メッセージボディが空
+     */
+    static String readCharMessageBody(InputStream is, int contentLength) throws IOException, NullPointerException, RequestParseException {
+        Objects.requireNonNull(is);
+
+        BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+        while (!Strings.isNullOrEmpty(br.readLine())) ;
+        String str = null;
+        if (0 < contentLength) {
+            char[] c = new char[contentLength];
+            int i = br.read(c);
+            str = new String(c);
+        }
+        return str;
     }
 
     /**
@@ -168,6 +234,10 @@ public class RequestMessage {
             URI uri = new URI(rawUri);
             str[0] = uri.getPath();
             str[1] = uri.getQuery();
+
+            if (str[0].endsWith("/")) {
+                str[0] = str[0] + "index.html";
+            }
             return str;
 
         } catch (URISyntaxException e) {
@@ -198,37 +268,50 @@ public class RequestMessage {
     }
 
     /**
+     * ヘッダーフィールドのパースを行うメソッド
+     *
+     * @param headerField パースしたい文字列
+     * @return パースした結果をMapで返す
+     */
+    static Map<String, String> headerFieldParse(String headerField) {
+        Map<String, String> map = new HashMap<>();
+        String[] str = headerField.split("\n");
+        for (String s : str) {
+            String[] header = s.split(HEADER_FIELD_NAME_VALUE_SEPARATOR, HEADER_FIELD_NUM_ITEMS);
+            header[1] = header[1].trim();
+            map.put(header[0], header[1]);
+        }
+        return map;
+    }
+
+    /**
      * メッセージボディをパースするメソッド
      *
-     * @param br コンストラクタで作成したBufferedReaderのオブジェクト
-     * @throws IOException           BufferedReaderから発生した例外
+     * @param messageBody パースしたい文字列
+     * @return パースした結果をMapで返す
      * @throws RequestParseException リクエストになんらかの異常があった
      * @throws NullPointerException  引数がnull
      */
-    private static Map<String, String> charMessageBodyParse(BufferedReader br, int contentLength) throws IOException, RequestParseException, NullPointerException {
-        Objects.requireNonNull(br);
+    static Map<String, String> messageBodyParse(String messageBody) throws RequestParseException, NullPointerException {
+        Objects.requireNonNull(messageBody);
+        try {
+            messageBody = URLDecoder.decode(messageBody, "UTF-8");
 
-        Map<String, String> messageBody = new HashMap<>();
-        String str = null;
-        if (0 < contentLength) {
-            char[] c = new char[contentLength];
-            int i = br.read(c);
-            str = new String(c);
+        } catch (UnsupportedEncodingException e) {
+            throw new RequestParseException("UTF-8でのデコードに失敗");
         }
-        if (str == null) {
-            throw new RequestParseException("POSTなのにメッセージボディが空だった");
-        }
-        str = URLDecoder.decode(str, "UTF-8");
-        String[] s1 = str.split(MESSAGE_BODY_EACH_QUERY_SEPARATOR);
+
+        Map<String, String> result = new HashMap<>();
+        String[] s1 = messageBody.split(MESSAGE_BODY_EACH_QUERY_SEPARATOR);
         for (String aS1 : s1) {
             String[] s2 = aS1.split(MESSAGE_BODY_NAME_VALUE_SEPARATOR);
             if (s2.length == MESSAGE_BODY_NUM_ITEMS) {
-                messageBody.put(s2[0], s2[1]);
+                result.put(s2[0], s2[1]);
             } else {
-                throw new RequestParseException("リクエストのメッセージボディが不正なものだった:" + str);
+                throw new RequestParseException("リクエストのメッセージボディが不正なものだった");
             }
         }
-        return messageBody;
+        return result;
     }
 
     /**
@@ -284,7 +367,7 @@ public class RequestMessage {
      * @return ヘッダ値を返す。ヘッダーフィールドに含まれていなかった場合はNullを返す
      */
     String findHeaderByName(String fieldName) {
-        return headerFieldUri.get(fieldName);
+        return headerField.get(fieldName);
     }
 
     /**

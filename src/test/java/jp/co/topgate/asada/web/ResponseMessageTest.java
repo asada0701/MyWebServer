@@ -7,8 +7,11 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -16,6 +19,129 @@ import static org.junit.Assert.assertThat;
  */
 @RunWith(Enclosed.class)
 public class ResponseMessageTest {
+
+    public static class getResponseLineメソッドのテスト {
+        @Test(expected = NullPointerException.class)
+        public void 引数StatusLineのnullチェック() {
+            ResponseMessage.getResponseLine("HTTP/1.1", null);
+        }
+
+        @Test(expected = NullPointerException.class)
+        public void 引数protocolVersionのnullチェック() {
+            ResponseMessage.getResponseLine(null, StatusLine.OK);
+        }
+
+        @Test(expected = NullPointerException.class)
+        public void 引数両方のnullチェック() {
+            ResponseMessage.getResponseLine(null, null);
+        }
+
+        @Test
+        public void ステータスコード200のテスト() {
+            String responseLine = ResponseMessage.getResponseLine("HTTP/2", StatusLine.OK);
+            assertThat(responseLine, is("HTTP/2 200 OK\n"));
+        }
+
+        @Test
+        public void ステータスコード400のテスト() {
+            String responseLine = ResponseMessage.getResponseLine("HTTP/1.1", StatusLine.BAD_REQUEST);
+            assertThat(responseLine, is("HTTP/1.1 400 Bad Request\n"));
+        }
+
+        @Test
+        public void ステータスコード404のテスト() {
+            String responseLine = ResponseMessage.getResponseLine("HTTP/1.1", StatusLine.NOT_FOUND);
+            assertThat(responseLine, is("HTTP/1.1 404 Not Found\n"));
+        }
+
+        @Test
+        public void ステータスコード500のテスト() {
+            String responseLine = ResponseMessage.getResponseLine("HTTP/1.1", StatusLine.INTERNAL_SERVER_ERROR);
+            assertThat(responseLine, is("HTTP/1.1 500 Internal Server Error\n"));
+        }
+
+        @Test
+        public void ステータスコード501のテスト() {
+            String responseLine = ResponseMessage.getResponseLine("HTTP/1.1", StatusLine.NOT_IMPLEMENTED);
+            assertThat(responseLine, is("HTTP/1.1 501 Not Implemented\n"));
+        }
+
+        @Test
+        public void ステータスコード505のテスト() {
+            String responseLine = ResponseMessage.getResponseLine("HTTP/1.1", StatusLine.HTTP_VERSION_NOT_SUPPORTED);
+            assertThat(responseLine, is("HTTP/1.1 505 HTTP Version Not Supported\n"));
+        }
+    }
+
+    public static class getHeaderメソッドのテスト {
+        @Test(expected = NullPointerException.class)
+        public void nullチェック() {
+            ResponseMessage.getHeader(null);
+        }
+
+        @Test
+        public void 空チェック() {
+            List<String> list = new ArrayList<>();
+            String sut = ResponseMessage.getHeader(list);
+            assertThat(sut, is("\n"));
+        }
+
+        @Test
+        public void 正しく動作するか() {
+            List<String> list = new ArrayList<>();
+            list.add("Connection: Keep-Alive");
+            list.add("Content-Type: text/html; charset=UTF-8");
+
+            String sut = ResponseMessage.getHeader(list);
+            assertThat(sut, is("Connection: Keep-Alive\nContent-Type: text/html; charset=UTF-8\n\n"));
+        }
+    }
+
+    public static class getErrorMessageBodyメソッドのテスト {
+        @Test(expected = NullPointerException.class)
+        public void nullチェック() {
+            ResponseMessage.getErrorMessageBody(null);
+        }
+
+        @Test
+        public void BadRequest() {
+            String str = ResponseMessage.getErrorMessageBody(StatusLine.BAD_REQUEST);
+            assertThat(str, is("<html><head><title>400 Bad Request</title></head>" +
+                    "<body><h1>Bad Request</h1>" +
+                    "<p>Your browser sent a request that this server could not understand.<br /></p></body></html>"));
+        }
+
+        @Test
+        public void NotFound() {
+            String str = ResponseMessage.getErrorMessageBody(StatusLine.NOT_FOUND);
+            assertThat(str, is("<html><head><title>404 Not Found</title></head>" +
+                    "<body><h1>Not Found</h1>" +
+                    "<p>お探しのページは見つかりませんでした。</p></body></html>"));
+        }
+
+        @Test
+        public void InternalServerError() {
+            String str = ResponseMessage.getErrorMessageBody(StatusLine.INTERNAL_SERVER_ERROR);
+            assertThat(str, is("<html><head><title>500 Internal Server Error</title></head>" +
+                    "<body><h1>Internal Server Error</h1>" +
+                    "<p>サーバー内部のエラーにより表示できません。ごめんなさい。</p></body></html>"));
+        }
+
+        @Test
+        public void NotImplemented() {
+            String str = ResponseMessage.getErrorMessageBody(StatusLine.NOT_IMPLEMENTED);
+            assertThat(str, is("<html><head><title>501 Not Implemented</title></head>" +
+                    "<body><h1>Not Implemented</h1>" +
+                    "<p>Webサーバーでメソッドが実装されていません。</p></body></html>"));
+        }
+
+        @Test
+        public void HTTPVersionNotSupported() {
+            String str = ResponseMessage.getErrorMessageBody(StatusLine.HTTP_VERSION_NOT_SUPPORTED);
+            assertThat(str, is("<html><head><title>505 HTTP Version Not Supported</title></head>" +
+                    "<body><h1>HTTP Version Not Supported</h1></body></html>"));
+        }
+    }
 
     public static class プロトコルバージョンのテスト {
         ResponseMessage sut;
@@ -77,7 +203,28 @@ public class ResponseMessageTest {
         }
     }
 
-    public static class returnResponseメソッドのテスト {
+    public static class コンストラクタのテスト {
+        @Test(expected = NullPointerException.class)
+        public void 引数outputStreamのnullチェック() throws Exception {
+            new ResponseMessage(null, StatusLine.OK, "");
+        }
+
+        @Test(expected = NullPointerException.class)
+        public void 引数StatusLineのnullチェック() throws Exception {
+            String path = "./src/test/resources/responseMessage.txt";
+            try (FileOutputStream fos = new FileOutputStream(path)) {
+                new ResponseMessage(fos, null, "./src/main/resources/index.html");
+            }
+        }
+
+        @Test(expected = NullPointerException.class)
+        public void 引数ファイルパスのnullチェック() throws Exception {
+            String path = "./src/test/resources/responseMessage.txt";
+            try (FileOutputStream fos = new FileOutputStream(path)) {
+                new ResponseMessage(fos, StatusLine.OK, null);
+            }
+        }
+
         @Test
         public void レスポンスメッセージの生成テスト() throws Exception {
             String path = "./src/test/resources/responseMessage.txt";
@@ -91,11 +238,34 @@ public class ResponseMessageTest {
                 assertThat(br.readLine(), is("<!DOCTYPE html>"));
                 assertThat(br.readLine(), is("<html>"));
                 assertThat(br.readLine(), is("<head>"));
+                assertThat(br.readLine(), is("    <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">"));
+                assertThat(br.readLine(), is("    <link rel=\"stylesheet\" type=\"text/css\" href=\"./css/style.css\">"));
+                assertThat(br.readLine(), is("    <script type=\"text/javascript\" src=\"./js/myjs.js\"></script>"));
+                assertThat(br.readLine(), is("</head>"));
+                assertThat(br.readLine(), is("<body>"));
+                assertThat(br.readLine(), is("<center>"));
+                assertThat(br.readLine(), is("    <div id=\"header\">"));
+                assertThat(br.readLine(), is("        <h1>こんにちは</h1>"));
+                assertThat(br.readLine(), is("        <p>"));
+                assertThat(br.readLine(), is("            <script>"));
+                assertThat(br.readLine(), is("            koshin();"));
+                assertThat(br.readLine(), is("            </script>"));
+                assertThat(br.readLine(), is("        </p>"));
+                assertThat(br.readLine(), is("    </div>"));
+                assertThat(br.readLine(), is("    <div id=\"gazou\">"));
+                assertThat(br.readLine(), is("        <p>"));
+                assertThat(br.readLine(), is("            <img src=\"./img/s_1.jpg\" width=\"200\" height=\"180\" alt=\"猫\"/>"));
+                assertThat(br.readLine(), is("            <img src=\"./img/loading-loop.gif\" width=\"200\" height=\"180\"/>"));
+                assertThat(br.readLine(), is("            <img src=\"./img/s_pet_neko.png\" width=\"200\" height=\"180\"/>"));
+                assertThat(br.readLine(), is("        </p>"));
+                assertThat(br.readLine(), is("    </div>"));
+                assertThat(br.readLine(), is("</center>"));
+                assertThat(br.readLine(), is("</body>"));
+                assertThat(br.readLine(), is("</html>"));
+                assertThat(br.readLine(), is(nullValue()));
             }
         }
-    }
 
-    public static class returnErrorResponseメソッドのテスト {
         @Test
         public void バッドリクエストのテスト() throws Exception {
             String path = "./src/test/resources/responseMessage.txt";

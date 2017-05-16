@@ -45,7 +45,7 @@ public class StaticHandler extends Handler {
      * @throws NullPointerException 引数がnull
      */
     @Override
-    public void returnResponse(OutputStream os, StatusLine sl) throws NullPointerException {
+    public void returnResponse(OutputStream os, StatusLine sl) {
         Objects.requireNonNull(os);
         Objects.requireNonNull(sl);
 

@@ -48,6 +48,7 @@ public abstract class Handler {
         Objects.requireNonNull(is);
 
         RequestMessage requestMessage = new RequestMessage(is);
+
         Handler handler = new StaticHandler(requestMessage);
         String uri = requestMessage.getUri();
         for (String s : urlPattern.keySet()) {

@@ -1,5 +1,6 @@
 package jp.co.topgate.asada.web;
 
+import jp.co.topgate.asada.web.app.Handler;
 import jp.co.topgate.asada.web.app.StatusLine;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -35,7 +36,7 @@ public class ResponseMessage {
      * @param os       ソケットの出力ストリーム
      * @param sl       ステータスライン
      * @param filePath リソースファイルのパス
-     * @throws IOException
+     * @throws IOException          出力ストリームに書き出し中に例外発生
      * @throws NullPointerException 引数がnull
      */
     public ResponseMessage(OutputStream os, StatusLine sl, String filePath) throws IOException, NullPointerException {
@@ -47,14 +48,9 @@ public class ResponseMessage {
             ContentType ct = new ContentType(filePath);
             addHeader("Content-Type", ct.getContentType());
 
-        } else {
-            addHeader("Content-Type", "text/html; charset=UTF-8");
-        }
+            os.write(getResponseLine(protocolVersion, sl).getBytes());
+            os.write(getHeader(headerField).getBytes());
 
-        os.write(getResponseLine(protocolVersion, sl).getBytes());
-        os.write(getHeader(headerField).getBytes());
-
-        if (sl.equals(StatusLine.OK)) {
             try (InputStream in = new FileInputStream(new File(filePath))) {
                 int num;
                 while ((num = in.read()) != -1) {
@@ -63,45 +59,13 @@ public class ResponseMessage {
                 os.flush();
             }
         } else {
+            addHeader("Content-Type", "text/html; charset=UTF-8");
+
+            os.write(getResponseLine(protocolVersion, sl).getBytes());
+            os.write(getHeader(headerField).getBytes());
+
             os.write(getErrorMessageBody(sl).getBytes());
             os.flush();
-        }
-    }
-
-    /**
-     * エラーメッセージを保持しているメソッド
-     *
-     * @param sl ステータスライン
-     * @return エラーの場合のレスポンスメッセージの内容
-     * @throws NullPointerException 引数がnull
-     */
-    @NotNull
-    @Contract(pure = true)
-    static String getErrorMessageBody(StatusLine sl) throws NullPointerException {
-        switch (sl) {
-            case BAD_REQUEST:
-                return "<html><head><title>400 Bad Request</title></head>" +
-                        "<body><h1>Bad Request</h1>" +
-                        "<p>Your browser sent a request that this server could not understand.<br /></p></body></html>";
-
-            case NOT_FOUND:
-                return "<html><head><title>404 Not Found</title></head>" +
-                        "<body><h1>Not Found</h1>" +
-                        "<p>お探しのページは見つかりませんでした。</p></body></html>";
-
-            case NOT_IMPLEMENTED:
-                return "<html><head><title>501 Not Implemented</title></head>" +
-                        "<body><h1>Not Implemented</h1>" +
-                        "<p>Webサーバーでメソッドが実装されていません。</p></body></html>";
-
-            case HTTP_VERSION_NOT_SUPPORTED:
-                return "<html><head><title>505 HTTP Version Not Supported</title></head>" +
-                        "<body><h1>HTTP Version Not Supported</h1></body></html>";
-
-            default:
-                return "<html><head><title>500 Internal Server Error</title></head>" +
-                        "<body><h1>Internal Server Error</h1>" +
-                        "<p>サーバー内部のエラーにより表示できません。ごめんなさい。</p></body></html>";
         }
     }
 
@@ -127,15 +91,62 @@ public class ResponseMessage {
      *
      * @param list ヘッダーのリストを渡す
      * @return ヘッダーの文字列が返される
+     * @throws NullPointerException 引数がnull
      */
     @NotNull
-    static String getHeader(List<String> list) {
+    static String getHeader(List<String> list) throws NullPointerException {
+        Objects.requireNonNull(list);
+
         StringBuilder builder = new StringBuilder();
         for (String s : list) {
             builder.append(s).append("\n");
         }
         builder.append("\n");
         return builder.toString();
+    }
+
+    /**
+     * エラーメッセージを保持しているメソッド
+     *
+     * @param sl ステータスライン
+     * @return エラーの場合のレスポンスメッセージの内容
+     * @throws NullPointerException 引数がnull
+     */
+    @NotNull
+    @Contract(pure = true)
+    static String getErrorMessageBody(StatusLine sl) throws NullPointerException {
+        Objects.requireNonNull(sl);
+
+        switch (sl) {
+            case BAD_REQUEST:
+                return "<html><head><title>400 Bad Request</title></head>" +
+                        "<body><h1>Bad Request</h1>" +
+                        "<p>Your browser sent a request that this server could not understand.<br /></p></body></html>";
+
+            case NOT_FOUND:
+                return "<html><head><title>404 Not Found</title></head>" +
+                        "<body><h1>Not Found</h1>" +
+                        "<p>お探しのページは見つかりませんでした。</p></body></html>";
+
+            case INTERNAL_SERVER_ERROR:
+                return "<html><head><title>500 Internal Server Error</title></head>" +
+                        "<body><h1>Internal Server Error</h1>" +
+                        "<p>サーバー内部のエラーにより表示できません。ごめんなさい。</p></body></html>";
+
+            case NOT_IMPLEMENTED:
+                return "<html><head><title>501 Not Implemented</title></head>" +
+                        "<body><h1>Not Implemented</h1>" +
+                        "<p>Webサーバーでメソッドが実装されていません。</p></body></html>";
+
+            case HTTP_VERSION_NOT_SUPPORTED:
+                return "<html><head><title>505 HTTP Version Not Supported</title></head>" +
+                        "<body><h1>HTTP Version Not Supported</h1></body></html>";
+
+            default:
+                return "<html><head><title>500 Internal Server Error</title></head>" +
+                        "<body><h1>Internal Server Error</h1>" +
+                        "<p>サーバー内部のエラーにより表示できません。ごめんなさい。</p></body></html>";
+        }
     }
 
     /**
@@ -161,6 +172,7 @@ public class ResponseMessage {
         }
     }
 
+    //テスト用
     String getProtocolVersion() {
         return this.protocolVersion;
     }

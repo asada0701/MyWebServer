@@ -2,11 +2,13 @@ package jp.co.topgate.asada.web;
 
 import jp.co.topgate.asada.web.app.Handler;
 import jp.co.topgate.asada.web.app.HtmlEditor;
+import jp.co.topgate.asada.web.app.ProgramBoardHandler;
 import jp.co.topgate.asada.web.app.StatusLine;
 import jp.co.topgate.asada.web.exception.BindRuntimeException;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -21,6 +23,8 @@ class Server extends Thread {
     private static final int portNumber = 8080;
     private ServerSocket serverSocket = null;
     private Socket socket = new Socket();
+
+    static int index = 1;
 
     /**
      * コンストラクタ
@@ -81,10 +85,23 @@ class Server extends Thread {
 
                 try {
                     Handler handler = Handler.getHandler(socket.getInputStream());
+
                     StatusLine sl = handler.requestComes();
-                    handler.returnResponse(socket.getOutputStream(), sl);
+
+                    System.out.println("ここ");
+                    if (index == 3) {
+                        System.out.println(sl.getStatusCode());
+                    } else {
+                        index++;
+                    }
+                    OutputStream os = socket.getOutputStream();
+                    handler.returnResponse(os, sl);
+
+                } catch (NullPointerException e) {
+                    e.printStackTrace();
 
                 } catch (RequestParseException e) {
+                    e.printStackTrace();
                     new ResponseMessage(socket.getOutputStream(), StatusLine.BAD_REQUEST, "");
                 }
 
@@ -98,8 +115,10 @@ class Server extends Thread {
             throw new BindRuntimeException(e.toString());
 
         } catch (SocketException e) {
+            //e.printStackTrace();
 
         } catch (IOException e) {
+            e.printStackTrace();
             throw new RuntimeException();
         }
     }

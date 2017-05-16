@@ -18,6 +18,8 @@ import java.util.Objects;
  */
 public class ProgramBoardHandler extends Handler {
 
+    private static int score = 1;
+
     /**
      * 不正な入力値を置き換える
      */
@@ -153,9 +155,15 @@ public class ProgramBoardHandler extends Handler {
      * @throws NullPointerException
      */
     @Override
-    public void returnResponse(OutputStream os, StatusLine sl) throws RuntimeException, NullPointerException {
+    public void returnResponse(OutputStream os, StatusLine sl) {
         Objects.requireNonNull(os);
         Objects.requireNonNull(sl);
+
+        System.out.println(score + "回目");
+        if (score == 3) {
+            System.out.println("3回目:" + sl.getStatusCode());
+        }
+        score++;
 
         try {
             String path = "";

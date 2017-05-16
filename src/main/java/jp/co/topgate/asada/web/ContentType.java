@@ -2,7 +2,6 @@ package jp.co.topgate.asada.web;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * コンテンツタイプクラス
@@ -14,7 +13,7 @@ class ContentType {
     /**
      * デフォルトコンテンツタイプ
      */
-    static final String defaultFileType = "application/octet-stream";
+    private static final String defaultFileType = "application/octet-stream";
 
     /**
      * ファイル拡張子とコンテンツタイプのマップ
