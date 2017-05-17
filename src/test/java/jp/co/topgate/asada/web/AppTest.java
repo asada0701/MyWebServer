@@ -8,41 +8,50 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 
-import java.io.IOException;
-import java.net.BindException;
-
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 @RunWith(Enclosed.class)
 public class AppTest {
-//    public static class テスト1 {
-//        @Test
-//        public void サーバースタートテスト() throws Exception {
-//            Server server = new Server();
-//            assertThat(App.controlServer(server, Choices.START), is("start up http server.."));
-//            server.endServer();
-//        }
-//    }
-//
-//    public static class テスト2 {
-//        @Test(expected = NullPointerException.class)
-//        public void controlServerメソッドのnullチェック() throws IOException {
-//            Server server = new Server();
-//            assertThat(App.controlServer(null, null), is(nullValue()));
-//            server.endServer();
-//        }
-//    }
-//
-//    public static class テスト3 {
-//        @Test(expected = IllegalArgumentException.class)
-//        public void 想定していない文字が入力されたテスト() throws IOException {
-//            Server server = new Server();
-//            assertThat(App.controlServer(server, Choices.valueOf("name")), is(nullValue()));
-//            server.endServer();
-//        }
-//    }
+    public static class controlServerメソッドのテスト {
+        @Test
+        public void サーバーテスト() throws Exception {
+            Server server = new Server();
+
+            assertThat(App.controlServer(server, Choices.STOP), is("http server is not running.."));
+            assertThat(App.controlServer(server, Choices.START), is("start up http server.."));
+            assertThat(App.controlServer(server, Choices.START), is("http server is already running.."));
+            assertThat(App.controlServer(server, Choices.STOP), is("wait a second, http server is returning a response.."));
+            assertThat(App.controlServer(server, Choices.END), is("bye.."));
+        }
+    }
+
+    public static class isSelectメソッドのテスト {
+        @Test
+        public void nullチェック() {
+            assertThat(App.isSelect(null), is(false));
+        }
+
+        @Test
+        public void 空チェック() {
+            assertThat(App.isSelect(""), is(false));
+        }
+
+        @Test
+        public void テスト1を渡すとtrue() {
+            assertThat(App.isSelect("1"), is(true));
+        }
+
+        @Test
+        public void テスト2を渡すとtrue() {
+            assertThat(App.isSelect("2"), is(true));
+        }
+
+        @Test
+        public void テスト3を渡すとtrue() {
+            assertThat(App.isSelect("3"), is(true));
+        }
+    }
 
     public static class getChoicesEnumメソッドのテスト {
         @Test(expected = NullPointerException.class)

@@ -37,7 +37,7 @@ public class StaticHandler extends Handler {
      * リクエストの処理を行うメソッド
      */
     @Override
-    public final StatusLine requestComes() {
+    public final StatusLine doRequestProcess() {
         String method = requestMessage.getMethod();
         String uri = requestMessage.getUri();
         String protocolVersion = requestMessage.getProtocolVersion();
@@ -78,7 +78,7 @@ public class StaticHandler extends Handler {
      * @throws NullPointerException 引数がnull
      */
     @Override
-    public void returnResponse(OutputStream os, StatusLine sl) throws NullPointerException {
+    public void doResponseProcess(OutputStream os, StatusLine sl) throws NullPointerException {
         Objects.requireNonNull(os);
         Objects.requireNonNull(sl);
 
@@ -89,13 +89,13 @@ public class StaticHandler extends Handler {
             rm = new ResponseMessage(os, sl, path);
             ContentType ct = new ContentType(path);
             rm.addHeader("Content-Type", ct.getContentType());
+            rm.addHeader("Content-Length", String.valueOf(new File(path).length()));
 
         } else {
-            String path = "";
-            rm = new ResponseMessage(os, sl, path);
+            rm = new ResponseMessage(os, sl);
             rm.addHeader("Content-Type", "text/html; charset=UTF-8");
         }
 
-        rm.doResponse();
+        rm.returnResponse();
     }
 }

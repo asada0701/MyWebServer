@@ -28,7 +28,7 @@ public class RequestMessageTest {
             sut = new RequestMessage(null);
         }
 
-        @Test(expected = RequestParseException.class)
+        @Test(expected = NullPointerException.class)
         public void 空チェック() throws Exception {
             String path = "./src/test/resources/emptyRequestMessage.txt";
             try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(path)))) {
@@ -36,30 +36,30 @@ public class RequestMessageTest {
             }
         }
 
-//        @Test
-//        public void GETの場合正しく動作するか() throws Exception {
-//            String path = "./src/test/resources/GetRequestMessage.txt";
-//            try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(path)))) {
-//                sut = new RequestMessage(bis);
-//                assertThat(sut.getMethod(), is("GET"));
-//                assertThat(sut.getUri(), is("/index.html"));
-//                assertThat(sut.getProtocolVersion(), is("HTTP/1.1"));
-//
-//                assertThat(sut.findUriQuery("name"), is("asada"));
-//                assertThat(sut.findUriQuery("like"), is("cat"));
-//
-//                assertThat(sut.findHeaderByName("Host"), is("localhost:8080"));
-//                assertThat(sut.findHeaderByName("Connection"), is("keep-alive"));
-//                assertThat(sut.findHeaderByName("Pragma"), is("no-cache"));
-//                assertThat(sut.findHeaderByName("Cache-Control"), is("no-cache"));
-//                assertThat(sut.findHeaderByName("Upgrade-Insecure-Requests"), is("1"));
-//                assertThat(sut.findHeaderByName("User-Agent"), is("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36"));
-//                assertThat(sut.findHeaderByName("Accept"), is("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"));
-//                assertThat(sut.findHeaderByName("Accept-Encoding"), is("gzip, deflate, sdch, br"));
-//                assertThat(sut.findHeaderByName("Accept-Language"), is("ja,en-US;q=0.8,en;q=0.6"));
-//                assertThat(sut.findHeaderByName("Foo"), is("Bar:Fizz:Buzz"));
-//            }
-//        }
+        @Test
+        public void GETの場合正しく動作するか() throws Exception {
+            String path = "./src/test/resources/GetRequestMessage.txt";
+            try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(path)))) {
+                sut = new RequestMessage(bis);
+                assertThat(sut.getMethod(), is("GET"));
+                assertThat(sut.getUri(), is("/index.html"));
+                assertThat(sut.getProtocolVersion(), is("HTTP/1.1"));
+
+                assertThat(sut.findUriQuery("name"), is("asada"));
+                assertThat(sut.findUriQuery("like"), is("cat"));
+
+                assertThat(sut.findHeaderByName("Host"), is("localhost:8080"));
+                assertThat(sut.findHeaderByName("Connection"), is("keep-alive"));
+                assertThat(sut.findHeaderByName("Pragma"), is("no-cache"));
+                assertThat(sut.findHeaderByName("Cache-Control"), is("no-cache"));
+                assertThat(sut.findHeaderByName("Upgrade-Insecure-Requests"), is("1"));
+                assertThat(sut.findHeaderByName("User-Agent"), is("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36"));
+                assertThat(sut.findHeaderByName("Accept"), is("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"));
+                assertThat(sut.findHeaderByName("Accept-Encoding"), is("gzip, deflate, sdch, br"));
+                assertThat(sut.findHeaderByName("Accept-Language"), is("ja,en-US;q=0.8,en;q=0.6"));
+                assertThat(sut.findHeaderByName("Foo"), is("Bar:Fizz:Buzz"));
+            }
+        }
 //
 //        @Test
 //        public void POSTの場合正しく動作するか() throws Exception {

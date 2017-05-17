@@ -77,15 +77,16 @@ class Server extends Thread {
                 try {
                     Handler handler = Handler.getHandler(socket.getInputStream());
 
-                    StatusLine sl = handler.requestComes();
+                    StatusLine sl = handler.doRequestProcess();
 
-                    handler.returnResponse(socket.getOutputStream(), sl);
+                    handler.doResponseProcess(socket.getOutputStream(), sl);
 
                 } catch (NullPointerException e) {
                     e.printStackTrace();
+                    new ResponseMessage(socket.getOutputStream(), StatusLine.INTERNAL_SERVER_ERROR, "");
 
                 } catch (RequestParseException e) {
-                    e.printStackTrace();
+                    //e.printStackTrace();
                     new ResponseMessage(socket.getOutputStream(), StatusLine.BAD_REQUEST, "");
                 }
 

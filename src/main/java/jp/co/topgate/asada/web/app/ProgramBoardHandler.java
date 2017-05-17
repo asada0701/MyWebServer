@@ -54,10 +54,9 @@ public class ProgramBoardHandler extends Handler {
 
     /**
      * 抽象メソッド、リクエストの処理を行うメソッド
-     * TemplateMethodパターン
      */
     @Override
-    public StatusLine requestComes() {
+    public StatusLine doRequestProcess() {
         String method = requestMessage.getMethod();
         String uri = requestMessage.getUri();
         String protocolVersion = requestMessage.getProtocolVersion();
@@ -193,7 +192,7 @@ public class ProgramBoardHandler extends Handler {
      * @throws HtmlInitializeException {@link HtmlEditor#allInitialization()}を参照
      */
     @Override
-    public void returnResponse(OutputStream os, StatusLine sl) throws HtmlInitializeException {
+    public void doResponseProcess(OutputStream os, StatusLine sl) throws HtmlInitializeException {
         Objects.requireNonNull(os);
         Objects.requireNonNull(sl);
 
@@ -201,17 +200,17 @@ public class ProgramBoardHandler extends Handler {
 
         if (sl.equals(StatusLine.OK)) {
             String path = Handler.getFilePath(requestMessage.getUri());
-            rm = new ResponseMessage(os, sl, path);
             ContentType ct = new ContentType(path);
+            rm = new ResponseMessage(os, sl, path);
             rm.addHeader("Content-Type", ct.getContentType());
+            rm.addHeader("Content-Length", String.valueOf(new File(path).length()));
 
         } else {
-            String path = "";
-            rm = new ResponseMessage(os, sl, path);
+            rm = new ResponseMessage(os, sl);
             rm.addHeader("Content-Type", "text/html; charset=UTF-8");
         }
 
-        rm.doResponse();
+        rm.returnResponse();
 
         he.allInitialization();
     }

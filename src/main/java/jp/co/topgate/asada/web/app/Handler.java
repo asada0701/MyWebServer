@@ -6,7 +6,6 @@ import jp.co.topgate.asada.web.StaticHandler;
 import jp.co.topgate.asada.web.exception.HtmlInitializeException;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
@@ -61,11 +60,11 @@ public abstract class Handler {
     }
 
     /**
-     * 抽象メソッド、リクエストの処理を行うメソッド
+     * リクエストの処理を行うメソッド
      *
      * @return レスポンスラインの状態行(StatusLine)を返す
      */
-    public abstract StatusLine requestComes();
+    public abstract StatusLine doRequestProcess();
 
     /**
      * レスポンスを返すときに呼び出すメソッド
@@ -79,7 +78,7 @@ public abstract class Handler {
      * @param sl ステータスラインの列挙型
      * @throws NullPointerException 引数がnull
      */
-    public abstract void returnResponse(OutputStream os, StatusLine sl) throws NullPointerException;
+    public abstract void doResponseProcess(OutputStream os, StatusLine sl) throws NullPointerException;
 
     /**
      * URIを元にファイルパスを返すメソッド

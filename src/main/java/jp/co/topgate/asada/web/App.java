@@ -27,7 +27,7 @@ public class App {
             String choices;
             Scanner scan = new Scanner(System.in);
 
-            ModelController.setMessageList(CsvWriter.readMessage(CsvWriter.messageCsvPath));    //CSVファイル読み込み
+            ModelController.setMessageList(CsvWriter.readMessage());    //CSVファイル読み込み
             HtmlEditor he = new HtmlEditor();                                                   //HTMLファイル読み込み
 
             do {
@@ -39,7 +39,7 @@ public class App {
                 do {
                     System.out.print("please select :");
                     choices = scan.next();
-                } while (isSelect(choices));
+                } while (!isSelect(choices));
 
                 String msg = controlServer(server, getChoicesEnum(choices));
                 if (msg != null) {
@@ -49,7 +49,7 @@ public class App {
                 }
             } while (!choices.equals(String.valueOf(Choices.END.getId())));
 
-            CsvWriter.writeMessage(ModelController.getAllMessage(), CsvWriter.messageCsvPath);      //CSVファイルに書き込み
+            CsvWriter.writeMessage(ModelController.getAllMessage());      //CSVファイルに書き込み
             he.allInitialization();                                                                 //HTMLファイルの初期化
 
         } catch (ServerStateException | CsvRuntimeException | SocketRuntimeException |
@@ -60,10 +60,19 @@ public class App {
         }
     }
 
-    private static boolean isSelect(String choices) {
-        return !(choices.equals(String.valueOf(Choices.START.getId())) ||
+    /**
+     * 文字列を渡すとChoicesの列挙型を返してくれる
+     *
+     * @param choices 渡す文字列
+     * @return 列挙型のChoices
+     */
+    static boolean isSelect(String choices) {
+        if (choices == null) {
+            return false;
+        }
+        return choices.equals(String.valueOf(Choices.START.getId())) ||
                 choices.equals(String.valueOf(Choices.STOP.getId())) ||
-                choices.equals(String.valueOf(Choices.END.getId())));
+                choices.equals(String.valueOf(Choices.END.getId()));
     }
 
     /**

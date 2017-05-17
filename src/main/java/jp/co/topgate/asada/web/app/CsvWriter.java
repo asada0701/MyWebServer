@@ -19,7 +19,7 @@ public class CsvWriter {
     /**
      * ファイルパス
      */
-    public static final String messageCsvPath = "./src/main/resources/data/message.csv";
+    private static final String messageCsvPath = "./src/main/resources/data/message.csv";
 
     /**
      * CSVファイルの項目を分割する
@@ -39,7 +39,31 @@ public class CsvWriter {
      * @throws IOException          CSVファイル読み込みに失敗した
      * @throws NullPointerException 引数がnull
      */
-    public static List<Message> readMessage(String path) throws CsvRuntimeException, IOException, NullPointerException {
+    public static List<Message> readMessage() throws CsvRuntimeException, IOException, NullPointerException {
+        return readMessage(messageCsvPath);
+    }
+
+    /**
+     * MessageListを、CSVファイルに書き出すメソッド
+     *
+     * @param list CSVに書き込みたいListを渡す
+     * @throws CsvRuntimeException  CSVファイルの中身が規定の形になっていない
+     * @throws NullPointerException 引数がnull
+     */
+    public static void writeMessage(List<Message> list) throws CsvRuntimeException, NullPointerException {
+        writeMessage(list, messageCsvPath);
+    }
+
+    /**
+     * 過去のMessageListを、CSVファイルから読み出すメソッド
+     *
+     * @param path 書き込みたい対象のCSVのパス
+     * @return 過去に投稿された文をメッセージクラスのListに格納して返す
+     * @throws CsvRuntimeException  CSVファイルの中身が規定の形になっていない
+     * @throws IOException          CSVファイル読み込みに失敗した
+     * @throws NullPointerException 引数がnull
+     */
+    static List<Message> readMessage(String path) throws CsvRuntimeException, IOException, NullPointerException {
         Objects.requireNonNull(path);
 
         List<Message> list = new ArrayList<>();
@@ -70,11 +94,12 @@ public class CsvWriter {
     /**
      * MessageListを、CSVファイルに書き出すメソッド
      *
+     * @param path 書き込みたい対象のCSVのパス
      * @param list CSVに書き込みたいListを渡す
      * @throws CsvRuntimeException  CSVファイルの中身が規定の形になっていない
      * @throws NullPointerException 引数がnull
      */
-    public static void writeMessage(List<Message> list, String path) throws CsvRuntimeException, NullPointerException {
+    static void writeMessage(List<Message> list, String path) throws CsvRuntimeException, NullPointerException {
         Objects.requireNonNull(path);
 
         try (OutputStream os = new FileOutputStream(new File(path))) {

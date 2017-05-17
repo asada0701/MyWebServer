@@ -28,7 +28,7 @@ public class HtmlEditor {
      * @throws HtmlInitializeException HTMLファイルの読み込み中にエラー発生
      */
     public HtmlEditor() throws HtmlInitializeException {
-        for (HtmlListToEdit hlte : HtmlListToEdit.values()) {
+        for (EditHtmlList hlte : EditHtmlList.values()) {
             try (BufferedReader br = new BufferedReader(new FileReader(new File(hlte.getPath())))) {
                 String str;
                 StringBuilder builder = new StringBuilder();
@@ -49,7 +49,7 @@ public class HtmlEditor {
      * @throws HtmlInitializeException HTMLファイルに書き込み中にエラー発生
      */
     public void allInitialization() throws HtmlInitializeException {
-        for (HtmlListToEdit hlte : HtmlListToEdit.values()) {
+        for (EditHtmlList hlte : EditHtmlList.values()) {
             try (OutputStream os = new FileOutputStream(new File(hlte.getPath()))) {
                 os.write(htmlContent.get(hlte.getId()).getBytes());
                 os.flush();
@@ -66,7 +66,7 @@ public class HtmlEditor {
      */
     static void writeIndexHtml() throws IOException {
         List<Message> list = ModelController.getAllMessage();
-        String path = HtmlListToEdit.INDEX_HTML.getPath();
+        String path = EditHtmlList.INDEX_HTML.getPath();
 
         try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
             String str;
@@ -80,7 +80,7 @@ public class HtmlEditor {
                     } while (!str.endsWith("</tr>"));
 
                     for (int i = list.size() - 1; i > -1; i--) {
-                        builder.append(messageChangeToHtml(HtmlListToEdit.INDEX_HTML, list.get(i)));
+                        builder.append(messageChangeToHtml(EditHtmlList.INDEX_HTML, list.get(i)));
                         builder.append(str).append("\n");
                     }
                 }
@@ -102,7 +102,7 @@ public class HtmlEditor {
 
         List<Message> list = ModelController.findSameNameMessage(name);
 
-        String path = HtmlListToEdit.SEARCH_HTML.getPath();
+        String path = EditHtmlList.SEARCH_HTML.getPath();
 
         try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
             String str;
@@ -117,7 +117,7 @@ public class HtmlEditor {
 
                     assert list != null;
                     for (int i = list.size() - 1; i > -1; i--) {
-                        builder.append(messageChangeToHtml(HtmlListToEdit.SEARCH_HTML, list.get(i)));
+                        builder.append(messageChangeToHtml(EditHtmlList.SEARCH_HTML, list.get(i)));
                         builder.append(str).append("\n");
                     }
                 }
@@ -137,7 +137,7 @@ public class HtmlEditor {
     static void writeDeleteHtml(Message message) throws IOException, NullPointerException {
         Objects.requireNonNull(message);
 
-        String path = HtmlListToEdit.DELETE_HTML.getPath();
+        String path = EditHtmlList.DELETE_HTML.getPath();
 
         try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
             String str;
@@ -150,7 +150,7 @@ public class HtmlEditor {
                         builder.append(str).append("\n");
                     } while (!str.endsWith("</tr>"));
 
-                    builder.append(messageChangeToHtml(HtmlListToEdit.DELETE_HTML, message));
+                    builder.append(messageChangeToHtml(EditHtmlList.DELETE_HTML, message));
                 }
                 if (str.endsWith("<input type=\"hidden\" name=\"number\" value=\"\">")) {
                     builder.append("            <input type=\"hidden\" name=\"number\" value=\"");
@@ -173,7 +173,7 @@ public class HtmlEditor {
      * @return HTMLの構文に沿った文字列
      * @throws NullPointerException 引数がnull
      */
-    private static String messageChangeToHtml(HtmlListToEdit htmlListToEdit, Message message) throws NullPointerException {
+    private static String messageChangeToHtml(EditHtmlList htmlListToEdit, Message message) throws NullPointerException {
         Objects.requireNonNull(htmlListToEdit);
         Objects.requireNonNull(message);
 
@@ -239,15 +239,29 @@ public class HtmlEditor {
  *
  * @author asada
  */
-enum HtmlListToEdit {
+enum EditHtmlList {
+    /**
+     * index.html
+     * 添え字、ファイルのパス
+     */
     INDEX_HTML(0, "./src/main/resources/2/index.html"),
+
+    /**
+     * search.html
+     * 添え字、ファイルのパス
+     */
     SEARCH_HTML(1, "./src/main/resources/2/search.html"),
+
+    /**
+     * delete.html
+     * 添え字、ファイルのパス
+     */
     DELETE_HTML(2, "./src/main/resources/2/delete.html");
 
     private final int id;
     private final String path;
 
-    HtmlListToEdit(final int id, final String path) {
+    EditHtmlList(final int id, final String path) {
         this.id = id;
         this.path = path;
     }

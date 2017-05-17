@@ -98,11 +98,12 @@ public class RequestMessage {
         try {
             bis.mark(bis.available());
             String[] str = readRequestLineHeaderField(bis);
+            if(str[0] == null || str[1] == null){
+                throw new RequestParseException("不正なリクエストやで");
+            }
 
             String[] requestLine = str[0].split(REQUEST_LINE_SEPARATOR);
             if (requestLine.length != REQUEST_LINE_NUM_ITEMS) {
-//                bis.reset();
-//                charMessageBody = messageBodyParse(readCharMessageBody(bis, 1024));
                 throw new RequestParseException("リクエストラインが不正なものだった");
             }
 
@@ -117,26 +118,8 @@ public class RequestMessage {
             headerField = headerFieldParse(str[1]);
 
             if ("POST".equals(method)) {
-                if (!headerField.containsKey("Content-Type") && !headerField.containsKey("Content-Length")) {
-                    throw new RequestParseException("Content-TypeかContent-Lengthがリクエストに含まれていません");
-                }
-
-                String contentType = findHeaderByName("Content-Type");
-                int contentLength = Integer.parseInt(findHeaderByName("Content-Length"));
-
                 bis.reset();
-                if ("application/x-www-form-urlencoded".equals(contentType)) {
-                    charMessageBody = messageBodyParse(readCharMessageBody(bis, contentLength));
-
-                } else if ("multipart/form-data".equals(contentType)) {
-                    throw new RequestParseException("ファイルアップロード未実装");
-
-                } else if ("application/json".equals(contentType)) {
-                    throw new RequestParseException("json未実装");
-
-                } else {
-                    throw new RequestParseException(contentType + "は未実装です");
-                }
+                doPost(bis);
             }
 
         } catch (IOException e) {
@@ -144,6 +127,13 @@ public class RequestMessage {
 
         } catch (NumberFormatException e) {
             throw new RequestParseException("Content-Lengthに数字以外の文字が含まれています");
+        }
+
+        System.out.println("--------------------------");
+        System.out.println(method + " " + uri + " " + protocolVersion);
+        System.out.println();
+        for (String s : headerField.keySet()) {
+            System.out.println(s + ": " + headerField.get(s));
         }
     }
 
@@ -159,36 +149,45 @@ public class RequestMessage {
      * @throws IOException inputStreamを読んでいる時に発生する例外
      */
     static String[] readRequestLineHeaderField(InputStream is) throws IOException {
-        ByteArrayOutputStream[] baos = new ByteArrayOutputStream[REQUEST_LINE_NUM_ITEMS - 1];
-        baos[0] = new ByteArrayOutputStream();
-        baos[1] = new ByteArrayOutputStream();
+        BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+        String[] result = new String[2];
+        result[0] = br.readLine();
 
-        int index = 0, now, before = 0, moreBefore = 0, moremoreBefore = 0, i = 0;
-        while ((now = is.read()) != -1) {
-            baos[index].write(now);
-
-            if (index == 0 && before == CARRIAGE_RETURN && now == LINE_FEED) {    //リクエストラインを読み終わる
-                index = 1;
-            }
-            if (index == 1 && moremoreBefore == CARRIAGE_RETURN && moreBefore == LINE_FEED
-                    && before == CARRIAGE_RETURN && now == LINE_FEED) {           //ヘッダーフィールドを読み終わる
-                break;
-            }
-            moremoreBefore = moreBefore;
-            moreBefore = before;
-            before = now;
-            i++;
+        StringBuilder builder = new StringBuilder();
+        String str;
+        while (!Strings.isNullOrEmpty(str = br.readLine())) {
+            builder.append(str).append("\n");
         }
-        System.out.println("intの数" + i);
-
-        String[] result = new String[baos.length];
-        result[0] = baos[0].toString().trim();
-        result[1] = baos[1].toString().trim();
-
-//        System.out.println(result[0]);
-//        System.out.println("--------------------------");
-//        System.out.println(result[1]);
+        result[1] = builder.toString();
         return result;
+    }
+
+    /**
+     * POSTの場合の処理を行うメソッド
+     *
+     * @param is サーバーソケットのInputStream
+     * @throws IOException inputStreamを読んでいる時に発生する例外
+     */
+    void doPost(InputStream is) throws IOException {
+        if (!headerField.containsKey("Content-Type") && !headerField.containsKey("Content-Length")) {
+            throw new RequestParseException("Content-TypeかContent-Lengthがリクエストに含まれていません");
+        }
+
+        String contentType = findHeaderByName("Content-Type");
+        int contentLength = Integer.parseInt(findHeaderByName("Content-Length"));
+
+        if ("application/x-www-form-urlencoded".equals(contentType)) {
+            charMessageBody = messageBodyParse(readCharMessageBody(is, contentLength));
+
+        } else if ("multipart/form-data".equals(contentType)) {
+            throw new RequestParseException("ファイルアップロード未実装");
+
+        } else if ("application/json".equals(contentType)) {
+            throw new RequestParseException("json未実装");
+
+        } else {
+            throw new RequestParseException(contentType + "は未実装です");
+        }
     }
 
     /**
@@ -217,6 +216,32 @@ public class RequestMessage {
             System.out.println(contentLength + "と" + k);
         } while (contentLength != k);
         return buffer.toString();
+    }
+
+    static byte[] readImageMessageBody(InputStream is, int contentLength) throws IOException, RequestParseException {
+        ByteArrayOutputStream[] baos = new ByteArrayOutputStream[REQUEST_LINE_NUM_ITEMS];
+        baos[0] = new ByteArrayOutputStream();
+        baos[1] = new ByteArrayOutputStream();
+        baos[2] = new ByteArrayOutputStream();
+
+        int index = 0, now, before = 0, moreBefore = 0, moremoreBefore = 0, i = 0;
+        while ((now = is.read()) != -1) {
+            baos[index].write(now);
+
+            if (index == 0 && before == CARRIAGE_RETURN && now == LINE_FEED) {    //リクエストラインを読み終わる
+                index = 1;
+            }
+            if (index == 1 && moremoreBefore == CARRIAGE_RETURN && moreBefore == LINE_FEED
+                    && before == CARRIAGE_RETURN && now == LINE_FEED) {           //ヘッダーフィールドを読み終わる
+
+
+            }
+            moremoreBefore = moreBefore;
+            moreBefore = before;
+            before = now;
+            i++;
+        }
+        return baos[2].toByteArray();
     }
 
     /**

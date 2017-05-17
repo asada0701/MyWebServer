@@ -2,6 +2,7 @@ package jp.co.topgate.asada.web;
 
 import jp.co.topgate.asada.web.app.StatusLine;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -98,10 +99,13 @@ public class ResponseMessageTest {
     }
 
     public static class getErrorMessageBodyメソッドのテスト {
-//        @Test(expected = NullPointerException.class)
-//        public void nullチェック() {
-//            ResponseMessage.getErrorMessageBody(null);
-//        }
+        @Test
+        public void nullチェック() {
+            String str = ResponseMessage.getErrorMessageBody(null);
+            assertThat(str, is("<html><head><title>500 Internal Server Error</title></head>" +
+                    "<body><h1>Internal Server Error</h1>" +
+                    "<p>サーバー内部のエラーにより表示できません。ごめんなさい。</p></body></html>"));
+        }
 
         @Test
         public void BadRequest() {
@@ -175,111 +179,126 @@ public class ResponseMessageTest {
         }
     }
 
-//    public static class ヘッダーフィールドのテスト {
-//        ResponseMessage sut;
-//
-//        @Before
-//        public void setUp() throws Exception {
-//            File file = new File("./src/test/resources/responseMessage.txt");
-//
-//            FileOutputStream fos = new FileOutputStream(file);
-//            sut = new ResponseMessage(fos, StatusLine.OK, "./src/main/resources/index.html");
-//        }
-//
-//        @Test
-//        public void nullチェック() {
-//            sut.addHeader(null, null);
-//            sut.addHeader("Date", null);
-//            sut.addHeader(null, "Thu,13 Api 2017 18:33:23 GMT");
-//            assertThat(sut.getHeaderField().size(), is(1));
-//        }
-//
-//        @Test
-//        public void ヘッダーフィールドに追加してみる() {
-//            sut.addHeader("Date", "Thu,13 Api 2017 18:33:23 GMT");
-//            sut.addHeader("Server", "mywebserver/1.0");
-//            assertThat(sut.getHeaderField().get(1), is("Date: Thu,13 Api 2017 18:33:23 GMT"));
-//            assertThat(sut.getHeaderField().get(2), is("Server: mywebserver/1.0"));
-//        }
-//    }
+    public static class ヘッダーフィールドのテスト {
+        ResponseMessage sut;
 
-//    public static class コンストラクタのテスト {
-//        @Test(expected = NullPointerException.class)
-//        public void 引数outputStreamのnullチェック() throws Exception {
-//            new ResponseMessage(null, StatusLine.OK, "");
-//        }
-//
-//        @Test(expected = NullPointerException.class)
-//        public void 引数StatusLineのnullチェック() throws Exception {
-//            String path = "./src/test/resources/responseMessage.txt";
-//            try (FileOutputStream fos = new FileOutputStream(path)) {
-//                new ResponseMessage(fos, null, "./src/main/resources/index.html");
-//            }
-//        }
-//
-//        @Test(expected = NullPointerException.class)
-//        public void 引数ファイルパスのnullチェック() throws Exception {
-//            String path = "./src/test/resources/responseMessage.txt";
-//            try (FileOutputStream fos = new FileOutputStream(path)) {
-//                new ResponseMessage(fos, StatusLine.OK, null);
-//            }
-//        }
-//
-//        @Test
-//        public void レスポンスメッセージの生成テスト() throws Exception {
-//            String path = "./src/test/resources/responseMessage.txt";
-//            try (FileOutputStream fos = new FileOutputStream(path);
-//                 BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(path))))) {
-//                new ResponseMessage(fos, StatusLine.OK, "./src/main/resources/index.html");
-//
-//                assertThat(br.readLine(), is("HTTP/1.1 200 OK"));
-//                assertThat(br.readLine(), is("Content-Type: text/html; charset=UTF-8"));
-//                assertThat(br.readLine(), is(""));
-//                assertThat(br.readLine(), is("<!DOCTYPE html>"));
-//                assertThat(br.readLine(), is("<html>"));
-//                assertThat(br.readLine(), is("<head>"));
-//                assertThat(br.readLine(), is("    <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">"));
-//                assertThat(br.readLine(), is("    <link rel=\"stylesheet\" type=\"text/css\" href=\"./css/style.css\">"));
-//                assertThat(br.readLine(), is("    <script type=\"text/javascript\" src=\"./js/myjs.js\"></script>"));
-//                assertThat(br.readLine(), is("</head>"));
-//                assertThat(br.readLine(), is("<body>"));
-//                assertThat(br.readLine(), is("<center>"));
-//                assertThat(br.readLine(), is("    <div id=\"header\">"));
-//                assertThat(br.readLine(), is("        <h1>こんにちは</h1>"));
-//                assertThat(br.readLine(), is("        <p>"));
-//                assertThat(br.readLine(), is("            <script>"));
-//                assertThat(br.readLine(), is("            koshin();"));
-//                assertThat(br.readLine(), is("            </script>"));
-//                assertThat(br.readLine(), is("        </p>"));
-//                assertThat(br.readLine(), is("    </div>"));
-//                assertThat(br.readLine(), is("    <div id=\"gazou\">"));
-//                assertThat(br.readLine(), is("        <p>"));
-//                assertThat(br.readLine(), is("            <img src=\"./img/s_1.jpg\" width=\"200\" height=\"180\" alt=\"猫\"/>"));
-//                assertThat(br.readLine(), is("            <img src=\"./img/loading-loop.gif\" width=\"200\" height=\"180\"/>"));
-//                assertThat(br.readLine(), is("            <img src=\"./img/s_pet_neko.png\" width=\"200\" height=\"180\"/>"));
-//                assertThat(br.readLine(), is("        </p>"));
-//                assertThat(br.readLine(), is("    </div>"));
-//                assertThat(br.readLine(), is("</center>"));
-//                assertThat(br.readLine(), is("</body>"));
-//                assertThat(br.readLine(), is("</html>"));
-//                assertThat(br.readLine(), is(nullValue()));
-//            }
-//        }
-//
-//        @Test
-//        public void バッドリクエストのテスト() throws Exception {
-//            String path = "./src/test/resources/responseMessage.txt";
-//            try (FileOutputStream fos = new FileOutputStream(path);
-//                 BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(path))))) {
-//                new ResponseMessage(fos, StatusLine.BAD_REQUEST, "");
-//
-//                assertThat(br.readLine(), is("HTTP/1.1 400 Bad Request"));
-//                assertThat(br.readLine(), is("Content-Type: text/html; charset=UTF-8"));
-//                assertThat(br.readLine(), is(""));
-//                assertThat(br.readLine(), is("<html><head><title>400 Bad Request</title></head>" +
-//                        "<body><h1>Bad Request</h1>" +
-//                        "<p>Your browser sent a request that this server could not understand.<br /></p></body></html>"));
-//            }
-//        }
-//    }
+        @Before
+        public void setUp() throws Exception {
+            File file = new File("./src/test/resources/responseMessage.txt");
+
+            FileOutputStream fos = new FileOutputStream(file);
+            sut = new ResponseMessage(fos, StatusLine.OK, "./src/main/resources/index.html");
+        }
+
+        @Test
+        public void nullチェック() {
+            sut.addHeader(null, null);
+            sut.addHeader("Date", null);
+            sut.addHeader(null, "Thu,13 Api 2017 18:33:23 GMT");
+            assertThat(sut.getHeaderField().size(), is(0));
+        }
+
+        @Test
+        public void ヘッダーフィールドに追加してみる() {
+            sut.addHeader("Date", "Thu,13 Api 2017 18:33:23 GMT");
+            sut.addHeader("Server", "mywebserver/1.0");
+            assertThat(sut.getHeaderField().get(0), is("Date: Thu,13 Api 2017 18:33:23 GMT"));
+            assertThat(sut.getHeaderField().get(1), is("Server: mywebserver/1.0"));
+        }
+    }
+
+    public static class コンストラクタのテスト {
+        @Test(expected = NullPointerException.class)
+        public void 引数outputStreamのnullチェック() throws Exception {
+            new ResponseMessage(null, StatusLine.OK, "");
+        }
+
+        @Test(expected = NullPointerException.class)
+        public void 引数StatusLineのnullチェック() throws Exception {
+            String path = "./src/test/resources/responseMessage.txt";
+            try (FileOutputStream fos = new FileOutputStream(path)) {
+                new ResponseMessage(fos, null, "./src/main/resources/index.html");
+            }
+        }
+
+        @Test(expected = NullPointerException.class)
+        public void 引数ファイルパスのnullチェック() throws Exception {
+            String path = "./src/test/resources/responseMessage.txt";
+            try (FileOutputStream fos = new FileOutputStream(path)) {
+                new ResponseMessage(fos, StatusLine.OK, null);
+            }
+        }
+
+        @Test
+        public void レスポンスメッセージの生成テスト() throws Exception {
+            String path = "./src/test/resources/responseMessage.txt";
+            try (FileOutputStream fos = new FileOutputStream(path);
+                 BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(path))))) {
+                ResponseMessage rm = new ResponseMessage(fos, StatusLine.OK, "./src/main/resources/index.html");
+                rm.addHeader("Content-Type", "text/html; charset=UTF-8");
+                assertThat(rm.returnResponse(), is(true));
+
+                assertThat(br.readLine(), is("HTTP/1.1 200 OK"));
+                assertThat(br.readLine(), is("Content-Type: text/html; charset=UTF-8"));
+                assertThat(br.readLine(), is(""));
+                assertThat(br.readLine(), is("<!DOCTYPE html>"));
+                assertThat(br.readLine(), is("<html>"));
+                assertThat(br.readLine(), is("<head>"));
+                assertThat(br.readLine(), is("    <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">"));
+                assertThat(br.readLine(), is("    <link rel=\"stylesheet\" type=\"text/css\" href=\"./css/style.css\">"));
+                assertThat(br.readLine(), is("    <script type=\"text/javascript\" src=\"./js/myjs.js\"></script>"));
+                assertThat(br.readLine(), is("</head>"));
+                assertThat(br.readLine(), is("<body>"));
+                assertThat(br.readLine(), is("<center>"));
+                assertThat(br.readLine(), is("    <div id=\"header\">"));
+                assertThat(br.readLine(), is("        <h1>こんにちは</h1>"));
+                assertThat(br.readLine(), is("        <p>"));
+                assertThat(br.readLine(), is("            <script>"));
+                assertThat(br.readLine(), is("            koshin();"));
+                assertThat(br.readLine(), is("            </script>"));
+                assertThat(br.readLine(), is("        </p>"));
+                assertThat(br.readLine(), is("    </div>"));
+                assertThat(br.readLine(), is("    <div id=\"gazou\">"));
+                assertThat(br.readLine(), is("        <p>"));
+                assertThat(br.readLine(), is("            <img src=\"./img/s_1.jpg\" width=\"200\" height=\"180\" alt=\"猫\"/>"));
+                assertThat(br.readLine(), is("            <img src=\"./img/loading-loop.gif\" width=\"200\" height=\"180\"/>"));
+                assertThat(br.readLine(), is("            <img src=\"./img/s_pet_neko.png\" width=\"200\" height=\"180\"/>"));
+                assertThat(br.readLine(), is("        </p>"));
+                assertThat(br.readLine(), is("    </div>"));
+                assertThat(br.readLine(), is("</center>"));
+                assertThat(br.readLine(), is("</body>"));
+                assertThat(br.readLine(), is("</html>"));
+                assertThat(br.readLine(), is(nullValue()));
+            }
+        }
+
+        @Test
+        public void バッドリクエストのテスト() throws Exception {
+            String path = "./src/test/resources/responseMessage.txt";
+            try (FileOutputStream fos = new FileOutputStream(path);
+                 BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(path))))) {
+                ResponseMessage rm = new ResponseMessage(fos, StatusLine.BAD_REQUEST, "");
+                rm.addHeader("Content-Type", "text/html; charset=UTF-8");
+                assertThat(rm.returnResponse(), is(true));
+
+                assertThat(br.readLine(), is("HTTP/1.1 400 Bad Request"));
+                assertThat(br.readLine(), is("Content-Type: text/html; charset=UTF-8"));
+                assertThat(br.readLine(), is(""));
+                assertThat(br.readLine(), is("<html><head><title>400 Bad Request</title></head>" +
+                        "<body><h1>Bad Request</h1>" +
+                        "<p>Your browser sent a request that this server could not understand.<br /></p></body></html>"));
+            }
+        }
+
+        @Test
+        public void レスポンスに失敗してみる() throws Exception {
+            String path = "./src/test/resources/responseMessage.txt";
+            try (FileOutputStream fos = new FileOutputStream(path);
+                 BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(path))))) {
+                ResponseMessage rm = new ResponseMessage(fos, StatusLine.OK, "");
+                rm.addHeader("Content-Type", "text/html; charset=UTF-8");
+                assertThat(rm.returnResponse(), is(false));
+            }
+        }
+    }
 }

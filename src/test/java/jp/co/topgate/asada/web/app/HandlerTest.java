@@ -1,6 +1,7 @@
 package jp.co.topgate.asada.web.app;
 
 import jp.co.topgate.asada.web.StaticHandler;
+import jp.co.topgate.asada.web.exception.RequestParseException;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -19,107 +20,49 @@ import static org.junit.Assert.assertThat;
  */
 @RunWith(Enclosed.class)
 public class HandlerTest {
-//    public static class getHandlerメソッドのテスト {
-//        @Test
-//        public void 正しいリクエストメッセージを送る() throws Exception {
-//            try (InputStream is = new FileInputStream(new File("./src/test/resources/GetRequestMessage.txt"));
-//                 BufferedInputStream bis = new BufferedInputStream(is)) {
-//
-//                Handler sut = Handler.getHandler(bis);
-//
-//                assertThat(sut, is(instanceOf(StaticHandler.class)));
-//            }
-//        }
-//
-//        @Test
-//        public void WebAppHandlerが返されるテスト() throws Exception {
-//            try (InputStream is = new FileInputStream(new File("./src/test/resources/samplePostRequest.txt"));
-//                 BufferedInputStream bis = new BufferedInputStream(is)) {
-//
-//                Handler sut = Handler.getHandler(bis);
-//
-//                assertThat(sut, is(instanceOf(ProgramBoardHandler.class)));
-//            }
-//        }
-//
-//        @Test
-//        public void 誤ったリクエストメッセージを送る() throws Exception {
-//            try (InputStream is = new FileInputStream(new File("./src/test/resources/emptyRequestMessage.txt"));
-//                 BufferedInputStream bis = new BufferedInputStream(is)) {
-//
-//                Handler sut = Handler.getHandler(bis);
-//
-//                assertThat(sut, is(instanceOf(StaticHandler.class)));
-//            }
-//        }
-//    }
+    public static class getHandlerメソッドのテスト {
+        @Test
+        public void 正しいリクエストメッセージを送る() throws Exception {
+            try (InputStream is = new FileInputStream(new File("./src/test/resources/GetRequestMessage.txt"));
+                 BufferedInputStream bis = new BufferedInputStream(is)) {
 
-//    public static class requestComesメソッドのテスト {
-//        @Test
-//        public void ステータスコード200のテスト() throws Exception {
-//            try (InputStream is = new FileInputStream(new File("./src/test/resources/GetRequestMessage.txt"));
-//                 BufferedInputStream bis = new BufferedInputStream(is)) {
-//
-//                bis.mark(bis.available());
-//                Handler sut = Handler.getHandler(bis);
-//                bis.reset();
-//                sut.requestComes(bis);
-//                assertThat(sut.getStatusCode(), is(200));
-//            }
-//        }
-//
-//        @Test
-//        public void ステータスコード400のテスト() throws Exception {
-//            try (InputStream is = new FileInputStream(new File("./src/test/resources/emptyRequestMessage.txt"));
-//                 BufferedInputStream bis = new BufferedInputStream(is)) {
-//
-//                bis.mark(bis.available());
-//                Handler sut = Handler.getHandler(bis);
-//                bis.reset();
-//                sut.requestComes(bis);
-//                assertThat(sut.getStatusCode(), is(400));
-//            }
-//        }
-//
-//        @Test
-//        public void ステータスコード404のテスト() throws Exception {
-//            try (InputStream is = new FileInputStream(new File("./src/test/resources/NotExistTest.txt"));
-//                 BufferedInputStream bis = new BufferedInputStream(is)) {
-//
-//                bis.mark(bis.available());
-//                Handler sut = Handler.getHandler(bis);
-//                bis.reset();
-//                sut.requestComes(bis);
-//                assertThat(sut.getStatusCode(), is(404));
-//            }
-//        }
-//
-//        @Test
-//        public void ステータスコード501のテスト() throws Exception {
-//            try (InputStream is = new FileInputStream(new File("./src/test/resources/HTTPMethodTest.txt"));
-//                 BufferedInputStream bis = new BufferedInputStream(is)) {
-//
-//                bis.mark(bis.available());
-//                Handler sut = Handler.getHandler(bis);
-//                bis.reset();
-//                sut.requestComes(bis);
-//                assertThat(sut.getStatusCode(), is(501));
-//            }
-//        }
-//
-//        @Test
-//        public void ステータスコード505のテスト() throws Exception {
-//            try (InputStream is = new FileInputStream(new File("./src/test/resources/HTTPVersionTest.txt"));
-//                 BufferedInputStream bis = new BufferedInputStream(is)) {
-//
-//                bis.mark(bis.available());
-//                Handler sut = Handler.getHandler(bis);
-//                bis.reset();
-//                sut.requestComes(bis);
-//                assertThat(sut.getStatusCode(), is(505));
-//            }
-//        }
-//    }
+                Handler sut = Handler.getHandler(bis);
+
+                assertThat(sut, is(instanceOf(StaticHandler.class)));
+            }
+        }
+
+        @Test
+        public void urlPattern以外のPOSTのテスト() throws Exception {
+            try (InputStream is = new FileInputStream(new File("./src/test/resources/NotContainsUrlPatternTest.txt"));
+                 BufferedInputStream bis = new BufferedInputStream(is)) {
+
+                Handler sut = Handler.getHandler(bis);
+
+                assertThat(sut, is(instanceOf(StaticHandler.class)));
+            }
+        }
+
+        @Test
+        public void WebAppHandlerが返されるテスト() throws Exception {
+            try (InputStream is = new FileInputStream(new File("./src/test/resources/PostRequestMessage.txt"));
+                 BufferedInputStream bis = new BufferedInputStream(is)) {
+
+                Handler sut = Handler.getHandler(bis);
+
+                assertThat(sut, is(instanceOf(ProgramBoardHandler.class)));
+            }
+        }
+
+        @Test(expected = RequestParseException.class)
+        public void 誤ったリクエストメッセージを送る() throws Exception {
+            try (InputStream is = new FileInputStream(new File("./src/test/resources/emptyRequestMessage.txt"));
+                 BufferedInputStream bis = new BufferedInputStream(is)) {
+
+                Handler.getHandler(bis);
+            }
+        }
+    }
 
     public static class getFilePathメソッドのテスト {
         @Test
