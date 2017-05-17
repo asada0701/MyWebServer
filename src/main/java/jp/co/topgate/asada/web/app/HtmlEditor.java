@@ -1,5 +1,6 @@
 package jp.co.topgate.asada.web.app;
 
+import jp.co.topgate.asada.web.exception.HtmlInitializeException;
 import jp.co.topgate.asada.web.model.Message;
 import jp.co.topgate.asada.web.model.ModelController;
 
@@ -24,9 +25,9 @@ public class HtmlEditor {
      * コンストラクタ
      * HTMLファイルの初期状態を保存する
      *
-     * @throws IOException HTMLファイルに書き込み中にエラー発生
+     * @throws HtmlInitializeException HTMLファイルの読み込み中にエラー発生
      */
-    public HtmlEditor() throws IOException {
+    public HtmlEditor() throws HtmlInitializeException {
         for (HtmlListToEdit hlte : HtmlListToEdit.values()) {
             try (BufferedReader br = new BufferedReader(new FileReader(new File(hlte.getPath())))) {
                 String str;
@@ -35,6 +36,9 @@ public class HtmlEditor {
                     builder.append(str).append("\n");
                 }
                 htmlContent.put(hlte.getId(), builder.toString());
+
+            } catch (IOException e) {
+                throw new HtmlInitializeException(e.getMessage());
             }
         }
     }
@@ -42,13 +46,15 @@ public class HtmlEditor {
     /**
      * 登録されているHTMLファイルを初期化する
      *
-     * @throws IOException HTMLファイルに書き込み中にエラー発生
+     * @throws HtmlInitializeException HTMLファイルに書き込み中にエラー発生
      */
-    public void allInitialization() throws IOException {
+    public void allInitialization() throws HtmlInitializeException {
         for (HtmlListToEdit hlte : HtmlListToEdit.values()) {
             try (OutputStream os = new FileOutputStream(new File(hlte.getPath()))) {
                 os.write(htmlContent.get(hlte.getId()).getBytes());
                 os.flush();
+            } catch (IOException e) {
+                throw new HtmlInitializeException(e.getMessage());
             }
         }
     }

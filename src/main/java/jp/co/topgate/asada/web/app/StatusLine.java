@@ -35,29 +35,4 @@ public enum StatusLine {
     public String getReasonPhrase() {
         return reasonPhrase;
     }
-
-    /**
-     * リクエストメッセージのmethod,uri,protocolVersionから、レスポンスのステータスコードを決定するメソッド
-     *
-     * @param method          メソッド
-     * @param uri             URI
-     * @param protocolVersion プロトコルバージョン
-     * @return StatusLineを返す
-     */
-    public static StatusLine getStatusLine(String method, String uri, String protocolVersion) {
-        if (!"HTTP/1.1".equals(protocolVersion)) {
-            return StatusLine.HTTP_VERSION_NOT_SUPPORTED;
-
-        } else if (!"GET".equals(method) && !"POST".equals(method)) {
-            return StatusLine.NOT_IMPLEMENTED;
-
-        } else {
-            File file = new File(Handler.getFilePath(uri));
-            if (!file.exists() || !file.isFile()) {
-                return StatusLine.NOT_FOUND;
-            } else {
-                return StatusLine.OK;
-            }
-        }
-    }
 }
