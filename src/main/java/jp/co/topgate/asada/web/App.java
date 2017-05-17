@@ -2,9 +2,9 @@ package jp.co.topgate.asada.web;
 
 import jp.co.topgate.asada.web.app.CsvWriter;
 import jp.co.topgate.asada.web.app.HtmlEditor;
-import jp.co.topgate.asada.web.exception.BindRuntimeException;
 import jp.co.topgate.asada.web.exception.CsvRuntimeException;
 import jp.co.topgate.asada.web.exception.ServerStateException;
+import jp.co.topgate.asada.web.exception.SocketRuntimeException;
 import jp.co.topgate.asada.web.model.ModelController;
 
 import java.io.IOException;
@@ -27,8 +27,8 @@ public class App {
             String choices;
             Scanner scan = new Scanner(System.in);
 
-            ModelController.setMessageList(CsvWriter.readMessage(CsvWriter.messageCsvPath));   //CSVファイル読み込み
-            HtmlEditor he = new HtmlEditor();                            //HTMLファイル読み込み
+            ModelController.setMessageList(CsvWriter.readMessage(CsvWriter.messageCsvPath));    //CSVファイル読み込み
+            HtmlEditor he = new HtmlEditor();                                                   //HTMLファイル読み込み
 
             do {
                 System.out.println("--------------------");
@@ -49,10 +49,10 @@ public class App {
                 }
             } while (!choices.equals(String.valueOf(Choices.END.getId())));
 
-            CsvWriter.writeMessage(ModelController.getAllMessage(), CsvWriter.messageCsvPath);   //CSVファイルに書き込み
-            he.allInitialization();                                                   //HTMLファイルの初期化
+            CsvWriter.writeMessage(ModelController.getAllMessage(), CsvWriter.messageCsvPath);      //CSVファイルに書き込み
+            he.allInitialization();                                                                 //HTMLファイルの初期化
 
-        } catch (BindRuntimeException | ServerStateException | CsvRuntimeException |
+        } catch (ServerStateException | CsvRuntimeException | SocketRuntimeException |
                 NullPointerException | IOException e) {
 
             System.out.println(e.getMessage());
@@ -92,12 +92,11 @@ public class App {
      * @param choices 選択した文字
      * @return サーバーの状態を文字列で返す
      * @throws IOException          {@link Server}を参照
-     * @throws BindRuntimeException {@link Server#run()}を参照
      * @throws ServerStateException サーバークラスの状態が予期しないものになった場合に発生する
      * @throws CsvRuntimeException  {@link CsvWriter}を参照
      * @throws NullPointerException 引数がnullの場合
      */
-    static String controlServer(Server server, Choices choices) throws IOException, BindRuntimeException,
+    static String controlServer(Server server, Choices choices) throws IOException, SocketRuntimeException,
             ServerStateException, CsvRuntimeException, NullPointerException {
 
         Objects.requireNonNull(server);
@@ -178,6 +177,11 @@ enum Choices {
         this.id = id;
     }
 
+    /**
+     * Choicesと対応する数字を返す
+     *
+     * @return Choicesの添え字
+     */
     public int getId() {
         return id;
     }

@@ -1,10 +1,9 @@
 package jp.co.topgate.asada.web;
 
 import jp.co.topgate.asada.web.app.Handler;
-import jp.co.topgate.asada.web.app.HtmlEditor;
 import jp.co.topgate.asada.web.app.StatusLine;
-import jp.co.topgate.asada.web.exception.BindRuntimeException;
 import jp.co.topgate.asada.web.exception.RequestParseException;
+import jp.co.topgate.asada.web.exception.SocketRuntimeException;
 
 import java.io.IOException;
 import java.net.BindException;
@@ -69,16 +68,12 @@ class Server extends Thread {
     /**
      * Threadクラスのrunメソッドのオーバーライドメソッド
      *
-     * @throws BindRuntimeException ポートが使用中であるが、要求されたローカル・アドレスの割り当てに失敗しました
-     * @throws RuntimeException     ソケットの入出力でエラーが発生しました
+     * @throws RuntimeException ソケットの入出力でエラーが発生しました
      */
     public void run() {
         try {
             while (true) {
                 socket = serverSocket.accept();
-
-                HtmlEditor he = new HtmlEditor();
-
                 try {
                     Handler handler = Handler.getHandler(socket.getInputStream());
 
@@ -96,19 +91,15 @@ class Server extends Thread {
 
                 socket.close();
                 socket = null;
-
-                he.allInitialization();
             }
-
         } catch (BindException e) {
-            throw new BindRuntimeException(e.toString());
+            throw new SocketRuntimeException(e.getMessage());
 
         } catch (SocketException e) {
-            //e.printStackTrace();
-
-        } catch (IOException e) {
             e.printStackTrace();
-            throw new RuntimeException();
+
+        } catch (IOException | RuntimeException e) {
+            throw new SocketRuntimeException(e.getMessage());
         }
     }
 }

@@ -1,10 +1,13 @@
 package jp.co.topgate.asada.web.app;
 
+import jp.co.topgate.asada.web.ContentType;
 import jp.co.topgate.asada.web.RequestMessage;
 import jp.co.topgate.asada.web.ResponseMessage;
+import jp.co.topgate.asada.web.exception.HtmlInitializeException;
 import jp.co.topgate.asada.web.model.Message;
 import jp.co.topgate.asada.web.model.ModelController;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
@@ -32,20 +35,33 @@ public class ProgramBoardHandler extends Handler {
     }
 
     /**
+     * リクエストメッセージ
+     */
+    private RequestMessage requestMessage;
+
+    private HtmlEditor he;
+
+    /**
      * コンストラクタ
      *
      * @param requestMessage リクエストメッセージのオブジェクト
+     * @throws HtmlInitializeException {@link HtmlEditor#HtmlEditor()}を参照
      */
-    ProgramBoardHandler(RequestMessage requestMessage) {
+    ProgramBoardHandler(RequestMessage requestMessage) throws HtmlInitializeException {
         this.requestMessage = requestMessage;
+        this.he = new HtmlEditor();
     }
 
+    /**
+     * 抽象メソッド、リクエストの処理を行うメソッド
+     * TemplateMethodパターン
+     */
     @Override
     public StatusLine requestComes() {
         String method = requestMessage.getMethod();
         String uri = requestMessage.getUri();
         String protocolVersion = requestMessage.getProtocolVersion();
-        StatusLine sl = StatusLine.getStatusLine(method, uri, protocolVersion);
+        StatusLine sl = ProgramBoardHandler.getStatusLine(method, uri, protocolVersion);
 
         try {
             if ("POST".equals(requestMessage.getMethod())) {
@@ -57,8 +73,32 @@ public class ProgramBoardHandler extends Handler {
         } catch (IOException e) {
             return StatusLine.INTERNAL_SERVER_ERROR;
         }
-
         return sl;
+    }
+
+    /**
+     * リクエストメッセージのmethod,uri,protocolVersionから、レスポンスのステータスコードを決定するメソッド
+     *
+     * @param method          リクエストメッセージのメソッドを渡す
+     * @param uri             URIを渡す
+     * @param protocolVersion プロトコルバージョンを渡す
+     * @return StatusLineを返す
+     */
+    static StatusLine getStatusLine(String method, String uri, String protocolVersion) {
+        if (!"HTTP/1.1".equals(protocolVersion)) {
+            return StatusLine.HTTP_VERSION_NOT_SUPPORTED;
+
+        } else if (!"GET".equals(method) && !"POST".equals(method)) {
+            return StatusLine.NOT_IMPLEMENTED;
+
+        } else {
+            File file = new File(Handler.getFilePath(uri));
+            if (!file.exists() || !file.isFile()) {
+                return StatusLine.NOT_FOUND;
+            } else {
+                return StatusLine.OK;
+            }
+        }
     }
 
     /**
@@ -66,9 +106,9 @@ public class ProgramBoardHandler extends Handler {
      *
      * @param requestMessage リクエストメッセージクラスのオブジェクトを渡す
      * @throws IOException
-     * @throws NullPointerException
+     * @throws NullPointerException 引数がnull
      */
-    private void doPost(RequestMessage requestMessage) throws IOException, NullPointerException {
+    void doPost(RequestMessage requestMessage) throws IOException, NullPointerException {
         Objects.requireNonNull(requestMessage);
 
         String param = requestMessage.findMessageBody("param");
@@ -134,7 +174,7 @@ public class ProgramBoardHandler extends Handler {
      *
      * @param str 生の文字列
      * @return 置き換えた文字列
-     * @throws NullPointerException
+     * @throws NullPointerException 引数がnull
      */
     static String replaceInputValue(String str) throws NullPointerException {
         Objects.requireNonNull(str);
@@ -143,5 +183,36 @@ public class ProgramBoardHandler extends Handler {
             str = str.replaceAll(key, invalidChar.get(key));
         }
         return str;
+    }
+
+    /**
+     * レスポンスを返すときに呼び出すメソッド
+     *
+     * @param os SocketのOutputStream
+     * @throws NullPointerException    引数がnull
+     * @throws HtmlInitializeException {@link HtmlEditor#allInitialization()}を参照
+     */
+    @Override
+    public void returnResponse(OutputStream os, StatusLine sl) throws HtmlInitializeException {
+        Objects.requireNonNull(os);
+        Objects.requireNonNull(sl);
+
+        ResponseMessage rm;
+
+        if (sl.equals(StatusLine.OK)) {
+            String path = Handler.getFilePath(requestMessage.getUri());
+            rm = new ResponseMessage(os, sl, path);
+            ContentType ct = new ContentType(path);
+            rm.addHeader("Content-Type", ct.getContentType());
+
+        } else {
+            String path = "";
+            rm = new ResponseMessage(os, sl, path);
+            rm.addHeader("Content-Type", "text/html; charset=UTF-8");
+        }
+
+        rm.doResponse();
+
+        he.allInitialization();
     }
 }

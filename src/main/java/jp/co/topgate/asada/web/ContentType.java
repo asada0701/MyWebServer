@@ -8,7 +8,7 @@ import java.util.Map;
  *
  * @author asada
  */
-class ContentType {
+public class ContentType {
 
     /**
      * デフォルトコンテンツタイプ
@@ -45,7 +45,7 @@ class ContentType {
      *
      * @param filePath リクエストメッセージで指定されたファイルのパス
      */
-    ContentType(String filePath) {
+    public ContentType(String filePath) {
         if (filePath != null) {
             for (String key : fileType.keySet()) {
                 if (filePath.endsWith(key)) {
@@ -60,7 +60,7 @@ class ContentType {
      *
      * @return コンテンツタイプを返す
      */
-    String getContentType() {
+    public String getContentType() {
         return fileType.getOrDefault(extension, defaultFileType);
     }
 }

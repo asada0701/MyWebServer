@@ -13,9 +13,9 @@ import java.util.*;
  */
 public class ResponseMessage {
     /**
-     * ヘッダーフィールドのコロン
+     * ヘッダーフィールドの名前と値を分割する
      */
-    private static final String HEADER_FIELD_COLON = ": ";
+    private static final String HEADER_FIELD_NAME_VALUE_SEPARATOR = ": ";
 
     /**
      * プロトコルバージョン
@@ -27,6 +27,10 @@ public class ResponseMessage {
      */
     private List<String> headerField = new ArrayList<>();
 
+    private OutputStream os;
+    private StatusLine sl;
+    private String filePath;
+
     /**
      * コンストラクタ
      * returnResponseメソッドを呼び出し、レスポンスメッセージを書き出す
@@ -34,36 +38,39 @@ public class ResponseMessage {
      * @param os       ソケットの出力ストリーム
      * @param sl       ステータスライン
      * @param filePath リソースファイルのパス
-     * @throws IOException          出力ストリームに書き出し中に例外発生
-     * @throws NullPointerException 引数がnull
      */
-    public ResponseMessage(OutputStream os, StatusLine sl, String filePath) throws IOException, NullPointerException {
-        Objects.requireNonNull(os);
-        Objects.requireNonNull(sl);
-        Objects.requireNonNull(filePath);
+    public ResponseMessage(OutputStream os, StatusLine sl, String filePath) {
+        this.os = os;
+        this.sl = sl;
+        this.filePath = filePath;
+    }
 
-        if (sl.equals(StatusLine.OK)) {
-            ContentType ct = new ContentType(filePath);
-            addHeader("Content-Type", ct.getContentType());
-
+    /**
+     * レスポンスメッセージを返したいタイミングで呼び出す
+     *
+     * @return trueの場合レスポンスに成功、falseの場合は失敗
+     */
+    public boolean doResponse() {
+        try {
             os.write(getResponseLine(protocolVersion, sl).getBytes());
             os.write(getHeader(headerField).getBytes());
 
-            try (InputStream in = new FileInputStream(new File(filePath))) {
-                int num;
-                while ((num = in.read()) != -1) {
-                    os.write(num);
+            if (sl.equals(StatusLine.OK)) {
+                try (InputStream in = new FileInputStream(new File(filePath))) {
+                    int num;
+                    while ((num = in.read()) != -1) {
+                        os.write(num);
+                    }
                 }
-                os.flush();
+            } else {
+                os.write(getErrorMessageBody(sl).getBytes());
             }
-        } else {
-            addHeader("Content-Type", "text/html; charset=UTF-8");
 
-            os.write(getResponseLine(protocolVersion, sl).getBytes());
-            os.write(getHeader(headerField).getBytes());
-
-            os.write(getErrorMessageBody(sl).getBytes());
             os.flush();
+            return true;
+
+        } catch (IOException e) {
+            return false;
         }
     }
 
@@ -152,7 +159,7 @@ public class ResponseMessage {
      *
      * @param protocolVersion プロトコルバージョン
      */
-    void setProtocolVersion(String protocolVersion) {
+    public void setProtocolVersion(String protocolVersion) {
         if (protocolVersion != null) {
             this.protocolVersion = protocolVersion;
         }
@@ -164,9 +171,9 @@ public class ResponseMessage {
      * @param name  ヘッダ名
      * @param value ヘッダ値
      */
-    void addHeader(String name, String value) {
+    public void addHeader(String name, String value) {
         if (name != null && value != null) {
-            headerField.add(name + HEADER_FIELD_COLON + value);
+            headerField.add(name + HEADER_FIELD_NAME_VALUE_SEPARATOR + value);
         }
     }
 

@@ -18,24 +18,24 @@ import static org.junit.Assert.assertThat;
 /**
  * Created by yusuke-pc on 2017/04/13.
  */
-//@RunWith(Enclosed.class)
+@RunWith(Enclosed.class)
 public class RequestMessageTest {
-//    public static class コンストラクタのテスト {
-//        RequestMessage sut;
-//
-//        @Test(expected = RequestParseException.class)
-//        public void nullチェック() throws Exception {
-//            sut = new RequestMessage(null);
-//        }
-//
-//        @Test(expected = RequestParseException.class)
-//        public void 空チェック() throws Exception {
-//            String path = "./src/test/resources/emptyRequestMessage.txt";
-//            try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(path)))) {
-//                sut = new RequestMessage(bis);
-//            }
-//        }
-//
+    public static class コンストラクタのテスト {
+        RequestMessage sut;
+
+        @Test(expected = RequestParseException.class)
+        public void nullチェック() throws Exception {
+            sut = new RequestMessage(null);
+        }
+
+        @Test(expected = RequestParseException.class)
+        public void 空チェック() throws Exception {
+            String path = "./src/test/resources/emptyRequestMessage.txt";
+            try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(path)))) {
+                sut = new RequestMessage(bis);
+            }
+        }
+
 //        @Test
 //        public void GETの場合正しく動作するか() throws Exception {
 //            String path = "./src/test/resources/GetRequestMessage.txt";
@@ -90,55 +90,55 @@ public class RequestMessageTest {
 //                assertThat(sut.findMessageBody("like"), is(nullValue()));
 //            }
 //        }
-//    }
-//
-//    public static class splitUriメソッドのテスト {
-//        @Test(expected = NullPointerException.class)
-//        public void nullチェック() {
-//            RequestMessage.splitUri(null);
-//        }
-//
-//        @Test
-//        public void 空チェック() throws Exception {
-//            String[] sut = RequestMessage.splitUri("");
-//            assertThat(sut.length, is(2));
-//            assertThat(sut[0], is(""));
-//            assertThat(sut[1], is(nullValue()));
-//        }
-//
-//        @Test(expected = RequestParseException.class)
-//        public void URIシンタックス例外のテスト() throws Exception {
-//            RequestMessage.splitUri("{hello world!}");
-//        }
-//
-//        @Test
-//        public void 正しく動作するか() throws Exception {
-//            String[] sut = RequestMessage.splitUri("/index.html?name=%e6%9c%9d%e7%94%b0&like=cat");
-//            assertThat(sut.length, is(2));
-//            assertThat(sut[0], is("/index.html"));
-//            assertThat(sut[1], is("name=朝田&like=cat"));
-//        }
-//    }
-//
-//    public static class uriQueryParseメソッドのテスト {
-//        @Test(expected = NullPointerException.class)
-//        public void nullチェック() throws Exception {
-//            RequestMessage.uriQueryParse(null);
-//        }
-//
-//        @Test(expected = RequestParseException.class)
-//        public void 空チェック() throws Exception {
-//            RequestMessage.uriQueryParse("");
-//        }
-//
-//        @Test
-//        public void 正しく動作するか() throws Exception {
-//            Map<String, String> sut = RequestMessage.uriQueryParse("name=朝田&like=cat");
-//            assertThat(sut.get("name"), is("朝田"));
-//            assertThat(sut.get("like"), is("cat"));
-//        }
-//    }
-//
+    }
+
+    public static class splitUriメソッドのテスト {
+        @Test(expected = NullPointerException.class)
+        public void nullチェック() {
+            RequestMessage.splitUri(null);
+        }
+
+        @Test
+        public void 空チェック() throws Exception {
+            String[] sut = RequestMessage.splitUri("");
+            assertThat(sut.length, is(2));
+            assertThat(sut[0], is(""));
+            assertThat(sut[1], is(nullValue()));
+        }
+
+        @Test(expected = RequestParseException.class)
+        public void URIシンタックス例外のテスト() throws Exception {
+            RequestMessage.splitUri("{hello world!}");
+        }
+
+        @Test
+        public void 正しく動作するか() throws Exception {
+            String[] sut = RequestMessage.splitUri("/index.html?name=%e6%9c%9d%e7%94%b0&like=cat");
+            assertThat(sut.length, is(2));
+            assertThat(sut[0], is("/index.html"));
+            assertThat(sut[1], is("name=朝田&like=cat"));
+        }
+    }
+
+    public static class uriQueryParseメソッドのテスト {
+        @Test(expected = NullPointerException.class)
+        public void nullチェック() throws Exception {
+            RequestMessage.uriQueryParse(null);
+        }
+
+        @Test(expected = RequestParseException.class)
+        public void 空チェック() throws Exception {
+            RequestMessage.uriQueryParse("");
+        }
+
+        @Test
+        public void 正しく動作するか() throws Exception {
+            Map<String, String> sut = RequestMessage.uriQueryParse("name=朝田&like=cat");
+            assertThat(sut.get("name"), is("朝田"));
+            assertThat(sut.get("like"), is("cat"));
+        }
+    }
+
 //    public static class ヘッダーフィルードのテスト {
 //        RequestMessage sut;
 //

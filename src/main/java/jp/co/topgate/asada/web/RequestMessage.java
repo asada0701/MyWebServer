@@ -101,7 +101,9 @@ public class RequestMessage {
 
             String[] requestLine = str[0].split(REQUEST_LINE_SEPARATOR);
             if (requestLine.length != REQUEST_LINE_NUM_ITEMS) {
-                throw new RequestParseException("リクエストラインが不正なものだった:" + str[0]);
+//                bis.reset();
+//                charMessageBody = messageBodyParse(readCharMessageBody(bis, 1024));
+                throw new RequestParseException("リクエストラインが不正なものだった");
             }
 
             method = requestLine[0];
@@ -138,7 +140,7 @@ public class RequestMessage {
             }
 
         } catch (IOException e) {
-            throw new RequestParseException("bufferedInputStream周りでの例外");
+            throw new RequestParseException("bufferedInputStream周りでの例外:" + e.getMessage());
 
         } catch (NumberFormatException e) {
             throw new RequestParseException("Content-Lengthに数字以外の文字が含まれています");
@@ -161,7 +163,7 @@ public class RequestMessage {
         baos[0] = new ByteArrayOutputStream();
         baos[1] = new ByteArrayOutputStream();
 
-        int index = 0, now, before = 0, moreBefore = 0, moremoreBefore = 0;
+        int index = 0, now, before = 0, moreBefore = 0, moremoreBefore = 0, i = 0;
         while ((now = is.read()) != -1) {
             baos[index].write(now);
 
@@ -175,11 +177,17 @@ public class RequestMessage {
             moremoreBefore = moreBefore;
             moreBefore = before;
             before = now;
+            i++;
         }
+        System.out.println("intの数" + i);
 
         String[] result = new String[baos.length];
         result[0] = baos[0].toString().trim();
         result[1] = baos[1].toString().trim();
+
+//        System.out.println(result[0]);
+//        System.out.println("--------------------------");
+//        System.out.println(result[1]);
         return result;
     }
 
@@ -193,15 +201,22 @@ public class RequestMessage {
      * @throws RequestParseException メッセージボディが空
      */
     static String readCharMessageBody(InputStream is, int contentLength) throws IOException, RequestParseException {
+        if (contentLength <= 0) {
+            return null;
+        }
         BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
         while (!Strings.isNullOrEmpty(br.readLine())) ;
-        String str = null;
-        if (0 < contentLength) {
-            char[] c = new char[contentLength];
-            //int i = br.read(c);
-            str = new String(c);
-        }
-        return str;
+        StringBuffer buffer = new StringBuffer();
+        char[] c = new char[contentLength];
+        int k = 0;
+        do {
+            int i = br.read(c);
+            buffer.append(c);
+
+            k += i;
+            System.out.println(contentLength + "と" + k);
+        } while (contentLength != k);
+        return buffer.toString();
     }
 
     /**
@@ -289,12 +304,12 @@ public class RequestMessage {
 
         Map<String, String> result = new HashMap<>();
         String[] s1 = messageBody.split(MESSAGE_BODY_EACH_QUERY_SEPARATOR);
-        for (String aS1 : s1) {
-            String[] s2 = aS1.split(MESSAGE_BODY_NAME_VALUE_SEPARATOR);
+        for (String s : s1) {
+            String[] s2 = s.split(MESSAGE_BODY_NAME_VALUE_SEPARATOR);
             if (s2.length == MESSAGE_BODY_NUM_ITEMS) {
                 result.put(s2[0], s2[1]);
             } else {
-                throw new RequestParseException("リクエストのメッセージボディが不正なものだった");
+                throw new RequestParseException("リクエストのメッセージボディが不正なものだった:" + s2[0]);
             }
         }
         return result;

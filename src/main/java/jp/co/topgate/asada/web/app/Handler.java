@@ -2,8 +2,8 @@ package jp.co.topgate.asada.web.app;
 
 import com.google.common.base.Strings;
 import jp.co.topgate.asada.web.RequestMessage;
-import jp.co.topgate.asada.web.ResponseMessage;
 import jp.co.topgate.asada.web.StaticHandler;
+import jp.co.topgate.asada.web.exception.HtmlInitializeException;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 
 import java.io.IOException;
@@ -37,19 +37,15 @@ public abstract class Handler {
     }
 
     /**
-     * リクエストメッセージ
-     */
-    protected RequestMessage requestMessage;
-
-    /**
      * ハンドラーのファクトリーメソッド
      *
      * @param is ソケットの入力ストリーム
      * @return 今回の接続を担当するハンドラーのオブジェクト
-     * @throws RequestParseException {@link RequestMessage}を参照
-     * @throws NullPointerException  引数がnull
+     * @throws RequestParseException   {@link RequestMessage#RequestMessage(InputStream)}を参照
+     * @throws NullPointerException    引数がnull
+     * @throws HtmlInitializeException {@link HtmlEditor#HtmlEditor()}を参照
      */
-    public static Handler getHandler(InputStream is) throws RequestParseException, NullPointerException {
+    public static Handler getHandler(InputStream is) throws RequestParseException, NullPointerException, HtmlInitializeException {
         Objects.requireNonNull(is);
 
         RequestMessage requestMessage = new RequestMessage(is);
@@ -66,51 +62,37 @@ public abstract class Handler {
 
     /**
      * 抽象メソッド、リクエストの処理を行うメソッド
+     *
+     * @return レスポンスラインの状態行(StatusLine)を返す
      */
     public abstract StatusLine requestComes();
 
     /**
      * レスポンスを返すときに呼び出すメソッド
+     * レスポンスに追加したいヘッダがある場合は、このメソッド内で追加する
+     * （例）
+     * ResponseMessage rm = new ResponseMessage(os,sl,filePath);
+     * rm.addHeader("hoge","hogehoge");
+     * rm.doResponse();
      *
      * @param os SocketのOutputStream
-     * @param sl StatusLineを渡す
+     * @param sl ステータスラインの列挙型
      * @throws NullPointerException 引数がnull
      */
-    /**
-     * レスポンスを返すときに呼び出すメソッド
-     *
-     * @param os SocketのOutputStream
-     * @throws NullPointerException 引数がnull
-     */
-    public void returnResponse(OutputStream os, StatusLine sl) {
-        Objects.requireNonNull(os);
-        Objects.requireNonNull(sl);
-
-        try {
-            String path = "";
-            if (requestMessage != null) {
-                path = Handler.getFilePath(requestMessage.getUri());
-            }
-            new ResponseMessage(os, sl, path);
-
-        } catch (IOException e) {
-            /*
-            ソケットにレスポンスを書き出す段階で、例外が出た。
-            原因としては、ソケットが閉じてしまった場合などが考えられる。
-            レスポンスを返せない例外なので、発生しても無視する。
-             */
-        }
-    }
+    public abstract void returnResponse(OutputStream os, StatusLine sl) throws NullPointerException;
 
     /**
      * URIを元にファイルパスを返すメソッド
-     * （例）/program/board/css/style.css
-     * を渡すと
-     * ./src/main/resources/2/css/style.css
-     * が返ってくる
+     * （例）
+     * 渡されたURIが、urlPatternに登録されている文字列から始まっている場合
+     * /program/board/css/style.css を渡すと
+     * ./src/main/resources/2/css/style.css が返ってくる
+     * そうでない場合
+     * /index.html を渡すと
+     * ./src/main/resources/index.html が返ってくる
      *
      * @param uri リクエストラインクラスのURI
-     * @return リクエストされたファイルのパス
+     * @return リクエストされたファイルパス
      */
     static String getFilePath(String uri) {
         if (Strings.isNullOrEmpty(uri)) {
