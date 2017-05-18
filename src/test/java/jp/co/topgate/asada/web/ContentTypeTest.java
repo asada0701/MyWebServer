@@ -6,13 +6,14 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 /**
- * Created by yusuke-pc on 2017/05/03.
+ * ContentTypeクラスをテストする
+ *
+ * @author asada
  */
 public class ContentTypeTest {
-    @Test
+    @Test(expected = NullPointerException.class)
     public void nullチェック() {
-        ContentType sut = new ContentType(null);
-        assertThat(sut.getContentType(), is("application/octet-stream"));
+        new ContentType(null);
     }
 
     @Test

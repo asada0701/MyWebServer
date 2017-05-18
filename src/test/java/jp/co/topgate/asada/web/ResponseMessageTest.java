@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.startsWith;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 
@@ -27,7 +28,7 @@ public class ResponseMessageTest {
             ResponseMessage.getResponseLine("HTTP/1.1", null);
         }
 
-        @Test(expected = NullPointerException.class)
+        @Test
         public void 引数protocolVersionのnullチェック() {
             ResponseMessage.getResponseLine(null, StatusLine.OK);
         }
@@ -154,7 +155,7 @@ public class ResponseMessageTest {
         public void setUp() throws Exception {
             File file = new File("./src/test/resources/responseMessage.txt");
             FileOutputStream fos = new FileOutputStream(file);
-            sut = new ResponseMessage(fos, StatusLine.OK, "./src/main/resources/index.html");
+            sut = new ResponseMessage(fos, StatusLine.OK);
         }
 
         @Test
@@ -173,7 +174,7 @@ public class ResponseMessageTest {
             File file = new File("./src/test/resources/responseMessage.txt");
 
             FileOutputStream fos = new FileOutputStream(file);
-            ResponseMessage sut2 = new ResponseMessage(fos, StatusLine.OK, "./src/main/resources/index.html");
+            ResponseMessage sut2 = new ResponseMessage(fos, StatusLine.OK);
             sut2.setProtocolVersion("HTTP/2");
             assertThat(sut2.getProtocolVersion(), is("HTTP/2"));
         }
@@ -187,7 +188,7 @@ public class ResponseMessageTest {
             File file = new File("./src/test/resources/responseMessage.txt");
 
             FileOutputStream fos = new FileOutputStream(file);
-            sut = new ResponseMessage(fos, StatusLine.OK, "./src/main/resources/index.html");
+            sut = new ResponseMessage(fos, StatusLine.OK);
         }
 
         @Test
@@ -208,20 +209,20 @@ public class ResponseMessageTest {
     }
 
     public static class コンストラクタのテスト {
-        @Test(expected = NullPointerException.class)
+        @Test
         public void 引数outputStreamのnullチェック() throws Exception {
-            new ResponseMessage(null, StatusLine.OK, "");
+            new ResponseMessage(null, StatusLine.OK);
         }
 
-        @Test(expected = NullPointerException.class)
+        @Test
         public void 引数StatusLineのnullチェック() throws Exception {
             String path = "./src/test/resources/responseMessage.txt";
             try (FileOutputStream fos = new FileOutputStream(path)) {
-                new ResponseMessage(fos, null, "./src/main/resources/index.html");
+                new ResponseMessage(fos, null);
             }
         }
 
-        @Test(expected = NullPointerException.class)
+        @Test
         public void 引数ファイルパスのnullチェック() throws Exception {
             String path = "./src/test/resources/responseMessage.txt";
             try (FileOutputStream fos = new FileOutputStream(path)) {
@@ -229,6 +230,28 @@ public class ResponseMessageTest {
             }
         }
 
+        @Test
+        public void 引数3つのコンストラクタのテスト() throws Exception {
+            String path = "./src/test/resources/responseMessage.txt";
+            try (FileOutputStream fos = new FileOutputStream(path)) {
+                ResponseMessage sut = new ResponseMessage(fos, StatusLine.OK, "");
+                assertThat(sut.getProtocolVersion(), is("HTTP/1.1"));
+                assertThat(sut.getStatusLine(), is(StatusLine.OK));
+            }
+        }
+
+        @Test
+        public void 引数2つのコンストラクタのテスト() throws Exception {
+            String path = "./src/test/resources/responseMessage.txt";
+            try (FileOutputStream fos = new FileOutputStream(path)) {
+                ResponseMessage sut = new ResponseMessage(fos, StatusLine.OK);
+                assertThat(sut.getProtocolVersion(), is("HTTP/1.1"));
+                assertThat(sut.getStatusLine(), is(StatusLine.OK));
+            }
+        }
+    }
+
+    public static class returnResponseメソッドのテスト {
         @Test
         public void レスポンスメッセージの生成テスト() throws Exception {
             String path = "./src/test/resources/responseMessage.txt";
@@ -277,7 +300,7 @@ public class ResponseMessageTest {
             String path = "./src/test/resources/responseMessage.txt";
             try (FileOutputStream fos = new FileOutputStream(path);
                  BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(path))))) {
-                ResponseMessage rm = new ResponseMessage(fos, StatusLine.BAD_REQUEST, "");
+                ResponseMessage rm = new ResponseMessage(fos, StatusLine.BAD_REQUEST);
                 rm.addHeader("Content-Type", "text/html; charset=UTF-8");
                 assertThat(rm.returnResponse(), is(true));
 
@@ -295,9 +318,28 @@ public class ResponseMessageTest {
             String path = "./src/test/resources/responseMessage.txt";
             try (FileOutputStream fos = new FileOutputStream(path);
                  BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(path))))) {
-                ResponseMessage rm = new ResponseMessage(fos, StatusLine.OK, "");
+                ResponseMessage rm = new ResponseMessage(fos, StatusLine.OK);
                 rm.addHeader("Content-Type", "text/html; charset=UTF-8");
                 assertThat(rm.returnResponse(), is(false));
+            }
+        }
+
+        @Test
+        public void JSONを送ってみる() throws Exception {
+            String path = "./src/test/resources/responseMessage.txt";
+            try (FileOutputStream fos = new FileOutputStream(path);
+                 BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(path))))) {
+                ResponseMessage rm = new ResponseMessage(fos, StatusLine.OK);
+                rm.addHeader("Content-Type", "application/json; charset=utf-8");
+                rm.addHeader("Content-Length", "43");
+                assertThat(rm.returnResponse("{\"status\":\"OK\",\"message\":\"Hello Guillaume\"}".getBytes()), is(true));
+
+                assertThat(br.readLine(), is("HTTP/1.1 200 OK"));
+                assertThat(br.readLine(), is("Content-Type: application/json; charset=utf-8"));
+                assertThat(br.readLine(), is("Content-Length: 43"));
+                assertThat(br.readLine(), is(""));
+                assertThat(br.readLine(), is("{\"status\":\"OK\",\"message\":\"Hello Guillaume\"}"));
+                assertThat(br.readLine(), is(nullValue()));
             }
         }
     }

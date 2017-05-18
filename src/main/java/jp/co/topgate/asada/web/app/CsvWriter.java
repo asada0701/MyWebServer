@@ -19,7 +19,7 @@ public class CsvWriter {
     /**
      * ファイルパス
      */
-    private static final String messageCsvPath = "./src/main/resources/data/message.csv";
+    private static final String csvPath = "./src/main/resources/data/message.csv";
 
     /**
      * CSVファイルの項目を分割する
@@ -35,39 +35,11 @@ public class CsvWriter {
      * 過去のMessageListを、CSVファイルから読み出すメソッド
      *
      * @return 過去に投稿された文をメッセージクラスのListに格納して返す
-     * @throws CsvRuntimeException  CSVファイルの中身が規定の形になっていない
-     * @throws IOException          CSVファイル読み込みに失敗した
-     * @throws NullPointerException 引数がnull
+     * @throws CsvRuntimeException CSVファイルの中身が規定の形になっていないもしくはファイル読み込みに失敗した
      */
-    public static List<Message> readMessage() throws CsvRuntimeException, IOException, NullPointerException {
-        return readMessage(messageCsvPath);
-    }
-
-    /**
-     * MessageListを、CSVファイルに書き出すメソッド
-     *
-     * @param list CSVに書き込みたいListを渡す
-     * @throws CsvRuntimeException  CSVファイルの中身が規定の形になっていない
-     * @throws NullPointerException 引数がnull
-     */
-    public static void writeMessage(List<Message> list) throws CsvRuntimeException, NullPointerException {
-        writeMessage(list, messageCsvPath);
-    }
-
-    /**
-     * 過去のMessageListを、CSVファイルから読み出すメソッド
-     *
-     * @param path 書き込みたい対象のCSVのパス
-     * @return 過去に投稿された文をメッセージクラスのListに格納して返す
-     * @throws CsvRuntimeException  CSVファイルの中身が規定の形になっていない
-     * @throws IOException          CSVファイル読み込みに失敗した
-     * @throws NullPointerException 引数がnull
-     */
-    static List<Message> readMessage(String path) throws CsvRuntimeException, IOException, NullPointerException {
-        Objects.requireNonNull(path);
-
+    public static List<Message> readMessage() throws CsvRuntimeException {
         List<Message> list = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
+        try (BufferedReader br = new BufferedReader(new FileReader(new File(csvPath)))) {
             String str;
             while (!Strings.isNullOrEmpty(str = br.readLine())) {
 
@@ -87,6 +59,8 @@ public class CsvWriter {
                     throw new CsvRuntimeException("指定されたCSVが規定の形にそっていないため読み込めません。");
                 }
             }
+        } catch (IOException e) {
+            throw new CsvRuntimeException(e.getMessage());
         }
         return list;
     }
@@ -94,15 +68,11 @@ public class CsvWriter {
     /**
      * MessageListを、CSVファイルに書き出すメソッド
      *
-     * @param path 書き込みたい対象のCSVのパス
      * @param list CSVに書き込みたいListを渡す
-     * @throws CsvRuntimeException  CSVファイルの中身が規定の形になっていない
-     * @throws NullPointerException 引数がnull
+     * @throws CsvRuntimeException CSVファイルの中身が規定の形になっていない
      */
-    static void writeMessage(List<Message> list, String path) throws CsvRuntimeException, NullPointerException {
-        Objects.requireNonNull(path);
-
-        try (OutputStream os = new FileOutputStream(new File(path))) {
+    public static void writeMessage(List<Message> list) throws CsvRuntimeException {
+        try (OutputStream os = new FileOutputStream(new File(csvPath))) {
             for (Message m : list) {
                 String messageID = String.valueOf(m.getMessageID());
                 String password = m.getPassword();

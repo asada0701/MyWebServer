@@ -45,7 +45,7 @@ class Server extends Thread {
      */
     boolean stopServer() throws IOException {
         boolean result = false;
-        if (socket == null || socket.isClosed()) {
+        if (socket == null) {
             serverSocket.close();
             result = true;
         }
@@ -81,19 +81,16 @@ class Server extends Thread {
 
                     handler.doResponseProcess(socket.getOutputStream(), sl);
 
-                } catch (NullPointerException e) {
-                    e.printStackTrace();
-                    new ResponseMessage(socket.getOutputStream(), StatusLine.INTERNAL_SERVER_ERROR, "");
-
                 } catch (RequestParseException e) {
-                    //e.printStackTrace();
-                    new ResponseMessage(socket.getOutputStream(), StatusLine.BAD_REQUEST, "");
+                    ResponseMessage rm = new ResponseMessage(socket.getOutputStream(), StatusLine.BAD_REQUEST);
+                    rm.returnResponse();
                 }
 
                 socket.close();
                 socket = null;
             }
-        } catch (BindException e) {
+
+        } catch (NullPointerException | BindException e) {
             throw new SocketRuntimeException(e.getMessage());
 
         } catch (SocketException e) {

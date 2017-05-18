@@ -16,7 +16,9 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 /**
- * Created by yusuke-pc on 2017/05/09.
+ * Handlerクラスをテストする
+ *
+ * @author asada
  */
 @RunWith(Enclosed.class)
 public class HandlerTest {
@@ -55,7 +57,7 @@ public class HandlerTest {
         }
 
         @Test(expected = RequestParseException.class)
-        public void 誤ったリクエストメッセージを送る() throws Exception {
+        public void 誤ったリクエストメッセージを送ると例外が発生する() throws Exception {
             try (InputStream is = new FileInputStream(new File("./src/test/resources/emptyRequestMessage.txt"));
                  BufferedInputStream bis = new BufferedInputStream(is)) {
 
@@ -67,25 +69,24 @@ public class HandlerTest {
     public static class getFilePathメソッドのテスト {
         @Test
         public void 引数に空が渡された場合() {
-            String s = Handler.getFilePath("");
-            assertThat(s, is("./src/main/resources/"));
+            String s = Handler.getFilePath(UrlPattern.PROGRAM_BOARD, "");
+            assertThat(s, is("./src/main/resources"));
         }
 
-        @Test
+        @Test(expected = NullPointerException.class)
         public void 引数にnullが渡された場合() {
-            String s = Handler.getFilePath(null);
-            assertThat(s, is("./src/main/resources/"));
+            Handler.getFilePath(UrlPattern.PROGRAM_BOARD, null);
         }
 
         @Test
         public void 登録されていないURIが渡された場合() {
-            String s = Handler.getFilePath("/index.html");
+            String s = Handler.getFilePath(UrlPattern.PROGRAM_BOARD, "/index.html");
             assertThat(s, is("./src/main/resources/index.html"));
         }
 
         @Test
         public void 登録されているUIRが渡された場合() {
-            String s = Handler.getFilePath("/program/board/index.html");
+            String s = Handler.getFilePath(UrlPattern.PROGRAM_BOARD, "/program/board/index.html");
             assertThat(s, is("./src/main/resources/2/index.html"));
         }
     }

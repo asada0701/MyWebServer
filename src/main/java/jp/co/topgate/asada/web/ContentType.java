@@ -35,22 +35,20 @@ public class ContentType {
     }
 
     /**
-     * コンストラクタで渡されてきたパスにあるファイルの拡張子
+     * ファイルの拡張子
      */
     private String extension;
 
     /**
      * コンストラクタ
-     * ファイル拡張子を取得する
+     * filePathに置いてあるファイルの拡張子を取得する
      *
      * @param filePath リクエストメッセージで指定されたファイルのパス
      */
     public ContentType(String filePath) {
-        if (filePath != null) {
-            for (String key : fileType.keySet()) {
-                if (filePath.endsWith(key)) {
-                    extension = key;
-                }
+        for (String key : fileType.keySet()) {
+            if (filePath.endsWith(key)) {
+                extension = key;
             }
         }
     }

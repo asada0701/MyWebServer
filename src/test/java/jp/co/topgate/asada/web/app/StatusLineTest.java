@@ -6,7 +6,9 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 /**
- * Created by yusuke-pc on 2017/05/09.
+ * 列挙型のStatusLineのテスト
+ *
+ * @author asada
  */
 public class StatusLineTest {
     @Test

@@ -28,42 +28,40 @@ public class ResponseMessage {
      */
     private List<String> headerField = new ArrayList<>();
 
-    private OutputStream os;
+    /**
+     * ステータスライン
+     */
     private StatusLine sl;
+
+    private OutputStream os;
+
+    /**
+     * リソースファイルの場所
+     */
     private String filePath;
 
     /**
      * コンストラクタ
-     * リソースファイルを使用する場合に使用する
-     *
-     * @param os       ソケットの出力ストリーム
-     * @param sl       ステータスライン
-     * @param filePath リソースファイルのパス
-     * @throws NullPointerException 引数がnull
      */
-    public ResponseMessage(OutputStream os, StatusLine sl, String filePath) throws NullPointerException {
+    public ResponseMessage(OutputStream os, StatusLine sl, String filePath) {
         this(os, sl);
-        Objects.requireNonNull(filePath);
         this.filePath = filePath;
     }
 
     /**
      * コンストラクタ
-     * リソースファイルを使用しない場合に使用する
      *
      * @param os ソケットの出力ストリーム
      * @param sl ステータスライン
      * @throws NullPointerException 引数がnull
      */
-    public ResponseMessage(OutputStream os, StatusLine sl) throws NullPointerException {
-        Objects.requireNonNull(os);
-        Objects.requireNonNull(sl);
+    public ResponseMessage(OutputStream os, StatusLine sl) {
         this.os = os;
         this.sl = sl;
     }
 
     /**
-     * リソースファイルをメッセージボディで使いたい場合に使用するメソッド
+     * リソースファイルを使用したい場合に使用するメソッド
      * レスポンスメッセージを返したいタイミングで呼び出す
      *
      * @return trueの場合レスポンスに成功、falseの場合は失敗
@@ -77,6 +75,7 @@ public class ResponseMessage {
                 if (Strings.isNullOrEmpty(filePath)) {
                     return false;
                 }
+
                 try (InputStream in = new FileInputStream(filePath)) {
                     int num;
                     while ((num = in.read()) != -1) {
@@ -96,21 +95,18 @@ public class ResponseMessage {
     }
 
     /**
-     * JSONなど、リソースファイル以外で文字列をメッセージボディで使いたい場合に使用するメソッド
+     * JSONなど、リソースファイルを使わない場合に使用するメソッド
      * レスポンスメッセージを返したいタイミングで呼び出す
      *
      * @return trueの場合レスポンスに成功、falseの場合は失敗
-     * @throws NullPointerException 引数がnulls
      */
-    public boolean returnResponse(String json) throws NullPointerException {
-        Objects.requireNonNull(json);
-
+    public boolean returnResponse(byte[] target) {
         try {
             os.write(getResponseLine(protocolVersion, sl).getBytes());
             os.write(getHeader(headerField).getBytes());
 
             if (sl.equals(StatusLine.OK)) {
-                os.write(json.getBytes());
+                os.write(target);
             } else {
                 os.write(getErrorMessageBody(sl).getBytes());
             }
@@ -129,13 +125,9 @@ public class ResponseMessage {
      * @param protocolVersion プロトコルバージョンを渡す
      * @param sl              StatusLineを渡す
      * @return レスポンスラインの文字列が返される
-     * @throws NullPointerException 引数がnull
      */
     @NotNull
-    static String getResponseLine(String protocolVersion, StatusLine sl) throws NullPointerException {
-        Objects.requireNonNull(protocolVersion);
-        Objects.requireNonNull(sl);
-
+    static String getResponseLine(String protocolVersion, StatusLine sl) {
         String[] str = {protocolVersion, String.valueOf(sl.getStatusCode()), sl.getReasonPhrase()};
         return String.join(" ", str) + "\n";
     }
@@ -145,12 +137,9 @@ public class ResponseMessage {
      *
      * @param list ヘッダーのリストを渡す
      * @return ヘッダーの文字列が返される
-     * @throws NullPointerException 引数がnull
      */
     @NotNull
-    static String getHeader(List<String> list) throws NullPointerException {
-        Objects.requireNonNull(list);
-
+    static String getHeader(List<String> list) {
         StringBuilder builder = new StringBuilder();
         for (String s : list) {
             builder.append(s).append("\n");
@@ -161,11 +150,12 @@ public class ResponseMessage {
 
     /**
      * エラーメッセージを保持しているメソッド
+     * 引数がnullの場合もHTTPステータスコード:500の文字列を返します
      *
      * @param sl ステータスライン
      * @return エラーの場合のレスポンスメッセージの内容
      */
-    static String getErrorMessageBody(StatusLine sl) {
+    public static String getErrorMessageBody(StatusLine sl) {
         if (sl == null) {
             return "<html><head><title>500 Internal Server Error</title></head>" +
                     "<body><h1>Internal Server Error</h1>" +
@@ -215,7 +205,7 @@ public class ResponseMessage {
     }
 
     /**
-     * ヘッダーフィールドにヘッダ名とヘッダ値を追加するメソッド
+     * ヘッダーフィールドのListに追加するメソッド
      *
      * @param name  ヘッダ名
      * @param value ヘッダ値
@@ -233,5 +223,9 @@ public class ResponseMessage {
 
     List<String> getHeaderField() {
         return this.headerField;
+    }
+
+    StatusLine getStatusLine() {
+        return this.sl;
     }
 }

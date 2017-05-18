@@ -1,22 +1,38 @@
 package jp.co.topgate.asada.web.app;
 
-/**
- * Created by yusuke-pc on 2017/05/09.
- */
-
 import jp.co.topgate.asada.web.model.Message;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+/**
+ * CsvWriterクラスのテスト
+ *
+ * @author asada
+ */
 public class CsvWriterTest {
+    private static List<Message> list;
+
+    @BeforeClass
+    public static void setUp() throws Exception {
+        list = CsvWriter.readMessage();
+        try (FileWriter fileWriter = new FileWriter(new File("./src/main/resources/data/message.csv"))) {
+            fileWriter.write("");
+            fileWriter.flush();
+        }
+    }
+
     @Test
     public void readMessageメソッドのテスト() throws Exception {
-        List<Message> sut = CsvWriter.readMessage("./src/test/resources/data/message.csv");
+        List<Message> sut = CsvWriter.readMessage();
         Message m;
 
         m = sut.get(0);
@@ -49,9 +65,9 @@ public class CsvWriterTest {
         m.setDate("2017/5/9 17:24");
         sut.add(m);
 
-        CsvWriter.writeMessage(sut, "./src/test/resources/data/message.csv");
+        CsvWriter.writeMessage(sut);
 
-        sut = CsvWriter.readMessage("./src/test/resources/data/message.csv");
+        sut = CsvWriter.readMessage();
         Message m2 = sut.get(0);
 
         assertThat(m.getMessageID(), is(m2.getMessageID()));
@@ -100,6 +116,11 @@ public class CsvWriterTest {
         m.setDate("2017/5/11 11:57");
         sut.add(m);
 
-        CsvWriter.writeMessage(sut, "./src/test/resources/data/message.csv");
+        CsvWriter.writeMessage(sut);
+    }
+
+    @AfterClass
+    public static void tearDown() throws Exception{
+        CsvWriter.writeMessage(list);
     }
 }

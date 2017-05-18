@@ -3,6 +3,9 @@ package jp.co.topgate.asada.web.app;
 import jp.co.topgate.asada.web.exception.HtmlInitializeException;
 import jp.co.topgate.asada.web.model.Message;
 import jp.co.topgate.asada.web.model.ModelController;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.util.HashMap;
@@ -95,11 +98,8 @@ public class HtmlEditor {
      *
      * @param name 探したい投稿者の名前を渡す
      * @throws IOException          HTMLファイルに書き込み中にエラー発生
-     * @throws NullPointerException 引数がnull
      */
-    static void writeSearchHtml(String name) throws IOException, NullPointerException {
-        Objects.requireNonNull(name);
-
+    static void writeSearchHtml(String name) throws IOException {
         List<Message> list = ModelController.findSameNameMessage(name);
 
         String path = EditHtmlList.SEARCH_HTML.getPath();
@@ -132,11 +132,8 @@ public class HtmlEditor {
      *
      * @param message メッセージのオブジェクト
      * @throws IOException          HTMLファイルに書き込み中にエラー発生
-     * @throws NullPointerException 引数がnull
      */
     static void writeDeleteHtml(Message message) throws IOException, NullPointerException {
-        Objects.requireNonNull(message);
-
         String path = EditHtmlList.DELETE_HTML.getPath();
 
         try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
@@ -171,11 +168,8 @@ public class HtmlEditor {
      * @param htmlListToEdit どのHTMLファイルに書き込むか
      * @param message        書き込みたいMessageのオブジェクト
      * @return HTMLの構文に沿った文字列
-     * @throws NullPointerException 引数がnull
      */
-    private static String messageChangeToHtml(EditHtmlList htmlListToEdit, Message message) throws NullPointerException {
-        Objects.requireNonNull(htmlListToEdit);
-        Objects.requireNonNull(message);
+    private static String messageChangeToHtml(EditHtmlList htmlListToEdit, Message message) {
 
         if (message.getText().contains("\r\n")) {
             message.setText(message.getText().replaceAll("\r\n", "<br>"));

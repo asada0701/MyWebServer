@@ -6,9 +6,10 @@ import jp.co.topgate.asada.web.exception.CsvRuntimeException;
 import jp.co.topgate.asada.web.exception.ServerStateException;
 import jp.co.topgate.asada.web.exception.SocketRuntimeException;
 import jp.co.topgate.asada.web.model.ModelController;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.util.Objects;
 import java.util.Scanner;
 
 /**
@@ -27,7 +28,7 @@ public class App {
             String choices;
             Scanner scan = new Scanner(System.in);
 
-            ModelController.setMessageList(CsvWriter.readMessage());    //CSVファイル読み込み
+            ModelController.setMessageList(CsvWriter.readMessage());                            //CSVファイル読み込み
             HtmlEditor he = new HtmlEditor();                                                   //HTMLファイル読み込み
 
             do {
@@ -42,14 +43,11 @@ public class App {
                 } while (!isSelect(choices));
 
                 String msg = controlServer(server, getChoicesEnum(choices));
-                if (msg != null) {
-                    System.out.println(msg);
-                } else {
-                    choices = "";
-                }
+                System.out.println(msg);
+
             } while (!choices.equals(String.valueOf(Choices.END.getId())));
 
-            CsvWriter.writeMessage(ModelController.getAllMessage());      //CSVファイルに書き込み
+            CsvWriter.writeMessage(ModelController.getAllMessage());                                //CSVファイルに書き込み
             he.allInitialization();                                                                 //HTMLファイルの初期化
 
         } catch (ServerStateException | CsvRuntimeException | SocketRuntimeException |
@@ -66,10 +64,7 @@ public class App {
      * @param choices 渡す文字列
      * @return 列挙型のChoices
      */
-    static boolean isSelect(String choices) {
-        if (choices == null) {
-            return false;
-        }
+    static boolean isSelect(final String choices) {
         return choices.equals(String.valueOf(Choices.START.getId())) ||
                 choices.equals(String.valueOf(Choices.STOP.getId())) ||
                 choices.equals(String.valueOf(Choices.END.getId()));
@@ -80,9 +75,9 @@ public class App {
      *
      * @param choices ユーザーが入力した文字
      * @return Choicesの列挙型で返す
-     * @throws NullPointerException 引数が例外の場合
      */
-    static Choices getChoicesEnum(String choices) throws NullPointerException {
+    @Contract(pure = true)  //メソッドを実行しても副作用がないことを示す
+    static Choices getChoicesEnum(final String choices) {
         switch (choices) {
             case "1":
                 return Choices.START;
@@ -103,16 +98,12 @@ public class App {
      * @throws IOException          {@link Server}を参照
      * @throws ServerStateException サーバークラスの状態が予期しないものになった場合に発生する
      * @throws CsvRuntimeException  {@link CsvWriter}を参照
-     * @throws NullPointerException 引数がnullの場合
      */
-    static String controlServer(Server server, Choices choices) throws IOException, SocketRuntimeException,
-            ServerStateException, CsvRuntimeException, NullPointerException {
-
-        Objects.requireNonNull(server);
-        Objects.requireNonNull(choices);
+    @NotNull
+    static String controlServer(Server server, final Choices choices) throws IOException, SocketRuntimeException,
+            ServerStateException, CsvRuntimeException {
 
         switch (choices) {
-
             case START:
                 switch (server.getState()) {
                     case TERMINATED:
@@ -160,7 +151,7 @@ public class App {
 }
 
 /**
- * controllerServerのメソッドの引数で渡す。
+ * Serverクラスの制御用Enum
  *
  * @author asada
  */
@@ -191,6 +182,7 @@ enum Choices {
      *
      * @return Choicesの添え字
      */
+    @Contract(pure = true)
     public int getId() {
         return id;
     }

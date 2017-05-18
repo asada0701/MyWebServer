@@ -27,9 +27,9 @@ public class AppTest {
     }
 
     public static class isSelectメソッドのテスト {
-        @Test
+        @Test(expected = NullPointerException.class)
         public void nullチェック() {
-            assertThat(App.isSelect(null), is(false));
+            App.isSelect(null);
         }
 
         @Test
