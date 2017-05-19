@@ -70,12 +70,11 @@ public class RequestMessageTest {
             }
         }
 
-        @Ignore
         @Test
         public void POSTの場合正しく動作するか() throws Exception {
             String path = "./src/test/resources/PostRequestMessage.txt";
-            try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(path)))) {
-                sut = new RequestMessage(bis);
+            try (FileInputStream fis = new FileInputStream(new File(path))) {
+                sut = new RequestMessage(fis);
                 assertThat(sut.getMethod(), is("POST"));
                 assertThat(sut.getUri(), is("/program/board/index.html"));
                 assertThat(sut.getProtocolVersion(), is("HTTP/1.1"));
@@ -93,7 +92,7 @@ public class RequestMessageTest {
                 assertThat(sut.findHeaderByName("Content-Length"), is("123"));
 
                 byte[] bytes = sut.getMessageBody();
-                assertThat(new String(bytes), is("name%3dasada%26title%3dtest%26text%3d%e3%81%93%e3%82%93%e3%81%ab%e3%81%a1%e3%81%af%26password%3dtest%26param%3dcontribution\n"));
+                assertThat(new String(bytes), is("name%3dasada%26title%3dtest%26text%3d%e3%81%93%e3%82%93%e3%81%ab%e3%81%a1%e3%81%af%26password%3dtest%26param%3dcontribution"));
             }
         }
     }
@@ -182,7 +181,7 @@ public class RequestMessageTest {
         }
     }
 
-    public static class headerFielddParseメソッドのテスト {
+    public static class headerFieldParseメソッドのテスト {
 
         @Test(expected = NullPointerException.class)
         public void nullチッェク() throws Exception {

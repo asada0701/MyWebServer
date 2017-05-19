@@ -90,46 +90,4 @@ public class HandlerTest {
             assertThat(s, is("./src/main/resources/2/index.html"));
         }
     }
-
-    public static class getStatusLineのテスト {
-        @Test
-        public void GETリクエスト200() throws Exception {
-            StatusLine sut = StaticHandler.getStatusLine("GET", "/index.html", "HTTP/1.1");
-            assertThat(sut.getStatusCode(), is(200));
-        }
-
-        @Test
-        public void POSTリクエスト200() throws Exception {
-            StatusLine sut = StaticHandler.getStatusLine("POST", "/index.html", "HTTP/1.1");
-            assertThat(sut.getStatusCode(), is(200));
-        }
-
-        @Test
-        public void 存在しないファイルを指定すると404() throws Exception {
-            StatusLine sut = StaticHandler.getStatusLine("GET", "/hogehoge", "HTTP/1.1");
-            assertThat(sut.getStatusCode(), is(404));
-        }
-
-        @Test
-        public void ディレクトリを指定すると404() throws Exception {
-            StatusLine sut = StaticHandler.getStatusLine("GET", "/", "HTTP/1.1");
-            assertThat(sut.getStatusCode(), is(404));
-        }
-
-        @Test
-        public void GETとPOST以外は501() throws Exception {
-            StatusLine sut;
-            sut = StaticHandler.getStatusLine("PUT", "/", "HTTP/1.1");
-            assertThat(sut.getStatusCode(), is(501));
-
-            sut = StaticHandler.getStatusLine("DELETE", "/", "HTTP/1.1");
-            assertThat(sut.getStatusCode(), is(501));
-        }
-
-        @Test
-        public void HTTPのバージョンが指定と異なる505() throws Exception {
-            StatusLine sut = StaticHandler.getStatusLine("GET", "/", "HTTP/2.0");
-            assertThat(sut.getStatusCode(), is(505));
-        }
-    }
 }

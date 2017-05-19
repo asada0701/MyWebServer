@@ -5,7 +5,6 @@ import jp.co.topgate.asada.web.StaticHandler;
 import jp.co.topgate.asada.web.exception.HtmlInitializeException;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 
-import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -45,6 +44,15 @@ public abstract class Handler {
     }
 
     /**
+     * URIを元に、実際のファイルパスを返すメソッド
+     */
+    static String getFilePath(UrlPattern urlPattern, String uri) {
+        return FILE_PATH + uri.replace(
+                urlPattern.getUrlPattern(),
+                urlPattern.getFilePath());
+    }
+
+    /**
      * リクエストの処理を行うメソッド
      *
      * @return レスポンスラインの状態行(StatusLine)を返す
@@ -57,45 +65,6 @@ public abstract class Handler {
      *
      * @param os SocketのOutputStream
      * @param sl ステータスラインの列挙型
-     * @throws NullPointerException 引数がnull
      */
     public abstract void doResponseProcess(OutputStream os, StatusLine sl);
-
-    /**
-     * URIを元に、実際のファイルパスを返すメソッド
-     */
-    static String getFilePath(UrlPattern urlPattern, String uri) {
-        return FILE_PATH + uri.replace(
-                urlPattern.getUrlPattern(),
-                urlPattern.getFilePath());
-    }
-
-    /**
-     * リクエストメッセージのmethod,uri,protocolVersionから、レスポンスのステータスコードを決定するメソッド
-     * 1.プロトコルバージョンがHTTP/1.1以外の場合は500
-     * 2.GET,POST以外のメソッドの場合は501
-     * 3.URIで指定されたファイルがリソースフォルダにない、もしくはディレクトリの場合は404
-     * 4.1,2,3でチェックして問題がなければ200
-     *
-     * @param method          リクエストメッセージのメソッドを渡す
-     * @param uri             URIを渡す
-     * @param protocolVersion プロトコルバージョンを渡す
-     * @return レスポンスラインの状態行(StatusLine)を返す
-     */
-    public static StatusLine getStatusLine(String method, String uri, String protocolVersion) {
-        if (!"HTTP/1.1".equals(protocolVersion)) {
-            return StatusLine.HTTP_VERSION_NOT_SUPPORTED;
-
-        } else if (!"GET".equals(method) && !"POST".equals(method)) {
-            return StatusLine.NOT_IMPLEMENTED;
-
-        } else {
-            File file = new File(Handler.FILE_PATH + uri);
-            if (!file.exists() || !file.isFile()) {
-                return StatusLine.NOT_FOUND;
-            } else {
-                return StatusLine.OK;
-            }
-        }
-    }
 }

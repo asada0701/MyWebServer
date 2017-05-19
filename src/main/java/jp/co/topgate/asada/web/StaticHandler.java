@@ -38,7 +38,7 @@ public class StaticHandler extends Handler {
         String uri = requestMessage.getUri();
         String protocolVersion = requestMessage.getProtocolVersion();
 
-        return Handler.getStatusLine(method, uri, protocolVersion);
+        return StaticHandler.getStatusLine(method, uri, protocolVersion);
     }
 
     /**
@@ -65,6 +65,34 @@ public class StaticHandler extends Handler {
         }
 
         rm.returnResponse();
+    }
+
+    /**
+     * リクエストメッセージのmethod,uri,protocolVersionから、レスポンスのステータスコードを決定するメソッド
+     * 1.プロトコルバージョンがHTTP/1.1以外の場合は500
+     * 2.GET,POST以外のメソッドの場合は501
+     * 3.URIで指定されたファイルがリソースフォルダにない、もしくはディレクトリの場合は404
+     * 4.1,2,3でチェックして問題がなければ200
+     *
+     * @param method          リクエストメッセージのメソッドを渡す
+     * @param uri             URIを渡す
+     * @param protocolVersion プロトコルバージョンを渡す
+     * @return レスポンスラインの状態行(StatusLine)を返す
+     */
+    static StatusLine getStatusLine(String method, String uri, String protocolVersion) {
+        if (!"HTTP/1.1".equals(protocolVersion)) {
+            return StatusLine.HTTP_VERSION_NOT_SUPPORTED;
+
+        } else if (!"GET".equals(method) && !"POST".equals(method)) {
+            return StatusLine.NOT_IMPLEMENTED;
+
+        } else {
+            File file = new File(Handler.FILE_PATH + uri);
+            if (!file.exists() || !file.isFile()) {
+                return StatusLine.NOT_FOUND;
+            }
+        }
+        return StatusLine.OK;
     }
 
     //テスト用

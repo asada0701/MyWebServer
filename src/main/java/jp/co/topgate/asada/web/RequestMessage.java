@@ -155,7 +155,6 @@ public class RequestMessage {
 
         int index = 0, now, before = 0, moreBefore = 0, moremoreBefore = 0;
         while ((now = is.read()) != -1) {
-
             if (index == 0 && before == CARRIAGE_RETURN && now == LINE_FEED) {    //リクエストラインを読み終わる
                 index = 1;
             }
@@ -163,10 +162,7 @@ public class RequestMessage {
                     && before == CARRIAGE_RETURN && now == LINE_FEED) {           //ヘッダーフィールドを読み終わる
 
                 //メッセージボディを読む
-                int i;
-                do {
-                    i = is.read(result);
-                } while (i != contentLength);
+                int i = is.read(result);
                 break;
             }
             moremoreBefore = moreBefore;

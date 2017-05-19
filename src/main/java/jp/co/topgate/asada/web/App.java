@@ -3,6 +3,7 @@ package jp.co.topgate.asada.web;
 import jp.co.topgate.asada.web.app.CsvHelper;
 import jp.co.topgate.asada.web.app.HtmlEditor;
 import jp.co.topgate.asada.web.exception.CsvRuntimeException;
+import jp.co.topgate.asada.web.exception.HtmlInitializeException;
 import jp.co.topgate.asada.web.exception.ServerStateException;
 import jp.co.topgate.asada.web.exception.SocketRuntimeException;
 import jp.co.topgate.asada.web.model.ModelController;
@@ -50,9 +51,7 @@ public class App {
             CsvHelper.writeMessage(ModelController.getAllMessage());                                //CSVファイルに書き込み
             he.allInitialization();                                                                 //HTMLファイルの初期化
 
-        } catch (ServerStateException | CsvRuntimeException | SocketRuntimeException |
-                NullPointerException | IOException e) {
-
+        } catch (ServerStateException | CsvRuntimeException | SocketRuntimeException | HtmlInitializeException | IOException e) {
             System.out.println(e.getMessage());
             System.exit(1);
         }
@@ -97,11 +96,9 @@ public class App {
      * @return サーバーの状態を文字列で返す
      * @throws IOException          {@link Server}を参照
      * @throws ServerStateException サーバークラスの状態が予期しないものになった場合に発生する
-     * @throws CsvRuntimeException  {@link CsvHelper}を参照
      */
     @NotNull
-    static String controlServer(Server server, Choices choices) throws IOException, SocketRuntimeException,
-            ServerStateException, CsvRuntimeException {
+    static String controlServer(Server server, Choices choices) throws IOException, SocketRuntimeException, ServerStateException {
 
         switch (choices) {
             case START:

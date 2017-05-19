@@ -94,7 +94,7 @@ class Server extends Thread {
             throw new SocketRuntimeException(e.getMessage());
 
         } catch (SocketException e) {
-            e.printStackTrace();
+            //e.printStackTrace();
 
         } catch (IOException | RuntimeException e) {
             throw new SocketRuntimeException(e.getMessage());

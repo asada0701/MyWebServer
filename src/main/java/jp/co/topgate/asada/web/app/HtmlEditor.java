@@ -15,7 +15,7 @@ import java.util.Map;
  */
 public class HtmlEditor {
     /**
-     * 編集するhtmlの初期状態を保存するリスト
+     * 編集するHTMLの初期状態を保存するリスト
      */
     private static Map<EditHtmlList, String> htmlContent = new HashMap<>();
 
@@ -58,20 +58,22 @@ public class HtmlEditor {
     }
 
     /**
-     * htmlの文字列を返すメソッド
+     * htmlContentに保存してあるhtmlを返す
      *
      * @param ehl 取得したいhtmlのEnum
-     * @return htmlの文字列
+     * @return HTML文章
      */
-    public String getHtml(EditHtmlList ehl) {
+    String getHtml(EditHtmlList ehl) {
         return htmlContent.get(ehl);
     }
 
     /**
-     * @param ehl
-     * @param rawHtml
-     * @param list
-     * @return
+     * indexまたはsearchのHTML文章を編集する
+     *
+     * @param ehl     編集したいHTMLのEnum
+     * @param rawHtml 編集前のHTML文章
+     * @param list    HTML文章に書き込みたいMessageのリスト
+     * @return 編集後のHTML文章
      */
     String editIndexOrSearchHtml(EditHtmlList ehl, String rawHtml, List<Message> list) {
         String[] line = rawHtml.split("\n");
@@ -99,10 +101,11 @@ public class HtmlEditor {
     }
 
     /**
-     * 削除確認画面に削除したいメッセージを表示する
+     * deleteのHTML文章を編集する
      *
+     * @param rawHtml 編集前のHTML文章
      * @param message メッセージのオブジェクト
-     * @return delete.htmlファイルの編集後の状態をStringで返す
+     * @return 編集後のHTML文章
      */
     String editDeleteHtml(String rawHtml, Message message) {
         String[] line = rawHtml.split("\n");
@@ -134,14 +137,13 @@ public class HtmlEditor {
     }
 
     /**
-     * htmlに沿った文字列にするメソッド
+     * messageをHTML文章にする
      *
-     * @param htmlListToEdit どのHTMLファイルに書き込むか
-     * @param message        書き込みたいMessageのオブジェクト
-     * @return HTMLの構文に沿った文字列
+     * @param ehl     編集したHTMLのEnum
+     * @param message 書き込みたいMessageのオブジェクト
+     * @return HTML文章
      */
-    static String messageChangeToHtml(EditHtmlList htmlListToEdit, Message message) {
-
+    static String messageChangeToHtml(EditHtmlList ehl, Message message) {
         if (message.getText().contains("\r\n")) {
             message.setText(message.getText().replaceAll("\r\n", "<br>"));
         } else if (message.getText().contains("\n")) {
@@ -153,7 +155,7 @@ public class HtmlEditor {
                 "                <td>" + message.getText() + "</td>" + "\n" +
                 "                <td>" + message.getName() + "</td>" + "\n" +
                 "                <td>" + message.getDate() + "</td>" + "\n";
-        switch (htmlListToEdit) {
+        switch (ehl) {
             case INDEX_HTML:
                 result = result +
                         "                <td>\n" +
@@ -185,9 +187,11 @@ public class HtmlEditor {
     }
 
     /**
-     * @param ehl
-     * @param html
-     * @throws IOException
+     * HTMLファイルに文章を書き込むメソッド
+     *
+     * @param ehl  書き込みたいHTMLのEnum
+     * @param html 書き込みたい文字列
+     * @throws IOException 書き込み中の例外
      */
     void writeHtml(EditHtmlList ehl, String html) throws IOException {
         try (OutputStream os = new FileOutputStream(new File(ehl.getPath()))) {
