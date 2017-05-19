@@ -7,14 +7,13 @@ import jp.co.topgate.asada.web.model.Message;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * CSVファイルの読み書きを行うクラス
  *
  * @author asada
  */
-public class CsvWriter {
+public class CsvHelper {
 
     /**
      * ファイルパス

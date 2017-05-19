@@ -2,16 +2,11 @@ package jp.co.topgate.asada.web.app;
 
 import jp.co.topgate.asada.web.exception.HtmlInitializeException;
 import jp.co.topgate.asada.web.model.Message;
-import jp.co.topgate.asada.web.model.ModelController;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 /**
  * HTMLを編集するクラス
@@ -22,7 +17,7 @@ public class HtmlEditor {
     /**
      * 編集するhtmlの初期状態を保存するリスト
      */
-    private static Map<Integer, String> htmlContent = new HashMap<>();
+    private static Map<EditHtmlList, String> htmlContent = new HashMap<>();
 
     /**
      * コンストラクタ
@@ -31,14 +26,14 @@ public class HtmlEditor {
      * @throws HtmlInitializeException HTMLファイルの読み込み中にエラー発生
      */
     public HtmlEditor() throws HtmlInitializeException {
-        for (EditHtmlList hlte : EditHtmlList.values()) {
-            try (BufferedReader br = new BufferedReader(new FileReader(new File(hlte.getPath())))) {
+        for (EditHtmlList eh : EditHtmlList.values()) {
+            try (BufferedReader br = new BufferedReader(new FileReader(new File(eh.getPath())))) {
                 String str;
                 StringBuilder builder = new StringBuilder();
                 while ((str = br.readLine()) != null) {
                     builder.append(str).append("\n");
                 }
-                htmlContent.put(hlte.getId(), builder.toString());
+                htmlContent.put(eh, builder.toString());
 
             } catch (IOException e) {
                 throw new HtmlInitializeException(e.getMessage());
@@ -52,9 +47,9 @@ public class HtmlEditor {
      * @throws HtmlInitializeException HTMLファイルに書き込み中にエラー発生
      */
     public void allInitialization() throws HtmlInitializeException {
-        for (EditHtmlList hlte : EditHtmlList.values()) {
-            try (OutputStream os = new FileOutputStream(new File(hlte.getPath()))) {
-                os.write(htmlContent.get(hlte.getId()).getBytes());
+        for (EditHtmlList eh : EditHtmlList.values()) {
+            try (OutputStream os = new FileOutputStream(new File(eh.getPath()))) {
+                os.write(htmlContent.get(eh).getBytes());
                 os.flush();
             } catch (IOException e) {
                 throw new HtmlInitializeException(e.getMessage());
@@ -63,103 +58,79 @@ public class HtmlEditor {
     }
 
     /**
-     * メッセージを投稿する
+     * htmlの文字列を返すメソッド
      *
-     * @throws IOException HTMLファイルに書き込み中にエラー発生
+     * @param ehl 取得したいhtmlのEnum
+     * @return htmlの文字列
      */
-    static void writeIndexHtml() throws IOException {
-        List<Message> list = ModelController.getAllMessage();
-        String path = EditHtmlList.INDEX_HTML.getPath();
-
-        try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
-            String str;
-            StringBuilder builder = new StringBuilder();
-            while ((str = br.readLine()) != null) {
-                if (str.endsWith("<div id=\"log\">")) {
-                    builder.append(str).append("\n");
-                    do {
-                        str = br.readLine();
-                        builder.append(str).append("\n");
-                    } while (!str.endsWith("</tr>"));
-
-                    for (int i = list.size() - 1; i > -1; i--) {
-                        builder.append(messageChangeToHtml(EditHtmlList.INDEX_HTML, list.get(i)));
-                        builder.append(str).append("\n");
-                    }
-                }
-                builder.append(str).append("\n");
-            }
-            writeHtml(path, builder.toString());
-        }
+    public String getHtml(EditHtmlList ehl) {
+        return htmlContent.get(ehl);
     }
 
     /**
-     * 投稿した人で抽出する
-     *
-     * @param name 探したい投稿者の名前を渡す
-     * @throws IOException          HTMLファイルに書き込み中にエラー発生
+     * @param ehl
+     * @param rawHtml
+     * @param list
+     * @return
      */
-    static void writeSearchHtml(String name) throws IOException {
-        List<Message> list = ModelController.findSameNameMessage(name);
+    String editIndexOrSearchHtml(EditHtmlList ehl, String rawHtml, List<Message> list) {
+        String[] line = rawHtml.split("\n");
+        StringBuilder builder = new StringBuilder();
 
-        String path = EditHtmlList.SEARCH_HTML.getPath();
-
-        try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
-            String str;
-            StringBuilder builder = new StringBuilder();
-            while ((str = br.readLine()) != null) {
-                if (str.endsWith("<div id=\"log\">")) {
+        for (int i = 0; i < line.length; i++) {
+            String str = line[i];
+            if (str.endsWith("<div id=\"log\">")) {
+                while (!str.endsWith("</tr>")) {
                     builder.append(str).append("\n");
-                    do {
-                        str = br.readLine();
-                        builder.append(str).append("\n");
-                    } while (!str.endsWith("</tr>"));
-
-                    assert list != null;
-                    for (int i = list.size() - 1; i > -1; i--) {
-                        builder.append(messageChangeToHtml(EditHtmlList.SEARCH_HTML, list.get(i)));
-                        builder.append(str).append("\n");
-                    }
+                    str = line[++i];
                 }
+                str = line[i];
                 builder.append(str).append("\n");
+
+                for (int k = list.size() - 1; k > -1; k--) {
+                    builder.append(messageChangeToHtml(ehl, list.get(k)));
+                    builder.append(str).append("\n");
+                }
+                str = line[++i];
             }
-            writeHtml(path, builder.toString());
+            builder.append(str).append("\n");
         }
+        return builder.toString();
     }
 
     /**
      * 削除確認画面に削除したいメッセージを表示する
      *
      * @param message メッセージのオブジェクト
-     * @throws IOException          HTMLファイルに書き込み中にエラー発生
+     * @return delete.htmlファイルの編集後の状態をStringで返す
      */
-    static void writeDeleteHtml(Message message) throws IOException, NullPointerException {
-        String path = EditHtmlList.DELETE_HTML.getPath();
+    String editDeleteHtml(String rawHtml, Message message) {
+        String[] line = rawHtml.split("\n");
+        StringBuilder builder = new StringBuilder();
 
-        try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
-            String str;
-            StringBuilder builder = new StringBuilder();
-            while ((str = br.readLine()) != null) {
-                if (str.endsWith("<div id=\"log\">")) {
+        for (int i = 0; i < line.length; i++) {
+            String str = line[i];
+            if (str.endsWith("<div id=\"log\">")) {
+                while (!str.endsWith("</tr>")) {
                     builder.append(str).append("\n");
-                    do {
-                        str = br.readLine();
-                        builder.append(str).append("\n");
-                    } while (!str.endsWith("</tr>"));
-
-                    builder.append(messageChangeToHtml(EditHtmlList.DELETE_HTML, message));
+                    str = line[++i];
                 }
-                if (str.endsWith("<input type=\"hidden\" name=\"number\" value=\"\">")) {
-                    builder.append("            <input type=\"hidden\" name=\"number\" value=\"");
-                    builder.append(message.getMessageID()).append("\">").append("\n");
-
-                    str = br.readLine();
-                }
-
+                str = line[i];
                 builder.append(str).append("\n");
+
+                builder.append(messageChangeToHtml(EditHtmlList.DELETE_HTML, message));
+                str = line[i];
             }
-            writeHtml(path, builder.toString());
+            if (str.endsWith("<input type=\"hidden\" name=\"number\" value=\"\">")) {
+                builder.append("            <input type=\"hidden\" name=\"number\" value=\"");
+                builder.append(message.getMessageID()).append("\">").append("\n");
+
+                str = line[++i];
+            }
+
+            builder.append(str).append("\n");
         }
+        return builder.toString();
     }
 
     /**
@@ -169,7 +140,7 @@ public class HtmlEditor {
      * @param message        書き込みたいMessageのオブジェクト
      * @return HTMLの構文に沿った文字列
      */
-    private static String messageChangeToHtml(EditHtmlList htmlListToEdit, Message message) {
+    static String messageChangeToHtml(EditHtmlList htmlListToEdit, Message message) {
 
         if (message.getText().contains("\r\n")) {
             message.setText(message.getText().replaceAll("\r\n", "<br>"));
@@ -214,15 +185,13 @@ public class HtmlEditor {
     }
 
     /**
-     * htmlファイルに書き込むメソッド
-     *
-     * @param filePath 書き込みたいファイルのパスを渡す
-     * @param str      書き込みたい文字列を渡す
-     * @throws IOException HTMLファイルに書き込み中にエラー発生
+     * @param ehl
+     * @param html
+     * @throws IOException
      */
-    private static void writeHtml(String filePath, String str) throws IOException {
-        try (OutputStream os = new FileOutputStream(new File(filePath))) {
-            os.write(str.getBytes());
+    void writeHtml(EditHtmlList ehl, String html) throws IOException {
+        try (OutputStream os = new FileOutputStream(new File(ehl.getPath()))) {
+            os.write(html.getBytes());
             os.flush();
         }
     }
@@ -238,30 +207,22 @@ enum EditHtmlList {
      * index.html
      * 添え字、ファイルのパス
      */
-    INDEX_HTML(0, "./src/main/resources/2/index.html"),
+    INDEX_HTML("./src/main/resources/2/index.html"),
 
     /**
      * search.html
-     * 添え字、ファイルのパス
      */
-    SEARCH_HTML(1, "./src/main/resources/2/search.html"),
+    SEARCH_HTML("./src/main/resources/2/search.html"),
 
     /**
      * delete.html
-     * 添え字、ファイルのパス
      */
-    DELETE_HTML(2, "./src/main/resources/2/delete.html");
+    DELETE_HTML("./src/main/resources/2/delete.html");
 
-    private final int id;
     private final String path;
 
-    EditHtmlList(final int id, final String path) {
-        this.id = id;
+    EditHtmlList(String path) {
         this.path = path;
-    }
-
-    public int getId() {
-        return id;
     }
 
     public String getPath() {

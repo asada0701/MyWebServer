@@ -48,7 +48,7 @@ public enum StatusLine {
 
     private final String reasonPhrase;
 
-    StatusLine(final int statusCode, final String reasonPhrase) {
+    StatusLine(int statusCode, String reasonPhrase) {
         this.statusCode = statusCode;
         this.reasonPhrase = reasonPhrase;
     }

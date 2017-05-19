@@ -32,7 +32,7 @@ public abstract class Handler {
      * @throws RequestParseException   {@link RequestMessage#RequestMessage(InputStream)}を参照
      * @throws HtmlInitializeException {@link HtmlEditor#HtmlEditor()}を参照
      */
-    public static Handler getHandler(final InputStream is) throws RequestParseException, HtmlInitializeException {
+    public static Handler getHandler(InputStream is) throws RequestParseException, HtmlInitializeException {
         RequestMessage requestMessage = new RequestMessage(is);
         String uri = requestMessage.getUri();
 
@@ -59,12 +59,12 @@ public abstract class Handler {
      * @param sl ステータスラインの列挙型
      * @throws NullPointerException 引数がnull
      */
-    public abstract void doResponseProcess(final OutputStream os, final StatusLine sl);
+    public abstract void doResponseProcess(OutputStream os, StatusLine sl);
 
     /**
      * URIを元に、実際のファイルパスを返すメソッド
      */
-    static String getFilePath(final UrlPattern urlPattern, final String uri) {
+    static String getFilePath(UrlPattern urlPattern, String uri) {
         return FILE_PATH + uri.replace(
                 urlPattern.getUrlPattern(),
                 urlPattern.getFilePath());
@@ -82,7 +82,7 @@ public abstract class Handler {
      * @param protocolVersion プロトコルバージョンを渡す
      * @return レスポンスラインの状態行(StatusLine)を返す
      */
-    public static StatusLine getStatusLine(final String method, final String uri, final String protocolVersion) {
+    public static StatusLine getStatusLine(String method, String uri, String protocolVersion) {
         if (!"HTTP/1.1".equals(protocolVersion)) {
             return StatusLine.HTTP_VERSION_NOT_SUPPORTED;
 

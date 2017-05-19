@@ -14,7 +14,7 @@ enum UrlPattern {
 
     private final String filePath;
 
-    UrlPattern(final String urlPattern, final String filePath) {
+    UrlPattern(String urlPattern, String filePath) {
         this.urlPattern = urlPattern;
         this.filePath = filePath;
     }

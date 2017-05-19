@@ -14,6 +14,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -81,15 +82,44 @@ public class ProgramBoardHandler extends Handler {
 
         try {
             if ("POST".equals(requestMessage.getMethod())) {
-                doPost(requestMessage);
+                doPost(messageBodyParse(new String(requestMessage.getMessageBody())));
 
             } else if ("GET".equals(requestMessage.getMethod())) {
-                HtmlEditor.writeIndexHtml();
+                String html = he.getHtml(EditHtmlList.INDEX_HTML);
+                html = he.editIndexOrSearchHtml(EditHtmlList.INDEX_HTML, html, ModelController.getAllMessage());
+                he.writeHtml(EditHtmlList.INDEX_HTML, html);
             }
         } catch (IOException e) {
             return StatusLine.INTERNAL_SERVER_ERROR;
         }
         return sl;
+    }
+
+    /**
+     * レスポンスを返すときに呼び出すメソッド
+     *
+     * @param os SocketのOutputStream
+     * @throws HtmlInitializeException {@link HtmlEditor#allInitialization()}を参照
+     */
+    @Override
+    public void doResponseProcess(OutputStream os, StatusLine sl) throws HtmlInitializeException {
+        ResponseMessage rm;
+
+        if (sl.equals(StatusLine.OK)) {
+            String path = Handler.getFilePath(UrlPattern.PROGRAM_BOARD, requestMessage.getUri());
+            ContentType ct = new ContentType(path);
+            rm = new ResponseMessage(os, sl, path);
+            rm.addHeader("Content-Type", ct.getContentType());
+            rm.addHeader("Content-Length", String.valueOf(new File(path).length()));
+
+        } else {
+            rm = new ResponseMessage(os, sl);
+            rm.addHeader("Content-Type", "text/html; charset=UTF-8");
+        }
+
+        rm.returnResponse();
+
+        he.allInitialization();
     }
 
     /**
@@ -120,106 +150,101 @@ public class ProgramBoardHandler extends Handler {
     /**
      * POSTの場合の処理
      *
-     * @param requestMessage リクエストメッセージクラスのオブジェクトを渡す
+     * @param messageBody
      * @throws IOException
      */
-    void doPost(RequestMessage requestMessage) throws IOException {
-//        String param = requestMessage.findMessageBody("param");
-//        if (param != null && requestMessage.getUri().startsWith("/program/board/")) {
-//            Message message;
-//
-//            switch (param) {
-//                case "contribution":
-//                    String name = requestMessage.findMessageBody("name");
-//                    String title = requestMessage.findMessageBody("title");
-//                    String text = requestMessage.findMessageBody("text");
-//                    String password = requestMessage.findMessageBody("password");
-//
-//                    name = replaceInputValue(name);
-//                    title = replaceInputValue(title);
-//                    text = replaceInputValue(text);
-//
-//                    ModelController.addMessage(name, title, text, password);
-//                    HtmlEditor.writeIndexHtml();
-//                    break;
-//
-//                case "search":
-//                    requestMessage.setUri("/program/board/search.html");
-//                    int number = Integer.parseInt(requestMessage.findMessageBody("number"));
-//                    String nameToFind = ModelController.getName(number);
-//                    HtmlEditor.writeSearchHtml(nameToFind);
-//                    break;
-//
-//                case "delete1":
-//                    requestMessage.setUri("/program/board/delete.html");
-//                    message = ModelController.findMessage(Integer.parseInt(requestMessage.findMessageBody("number")));
-//                    HtmlEditor.writeDeleteHtml(message);
-//                    break;
-//
-//                case "delete2":
-//                    int num = Integer.parseInt(requestMessage.findMessageBody("number"));
-//                    password = requestMessage.findMessageBody("password");
-//
-//                    if (ModelController.deleteMessage(num, password)) {
-//                        requestMessage.setUri("/program/board/result.html");
-//
-//                    } else {
-//                        requestMessage.setUri("/program/board/result.html");
-//                        message = ModelController.findMessage(Integer.parseInt(requestMessage.findMessageBody("number")));
-//                        HtmlEditor.writeDeleteHtml(message);
-//                    }
-//                    break;
-//
-//                case "back":
-//                    requestMessage.setUri("/program/board/index.html");
-//                    HtmlEditor.writeIndexHtml();
-//                    break;
-//
-//                default:
-//                    requestMessage.setUri("/program/board/index.html");
-//                    HtmlEditor.writeIndexHtml();
-//            }
-//        }
+    void doPost(Map<String, String> messageBody) throws IOException {
+        String param = messageBody.get("param");
+        if (param != null && requestMessage.getUri().startsWith("/program/board/")) {
+            Message message;
+
+            String html;
+
+            switch (param) {
+                case "contribution":
+                    String name = messageBody.get("name");
+                    String title = messageBody.get("title");
+                    String text = messageBody.get("text");
+                    String password = messageBody.get("password");
+
+                    name = replaceInputValue(name);
+                    title = replaceInputValue(title);
+                    text = replaceInputValue(text);
+                    password = replaceInputValue(password);
+
+                    ModelController.addMessage(name, title, text, password);
+
+                    html = he.getHtml(EditHtmlList.INDEX_HTML);
+                    html = he.editIndexOrSearchHtml(EditHtmlList.INDEX_HTML, html, ModelController.getAllMessage());
+                    he.writeHtml(EditHtmlList.INDEX_HTML, html);
+                    break;
+
+                case "search":
+                    requestMessage.setUri("/program/board/search.html");
+                    int number = Integer.parseInt(messageBody.get("number"));
+                    String nameToFind = ModelController.getName(number);
+                    List<Message> list = ModelController.findSameNameMessage(nameToFind);
+
+                    html = he.getHtml(EditHtmlList.SEARCH_HTML);
+                    html = he.editIndexOrSearchHtml(EditHtmlList.SEARCH_HTML, html, list);
+                    he.writeHtml(EditHtmlList.SEARCH_HTML, html);
+                    break;
+
+                case "delete1":
+                    requestMessage.setUri("/program/board/delete.html");
+                    message = ModelController.findMessage(Integer.parseInt(messageBody.get("number")));
+
+                    html = he.getHtml(EditHtmlList.DELETE_HTML);
+                    html = he.editDeleteHtml(html, message);
+                    he.writeHtml(EditHtmlList.DELETE_HTML, html);
+
+                    break;
+
+                case "delete2":
+                    int num = Integer.parseInt(messageBody.get("number"));
+                    password = messageBody.get("password");
+
+                    if (ModelController.deleteMessage(num, password)) {
+                        requestMessage.setUri("/program/board/result.html");
+
+                    } else {
+                        requestMessage.setUri("/program/board/result.html");
+                        message = ModelController.findMessage(Integer.parseInt(messageBody.get("number")));
+
+                        html = he.getHtml(EditHtmlList.DELETE_HTML);
+                        html = he.editDeleteHtml(html, message);
+                        he.writeHtml(EditHtmlList.DELETE_HTML, html);
+                    }
+                    break;
+
+                case "back":
+                    requestMessage.setUri("/program/board/index.html");
+                    html = he.getHtml(EditHtmlList.INDEX_HTML);
+                    html = he.editIndexOrSearchHtml(EditHtmlList.INDEX_HTML, html, ModelController.getAllMessage());
+                    he.writeHtml(EditHtmlList.INDEX_HTML, html);
+                    break;
+
+                default:
+                    requestMessage.setUri("/program/board/index.html");
+                    html = he.getHtml(EditHtmlList.INDEX_HTML);
+                    html = he.editIndexOrSearchHtml(EditHtmlList.INDEX_HTML, html, ModelController.getAllMessage());
+                    he.writeHtml(EditHtmlList.INDEX_HTML, html);
+            }
+        }
     }
 
     /**
      * セキュリティに問題のある入力値(<script></script>など)をHTMLの特殊文字に置き換えるメソッド
      *
-     * @param str 生の文字列
+     * @param rawStr 生の文字列
      * @return 置き換えた文字列
      */
-    static String replaceInputValue(String str) {
+    static String replaceInputValue(String rawStr) {
+        String result = rawStr;
         for (String key : invalidChar.keySet()) {
-            str = str.replaceAll(key, invalidChar.get(key));
+            result = rawStr.replaceAll(key, invalidChar.get(key));
         }
-        return str;
-    }
-
-    /**
-     * レスポンスを返すときに呼び出すメソッド
-     *
-     * @param os SocketのOutputStream
-     * @throws HtmlInitializeException {@link HtmlEditor#allInitialization()}を参照
-     */
-    @Override
-    public void doResponseProcess(OutputStream os, StatusLine sl) throws HtmlInitializeException {
-        ResponseMessage rm;
-
-        if (sl.equals(StatusLine.OK)) {
-            String path = Handler.getFilePath(UrlPattern.PROGRAM_BOARD, requestMessage.getUri());
-            ContentType ct = new ContentType(path);
-            rm = new ResponseMessage(os, sl, path);
-            rm.addHeader("Content-Type", ct.getContentType());
-            rm.addHeader("Content-Length", String.valueOf(new File(path).length()));
-
-        } else {
-            rm = new ResponseMessage(os, sl);
-            rm.addHeader("Content-Type", "text/html; charset=UTF-8");
-        }
-
-        rm.returnResponse();
-
-        he.allInitialization();
+        return result;
     }
 
     /**

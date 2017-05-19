@@ -14,16 +14,16 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 /**
- * CsvWriterクラスのテスト
+ * CsvHelperクラスのテスト
  *
  * @author asada
  */
-public class CsvWriterTest {
+public class CsvHelperTest {
     private static List<Message> list;
 
     @BeforeClass
     public static void setUp() throws Exception {
-        list = CsvWriter.readMessage();
+        list = CsvHelper.readMessage();
         try (FileWriter fileWriter = new FileWriter(new File("./src/main/resources/data/message.csv"))) {
             fileWriter.write("");
             fileWriter.flush();
@@ -32,7 +32,7 @@ public class CsvWriterTest {
 
     @Test
     public void readMessageメソッドのテスト() throws Exception {
-        List<Message> sut = CsvWriter.readMessage();
+        List<Message> sut = CsvHelper.readMessage();
         Message m;
 
         m = sut.get(0);
@@ -65,9 +65,9 @@ public class CsvWriterTest {
         m.setDate("2017/5/9 17:24");
         sut.add(m);
 
-        CsvWriter.writeMessage(sut);
+        CsvHelper.writeMessage(sut);
 
-        sut = CsvWriter.readMessage();
+        sut = CsvHelper.readMessage();
         Message m2 = sut.get(0);
 
         assertThat(m.getMessageID(), is(m2.getMessageID()));
@@ -116,11 +116,11 @@ public class CsvWriterTest {
         m.setDate("2017/5/11 11:57");
         sut.add(m);
 
-        CsvWriter.writeMessage(sut);
+        CsvHelper.writeMessage(sut);
     }
 
     @AfterClass
     public static void tearDown() throws Exception{
-        CsvWriter.writeMessage(list);
+        CsvHelper.writeMessage(list);
     }
 }

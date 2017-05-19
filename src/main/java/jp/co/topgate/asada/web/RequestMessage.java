@@ -110,7 +110,7 @@ public class RequestMessage {
                 } catch (NumberFormatException e) {
                     throw new RequestParseException("Content-Lengthに数字以外の文字が含まれています");
                 }
-                messageBody = readMessageBody(is, contentLength);
+                messageBody = readMessageBody(bis, contentLength);
             }
 
         } catch (IOException e) {
@@ -173,7 +173,6 @@ public class RequestMessage {
             moreBefore = before;
             before = now;
         }
-        System.out.println(new String(result));
         return result;
     }
 

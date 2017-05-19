@@ -1,6 +1,6 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.app.CsvWriter;
+import jp.co.topgate.asada.web.app.CsvHelper;
 import jp.co.topgate.asada.web.app.HtmlEditor;
 import jp.co.topgate.asada.web.exception.CsvRuntimeException;
 import jp.co.topgate.asada.web.exception.ServerStateException;
@@ -28,7 +28,7 @@ public class App {
             String choices;
             Scanner scan = new Scanner(System.in);
 
-            ModelController.setMessageList(CsvWriter.readMessage());                            //CSVファイル読み込み
+            ModelController.setMessageList(CsvHelper.readMessage());                            //CSVファイル読み込み
             HtmlEditor he = new HtmlEditor();                                                   //HTMLファイル読み込み
 
             do {
@@ -47,7 +47,7 @@ public class App {
 
             } while (!choices.equals(String.valueOf(Choices.END.getId())));
 
-            CsvWriter.writeMessage(ModelController.getAllMessage());                                //CSVファイルに書き込み
+            CsvHelper.writeMessage(ModelController.getAllMessage());                                //CSVファイルに書き込み
             he.allInitialization();                                                                 //HTMLファイルの初期化
 
         } catch (ServerStateException | CsvRuntimeException | SocketRuntimeException |
@@ -64,7 +64,7 @@ public class App {
      * @param choices 渡す文字列
      * @return 列挙型のChoices
      */
-    static boolean isSelect(final String choices) {
+    static boolean isSelect(String choices) {
         return choices.equals(String.valueOf(Choices.START.getId())) ||
                 choices.equals(String.valueOf(Choices.STOP.getId())) ||
                 choices.equals(String.valueOf(Choices.END.getId()));
@@ -77,7 +77,7 @@ public class App {
      * @return Choicesの列挙型で返す
      */
     @Contract(pure = true)  //メソッドを実行しても副作用がないことを示す
-    static Choices getChoicesEnum(final String choices) {
+    static Choices getChoicesEnum(String choices) {
         switch (choices) {
             case "1":
                 return Choices.START;
@@ -97,10 +97,10 @@ public class App {
      * @return サーバーの状態を文字列で返す
      * @throws IOException          {@link Server}を参照
      * @throws ServerStateException サーバークラスの状態が予期しないものになった場合に発生する
-     * @throws CsvRuntimeException  {@link CsvWriter}を参照
+     * @throws CsvRuntimeException  {@link CsvHelper}を参照
      */
     @NotNull
-    static String controlServer(Server server, final Choices choices) throws IOException, SocketRuntimeException,
+    static String controlServer(Server server, Choices choices) throws IOException, SocketRuntimeException,
             ServerStateException, CsvRuntimeException {
 
         switch (choices) {
@@ -173,7 +173,7 @@ enum Choices {
 
     private final int id;
 
-    Choices(final int id) {
+    Choices(int id) {
         this.id = id;
     }
 
