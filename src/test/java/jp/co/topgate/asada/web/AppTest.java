@@ -52,35 +52,4 @@ public class AppTest {
             assertThat(App.isSelect("3"), is(true));
         }
     }
-
-    public static class getChoicesEnumメソッドのテスト {
-        @Test(expected = NullPointerException.class)
-        public void nullチェック() {
-            App.getChoicesEnum(null);
-        }
-
-        @Test
-        public void 空チェック() {
-            Choices sut = App.getChoicesEnum("");
-            assertThat(sut, is(Choices.END));
-        }
-
-        @Test
-        public void Choices_STARTが返ってくる() {
-            Choices sut = App.getChoicesEnum("1");
-            assertThat(sut, is(Choices.START));
-        }
-
-        @Test
-        public void Choices_STOPが返ってくる() {
-            Choices sut = App.getChoicesEnum("2");
-            assertThat(sut, is(Choices.STOP));
-        }
-
-        @Test
-        public void Choices_ENDが返ってくる() {
-            Choices sut = App.getChoicesEnum("3");
-            assertThat(sut, is(Choices.END));
-        }
-    }
 }

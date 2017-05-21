@@ -109,12 +109,7 @@ public final class ModelController {
      * @param password  削除したいメッセージのPW
      * @return 削除に成功するとtrueを返す
      */
-    @Contract("_, null -> false")
     public static boolean deleteMessage(int messageID, String password) {
-        if (password == null) {
-            return false;
-        }
-
         for (Message m : messageList) {
             BCryptPasswordEncoder bcrypt = new BCryptPasswordEncoder();
             if (messageID == m.getMessageID() && bcrypt.matches(password, m.getPassword())) {
@@ -125,6 +120,12 @@ public final class ModelController {
         return false;
     }
 
+    /**
+     * メッセージIDからメッセージを投稿した人の名前を取得する
+     *
+     * @param messageID 探したいメッセージID
+     * @return 投稿した人の名前
+     */
     @Nullable
     public static String getName(int messageID) {
         for (Message m : messageList) {
@@ -141,7 +142,7 @@ public final class ModelController {
      * @return （例)2017/5/5 17:20
      */
     @NotNull
-    private static String getNowDate() {
+    public static String getNowDate() {
         LocalDateTime ldt = LocalDateTime.now();
         return String.valueOf(ldt.getYear()) + "/" + ldt.getMonthValue() + "/" + ldt.getDayOfMonth() +
                 " " + ldt.getHour() + ":" + ldt.getMinute();

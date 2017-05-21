@@ -9,6 +9,6 @@ Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0
 Accept-Encoding: gzip, deflate, sdch, br
 Accept-Language: ja,en-US;q=0.8,en;q=0.6
 Content-Type: application/x-www-form-urlencoded
-Content-Length: 28
+Content-Length: 46
 
-number%3d2%26param%3ddelete2
+password%3dhoge%26number%3d2%26param%3ddelete2

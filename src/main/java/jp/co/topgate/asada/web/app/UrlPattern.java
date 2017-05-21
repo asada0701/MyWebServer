@@ -7,6 +7,7 @@ enum UrlPattern {
 
     /**
      * URLのパターン、ファイルのディレクトリ
+     * で登録する
      */
     PROGRAM_BOARD("/program/board/", "/2/");
 

@@ -1,6 +1,5 @@
 package jp.co.topgate.asada.web;
 
-import com.google.common.base.Strings;
 import jp.co.topgate.asada.web.app.StatusLine;
 import org.jetbrains.annotations.NotNull;
 
@@ -13,6 +12,12 @@ import java.util.*;
  * @author asada
  */
 public class ResponseMessage {
+
+    /**
+     * リクエストラインを分割する
+     */
+    private static final String REQUEST_LINE_SEPARATOR = " ";
+
     /**
      * ヘッダーフィールドの名前と値を分割する
      */
@@ -29,94 +34,51 @@ public class ResponseMessage {
     private List<String> headerField = new ArrayList<>();
 
     /**
-     * ステータスライン
-     */
-    private StatusLine sl;
-
-    private OutputStream os;
-
-    /**
-     * リソースファイルの場所
-     */
-    private String filePath;
-
-    /**
-     * コンストラクタ
-     */
-    public ResponseMessage(OutputStream os, StatusLine sl, String filePath) {
-        this(os, sl);
-        this.filePath = filePath;
-    }
-
-    /**
-     * コンストラクタ
-     *
-     * @param os ソケットの出力ストリーム
-     * @param sl ステータスライン
-     * @throws NullPointerException 引数がnull
-     */
-    public ResponseMessage(OutputStream os, StatusLine sl) {
-        this.os = os;
-        this.sl = sl;
-    }
-
-    /**
      * リソースファイルを使用したい場合に使用するメソッド
      * レスポンスメッセージを返したいタイミングで呼び出す
      *
-     * @return trueの場合レスポンスに成功、falseの場合は失敗
+     * @param os       ソケットの出力ストリーム
+     * @param sl       ステータスライン
+     * @param filePath リソースファイルのパスを渡す
+     *                 （例）./src/main/resources/index.html
+     * @throws IOException レスポンスメッセージを書き込み中に例外発生
      */
-    public boolean returnResponse() {
-        try {
-            os.write(getResponseLine(protocolVersion, sl).getBytes());
-            os.write(getHeader(headerField).getBytes());
+    public void returnResponse(OutputStream os, StatusLine sl, String filePath) throws IOException {
+        os.write(getResponseLine(protocolVersion, sl).getBytes());
+        os.write(getHeader(headerField).getBytes());
 
-            if (sl.equals(StatusLine.OK)) {
-                if (Strings.isNullOrEmpty(filePath)) {
-                    return false;
+        if (sl.equals(StatusLine.OK)) {
+            try (InputStream in = new FileInputStream(filePath)) {
+                int num;
+                while ((num = in.read()) != -1) {
+                    os.write(num);
                 }
-
-                try (InputStream in = new FileInputStream(filePath)) {
-                    int num;
-                    while ((num = in.read()) != -1) {
-                        os.write(num);
-                    }
-                }
-            } else {
-                os.write(getErrorMessageBody(sl).getBytes());
             }
-
-            os.flush();
-            return true;
-
-        } catch (IOException e) {
-            return false;
+        } else {
+            os.write(getErrorMessageBody(sl).getBytes());
         }
+        os.flush();
     }
 
     /**
      * JSONなど、リソースファイルを使わない場合に使用するメソッド
      * レスポンスメッセージを返したいタイミングで呼び出す
      *
-     * @return trueの場合レスポンスに成功、falseの場合は失敗
+     * @param os     ソケットの出力ストリーム
+     * @param sl     ステータスライン
+     * @param target byteの配列でレスポンスのメッセージボディを渡す
+     * @throws IOException レスポンスメッセージを書き込み中に例外発生
      */
-    public boolean returnResponse(byte[] target) {
-        try {
-            os.write(getResponseLine(protocolVersion, sl).getBytes());
-            os.write(getHeader(headerField).getBytes());
+    public void returnResponse(OutputStream os, StatusLine sl, byte[] target) throws IOException {
+        os.write(getResponseLine(protocolVersion, sl).getBytes());
+        os.write(getHeader(headerField).getBytes());
 
-            if (sl.equals(StatusLine.OK)) {
-                os.write(target);
-            } else {
-                os.write(getErrorMessageBody(sl).getBytes());
-            }
-
-            os.flush();
-            return true;
-
-        } catch (IOException e) {
-            return false;
+        if (sl.equals(StatusLine.OK)) {
+            os.write(target);
+        } else {
+            os.write(getErrorMessageBody(sl).getBytes());
         }
+        os.flush();
     }
 
     /**
@@ -129,14 +91,14 @@ public class ResponseMessage {
     @NotNull
     static String getResponseLine(String protocolVersion, StatusLine sl) {
         String[] str = {protocolVersion, String.valueOf(sl.getStatusCode()), sl.getReasonPhrase()};
-        return String.join(" ", str) + "\n";
+        return String.join(REQUEST_LINE_SEPARATOR, str) + "\n";
     }
 
     /**
      * ヘッダーを生成する
      *
      * @param list ヘッダーのリストを渡す
-     * @return ヘッダーの文字列が返される
+     * @return ヘッダーフィールドの文字列が返される
      */
     @NotNull
     static String getHeader(List<String> list) {
@@ -155,7 +117,7 @@ public class ResponseMessage {
      * @param sl ステータスライン
      * @return エラーの場合のレスポンスメッセージの内容
      */
-    public static String getErrorMessageBody(StatusLine sl) {
+    static String getErrorMessageBody(StatusLine sl) {
         if (sl == null) {
             return "<html><head><title>500 Internal Server Error</title></head>" +
                     "<body><h1>Internal Server Error</h1>" +
@@ -223,9 +185,5 @@ public class ResponseMessage {
 
     List<String> getHeaderField() {
         return this.headerField;
-    }
-
-    StatusLine getStatusLine() {
-        return this.sl;
     }
 }

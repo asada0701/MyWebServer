@@ -1,5 +1,6 @@
 package jp.co.topgate.asada.web;
 
+import jp.co.topgate.asada.web.app.RequestMessageBody;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -91,8 +92,8 @@ public class RequestMessageTest {
                 assertThat(sut.findHeaderByName("Content-Type"), is("application/x-www-form-urlencoded"));
                 assertThat(sut.findHeaderByName("Content-Length"), is("123"));
 
-                byte[] bytes = sut.getMessageBody();
-                assertThat(new String(bytes), is("name%3dasada%26title%3dtest%26text%3d%e3%81%93%e3%82%93%e3%81%ab%e3%81%a1%e3%81%af%26password%3dtest%26param%3dcontribution"));
+                RequestMessageBody rmb = sut.getMessageBody();
+                assertThat(new String(rmb.getMessageBody()), is("name%3dasada%26title%3dtest%26text%3d%e3%81%93%e3%82%93%e3%81%ab%e3%81%a1%e3%81%af%26password%3dtest%26param%3dcontribution"));
             }
         }
     }

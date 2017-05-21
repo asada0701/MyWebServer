@@ -43,10 +43,10 @@ public class App {
                     choices = scan.next();
                 } while (!isSelect(choices));
 
-                String msg = controlServer(server, getChoicesEnum(choices));
+                String msg = controlServer(server, Choices.getEnum(choices));
                 System.out.println(msg);
 
-            } while (!choices.equals(String.valueOf(Choices.END.getId())));
+            } while (!choices.equals(Choices.END.getId()));
 
             CsvHelper.writeMessage(ModelController.getAllMessage());                                //CSVファイルに書き込み
             he.allInitialization();                                                                 //HTMLファイルの初期化
@@ -64,29 +64,9 @@ public class App {
      * @return 列挙型のChoices
      */
     static boolean isSelect(String choices) {
-        return choices.equals(String.valueOf(Choices.START.getId())) ||
-                choices.equals(String.valueOf(Choices.STOP.getId())) ||
-                choices.equals(String.valueOf(Choices.END.getId()));
-    }
-
-    /**
-     * 文字列からChoicesの列挙型で返す
-     *
-     * @param choices ユーザーが入力した文字
-     * @return Choicesの列挙型で返す
-     */
-    @Contract(pure = true)  //メソッドを実行しても副作用がないことを示す
-    static Choices getChoicesEnum(String choices) {
-        switch (choices) {
-            case "1":
-                return Choices.START;
-            case "2":
-                return Choices.STOP;
-            case "3":
-                return Choices.END;
-            default:
-                return Choices.END;
-        }
+        return choices.equals(Choices.START.getId()) ||
+                choices.equals(Choices.STOP.getId()) ||
+                choices.equals(Choices.END.getId());
     }
 
     /**
@@ -156,31 +136,43 @@ enum Choices {
     /**
      * Serverを立ち上げる
      */
-    START(1),
+    START("1"),
 
     /**
      * Serverを停止させる
      */
-    STOP(2),
+    STOP("2"),
 
     /**
      * Serveを終了させる
      */
-    END(3);
+    END("3");
 
-    private final int id;
+    private final String id;
 
-    Choices(int id) {
+    Choices(String id) {
         this.id = id;
     }
 
-    /**
-     * Choicesと対応する数字を返す
-     *
-     * @return Choicesの添え字
-     */
     @Contract(pure = true)
-    public int getId() {
+    public String getId() {
         return id;
+    }
+
+    /**
+     * このメソッドは、文字列を元に、enumを返します。
+     *
+     * @param str 文字列（例）1
+     * @return Enum（例）Param.START
+     */
+    public static Choices getEnum(String str) {
+        Choices[] enumArray = Choices.values();
+
+        for (Choices enumStr : enumArray) {
+            if (str.equals(enumStr.id)) {
+                return enumStr;
+            }
+        }
+        return Choices.END;
     }
 }

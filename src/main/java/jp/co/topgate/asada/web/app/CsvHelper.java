@@ -68,7 +68,7 @@ public class CsvHelper {
      * MessageListを、CSVファイルに書き出すメソッド
      *
      * @param list CSVに書き込みたいListを渡す
-     * @throws CsvRuntimeException CSVファイルの書き込み中に失敗した
+     * @throws CsvRuntimeException CSVファイルの書き込み中に失敗したもしくは書き込みに失敗した
      */
     public static void writeMessage(List<Message> list) throws CsvRuntimeException {
         try (OutputStream os = new FileOutputStream(new File(csvPath))) {

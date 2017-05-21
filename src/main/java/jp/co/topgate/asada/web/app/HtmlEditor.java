@@ -76,26 +76,25 @@ public class HtmlEditor {
      * @return 編集後のHTML文章
      */
     String editIndexOrSearchHtml(EditHtmlList ehl, String rawHtml, List<Message> list) {
-        String[] line = rawHtml.split("\n");
+        String[] lineArray = rawHtml.split("\n");     //改行で分割
         StringBuilder builder = new StringBuilder();
 
-        for (int i = 0; i < line.length; i++) {
-            String str = line[i];
-            if (str.endsWith("<div id=\"log\">")) {
-                while (!str.endsWith("</tr>")) {
-                    builder.append(str).append("\n");
-                    str = line[++i];
+        for (int i = 0; i < lineArray.length; i++) {
+            String line = lineArray[i];
+            if (line.endsWith("<div id=\"log\">")) {         //<div id="log">の箇所を探す
+                while (!line.endsWith("</tr>")) {            //</tr>の次の行から編集する
+                    builder.append(line).append("\n");
+                    line = lineArray[++i];
                 }
-                str = line[i];
-                builder.append(str).append("\n");
+                builder.append(lineArray[i]).append("\n");  //</tr>を結合
 
-                for (int k = list.size() - 1; k > -1; k--) {
+                for (int k = list.size() - 1; k > -1; k--) {                //ここからがメッセージの部分
                     builder.append(messageChangeToHtml(ehl, list.get(k)));
-                    builder.append(str).append("\n");
+                    builder.append(line).append("\n");
                 }
-                str = line[++i];
+                line = lineArray[++i];
             }
-            builder.append(str).append("\n");
+            builder.append(line).append("\n");
         }
         return builder.toString();
     }
@@ -108,30 +107,30 @@ public class HtmlEditor {
      * @return 編集後のHTML文章
      */
     String editDeleteHtml(String rawHtml, Message message) {
-        String[] line = rawHtml.split("\n");
+        String[] lineArray = rawHtml.split("\n");     //改行で分割
         StringBuilder builder = new StringBuilder();
 
-        for (int i = 0; i < line.length; i++) {
-            String str = line[i];
-            if (str.endsWith("<div id=\"log\">")) {
-                while (!str.endsWith("</tr>")) {
-                    builder.append(str).append("\n");
-                    str = line[++i];
+        for (int i = 0; i < lineArray.length; i++) {
+            String line = lineArray[i];
+            if (line.endsWith("<div id=\"log\">")) {         //<div id="log">の箇所を探す
+                while (!line.endsWith("</tr>")) {            //</tr>の次の行から編集する
+                    builder.append(line).append("\n");
+                    line = lineArray[++i];
                 }
-                str = line[i];
-                builder.append(str).append("\n");
+                line = lineArray[i];
+                builder.append(line).append("\n");
 
                 builder.append(messageChangeToHtml(EditHtmlList.DELETE_HTML, message));
-                str = line[i];
+                line = lineArray[i];
             }
-            if (str.endsWith("<input type=\"hidden\" name=\"number\" value=\"\">")) {
+            if (line.endsWith("<input type=\"hidden\" name=\"number\" value=\"\">")) {
                 builder.append("            <input type=\"hidden\" name=\"number\" value=\"");
                 builder.append(message.getMessageID()).append("\">").append("\n");
 
-                str = line[++i];
+                line = lineArray[++i];
             }
 
-            builder.append(str).append("\n");
+            builder.append(line).append("\n");
         }
         return builder.toString();
     }
@@ -139,7 +138,7 @@ public class HtmlEditor {
     /**
      * messageをHTML文章にする
      *
-     * @param ehl     編集したHTMLのEnum
+     * @param ehl     編集したいHTMLのEnum
      * @param message 書き込みたいMessageのオブジェクト
      * @return HTML文章
      */
@@ -175,13 +174,9 @@ public class HtmlEditor {
                         "                        <input type=\"submit\" value=\"このコメントを削除する\">" + "\n" +
                         "                    </form>" + "\n" +
                         "                </td>" + "\n";
-                break;
-
+                
             case DELETE_HTML:
-                break;
-
             default:
-                return null;
         }
         return result;
     }

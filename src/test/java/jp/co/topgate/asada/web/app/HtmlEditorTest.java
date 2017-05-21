@@ -16,7 +16,7 @@ import static org.junit.Assert.assertThat;
  * @author asada
  */
 public class HtmlEditorTest {
-    List<Message> messagesList = new ArrayList<>();
+    List<Message> messageList = new ArrayList<>();
     HtmlEditor htmlEditor;
 
     @Before
@@ -31,7 +31,7 @@ public class HtmlEditorTest {
         m.setTitle("test");
         m.setText("こんにちは");
         m.setDate("2017/5/11 11:56");
-        messagesList.add(m);
+        messageList.add(m);
 
         m = new Message();
         m.setMessageID(2);
@@ -40,7 +40,7 @@ public class HtmlEditorTest {
         m.setTitle("t");
         m.setText("こんにちは");
         m.setDate("2017/5/11 11:57");
-        messagesList.add(m);
+        messageList.add(m);
 
         m = new Message();
         m.setMessageID(3);
@@ -49,7 +49,7 @@ public class HtmlEditorTest {
         m.setTitle("t");
         m.setText("今日は天気がいいですね");
         m.setDate("2017/5/11 11:57");
-        messagesList.add(m);
+        messageList.add(m);
 
         m = new Message();
         m.setMessageID(4);
@@ -58,7 +58,7 @@ public class HtmlEditorTest {
         m.setTitle("t");
         m.setText("そうですね");
         m.setDate("2017/5/11 11:57");
-        messagesList.add(m);
+        messageList.add(m);
     }
 
     @Test
@@ -232,8 +232,8 @@ public class HtmlEditorTest {
         String rawIndex = sut.getHtml(indexEnum);
         String rawSearch = sut.getHtml(searchEnum);
 
-        String resultIndex = sut.editIndexOrSearchHtml(indexEnum, rawIndex, messagesList);
-        String resultSearch = sut.editIndexOrSearchHtml(searchEnum, rawSearch, messagesList);
+        String resultIndex = sut.editIndexOrSearchHtml(indexEnum, rawIndex, messageList);
+        String resultSearch = sut.editIndexOrSearchHtml(searchEnum, rawSearch, messageList);
 
         String[] index = resultIndex.split("\n");
         String[] search = resultSearch.split("\n");

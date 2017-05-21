@@ -1,6 +1,7 @@
 package jp.co.topgate.asada.web;
 
 import com.google.common.base.Strings;
+import jp.co.topgate.asada.web.app.RequestMessageBody;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 
 import java.io.*;
@@ -54,26 +55,28 @@ public class RequestMessage {
 
     /**
      * ASCIIコード:13(CR)
+     * InputStreamをreadした時に改行かのチェックを行う
      */
-    private static final int CARRIAGE_RETURN = 13;
+    private static final int REQUEST_MESSAGE_CARRIAGE_RETURN = 13;
 
     /**
      * ASCIIコード:10(LF)
+     * InputStreamをreadした時に改行かのチェックを行う
      */
-    private static final int LINE_FEED = 10;
+    private static final int REQUEST_MESSAGE_LINE_FEED = 10;
 
     private String method;
     private String uri;
     private Map<String, String> uriQuery = new HashMap<>();
     private String protocolVersion;
     private Map<String, String> headerField = new HashMap<>();
-    private byte[] messageBody;
+    private RequestMessageBody messageBody;
 
     /**
      * コンストラクタ、リクエストメッセージのパースを行う
      *
      * @param is サーバーソケットのInputStream
-     * @throws RequestParseException パースに失敗した場合に投げられる
+     * @throws RequestParseException  リクエストのパースに失敗した場合に投げられる
      */
     public RequestMessage(InputStream is) throws RequestParseException {
         BufferedInputStream bis = new BufferedInputStream(is);
@@ -110,7 +113,7 @@ public class RequestMessage {
                 } catch (NumberFormatException e) {
                     throw new RequestParseException("Content-Lengthに数字以外の文字が含まれています");
                 }
-                messageBody = readMessageBody(bis, contentLength);
+                messageBody = new RequestMessageBody(readMessageBody(bis, contentLength));
             }
 
         } catch (IOException e) {
@@ -120,7 +123,7 @@ public class RequestMessage {
     }
 
     /**
-     * InputStreamを読み、ByteArrayOutputStreamの配列で返す
+     * InputStreamを読み、Stringの配列で返す
      * [0].リクエストライン
      * [1].ヘッダーフィールド
      *
@@ -155,11 +158,11 @@ public class RequestMessage {
 
         int index = 0, now, before = 0, moreBefore = 0, moremoreBefore = 0;
         while ((now = is.read()) != -1) {
-            if (index == 0 && before == CARRIAGE_RETURN && now == LINE_FEED) {    //リクエストラインを読み終わる
+            if (index == 0 && before == REQUEST_MESSAGE_CARRIAGE_RETURN && now == REQUEST_MESSAGE_LINE_FEED) {    //リクエストラインを読み終わる
                 index = 1;
             }
-            if (index == 1 && moremoreBefore == CARRIAGE_RETURN && moreBefore == LINE_FEED
-                    && before == CARRIAGE_RETURN && now == LINE_FEED) {           //ヘッダーフィールドを読み終わる
+            if (index == 1 && moremoreBefore == REQUEST_MESSAGE_CARRIAGE_RETURN && moreBefore == REQUEST_MESSAGE_LINE_FEED
+                    && before == REQUEST_MESSAGE_CARRIAGE_RETURN && now == REQUEST_MESSAGE_LINE_FEED) {           //ヘッダーフィールドを読み終わる
 
                 //メッセージボディを読む
                 int i = is.read(result);
@@ -223,7 +226,7 @@ public class RequestMessage {
      * @param headerField パースしたい文字列
      * @return パースした結果をMapで返す
      */
-    static Map<String, String> headerFieldParse(final String headerField) {
+    static Map<String, String> headerFieldParse(String headerField) {
         Map<String, String> map = new HashMap<>();
         String[] str = headerField.split("\n");
         for (String s : str) {
@@ -298,7 +301,7 @@ public class RequestMessage {
      *
      * @return メッセージボディ
      */
-    public byte[] getMessageBody() {
+    public RequestMessageBody getMessageBody() {
         return messageBody;
     }
 }

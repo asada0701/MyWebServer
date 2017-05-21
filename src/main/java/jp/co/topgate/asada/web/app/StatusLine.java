@@ -4,13 +4,13 @@ import org.jetbrains.annotations.Contract;
 
 /**
  * ステータスラインの列挙型
+ * ステータスコードとリーズンフレーズを用意する
  *
  * @author asada
  */
 public enum StatusLine {
     /**
      * HTTPステータスコード:200
-     * 問題がない場合
      */
     OK(200, "OK"),
 

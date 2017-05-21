@@ -1,6 +1,5 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.app.Handler;
 import jp.co.topgate.asada.web.app.StatusLine;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -51,7 +50,7 @@ public class StaticHandlerTest {
 
     public static class doResponseProcessのテスト {
         @Test
-        public void 正しく動作するか() throws Exception {
+        public void ステータスコード200のテスト() throws Exception {
             String path = "./src/test/resources/responseMessage.txt";
             try (FileOutputStream fos = new FileOutputStream(path);
                  FileInputStream is = new FileInputStream(new File("./src/test/resources/GetRequestMessage.txt"))) {
@@ -98,7 +97,31 @@ public class StaticHandlerTest {
                 assertThat(br.readLine(), is(nullValue()));
             }
         }
+
+        @Test
+        public void ステータスコード200以外のテスト() throws Exception {
+
+            String path = "./src/test/resources/responseMessage.txt";
+            try (FileOutputStream fos = new FileOutputStream(path);
+                 FileInputStream is = new FileInputStream(new File("./src/test/resources/NotFound.txt"))) {
+
+                RequestMessage rm = new RequestMessage(is);
+                StaticHandler sut = new StaticHandler(rm);
+                StatusLine sl = sut.doRequestProcess();
+
+                sut.doResponseProcess(fos, sl);
+            }
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(path))))) {
+                assertThat(br.readLine(), is("HTTP/1.1 404 Not Found"));
+                assertThat(br.readLine(), is("Content-Type: text/html; charset=UTF-8"));
+                assertThat(br.readLine(), is(""));
+                assertThat(br.readLine(), is("<html><head><title>404 Not Found</title></head><body><h1>Not Found</h1><p>お探しのページは見つかりませんでした。</p></body></html>"));
+                assertThat(br.readLine(), is(nullValue()));
+            }
+
+        }
     }
+
     public static class getStatusLineのテスト {
         @Test
         public void GETリクエスト200() throws Exception {

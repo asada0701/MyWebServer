@@ -82,8 +82,12 @@ class Server extends Thread {
                     handler.doResponseProcess(socket.getOutputStream(), sl);
 
                 } catch (RequestParseException e) {
-                    ResponseMessage rm = new ResponseMessage(socket.getOutputStream(), StatusLine.BAD_REQUEST);
-                    rm.returnResponse();
+                    ResponseMessage rm = new ResponseMessage();
+                    try {
+                        rm.returnResponse(socket.getOutputStream(), StatusLine.BAD_REQUEST, "");
+                    } catch (IOException e1) {
+
+                    }
                 }
 
                 socket.close();

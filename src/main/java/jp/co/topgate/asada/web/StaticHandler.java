@@ -4,6 +4,7 @@ import jp.co.topgate.asada.web.app.Handler;
 import jp.co.topgate.asada.web.app.StatusLine;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
 
 /**
@@ -49,30 +50,30 @@ public class StaticHandler extends Handler {
      */
     @Override
     public void doResponseProcess(OutputStream os, StatusLine sl) {
-        ResponseMessage rm;
+        ResponseMessage rm = new ResponseMessage();
+        String path = Handler.FILE_PATH + requestMessage.getUri();
 
         if (sl.equals(StatusLine.OK)) {
-            String path = Handler.FILE_PATH + requestMessage.getUri();
-
-            rm = new ResponseMessage(os, sl, path);
             ContentType ct = new ContentType(path);
             rm.addHeader("Content-Type", ct.getContentType());
             rm.addHeader("Content-Length", String.valueOf(new File(path).length()));
-
         } else {
-            rm = new ResponseMessage(os, sl);
             rm.addHeader("Content-Type", "text/html; charset=UTF-8");
         }
 
-        rm.returnResponse();
+        try {
+            rm.returnResponse(os, sl, path);
+        } catch (IOException e) {
+
+        }
     }
 
     /**
      * リクエストメッセージのmethod,uri,protocolVersionから、レスポンスのステータスコードを決定するメソッド
-     * 1.プロトコルバージョンがHTTP/1.1以外の場合は500
-     * 2.GET,POST以外のメソッドの場合は501
-     * 3.URIで指定されたファイルがリソースフォルダにない、もしくはディレクトリの場合は404
-     * 4.1,2,3でチェックして問題がなければ200
+     * 1.プロトコルバージョンがHTTP/1.1以外の場合は505:HTTP Version Not Supported
+     * 2.GET,POST以外のメソッドの場合は501:Not Implemented
+     * 3.URIで指定されたファイルがリソースフォルダにない、もしくはディレクトリの場合は404:Not Found
+     * 4.1,2,3でチェックして問題がなければ200:OK
      *
      * @param method          リクエストメッセージのメソッドを渡す
      * @param uri             URIを渡す
