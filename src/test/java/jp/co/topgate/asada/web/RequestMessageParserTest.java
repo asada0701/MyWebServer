@@ -19,21 +19,22 @@ import static org.junit.Assert.assertThat;
  */
 @RunWith(Enclosed.class)
 public class RequestMessageParserTest {
-
-
-    public static class コンストラクタのテスト {
+    public static class parseメソッドのテスト {
         RequestMessage sut;
 
-        @Test(expected = RequestParseException.class)
+        @Test
         public void nullチェック() throws Exception {
-            sut = new RequestMessage(null);
+            sut = new RequestMessage(null, null, null, null);
+            assertThat(sut.getMethod(), is(nullValue()));
+            assertThat(sut.getUri(), is(nullValue()));
+            assertThat(sut.getProtocolVersion(), is(nullValue()));
         }
 
         @Test(expected = RequestParseException.class)
         public void 空チェック() throws Exception {
             String path = "./src/test/resources/emptyRequestMessage.txt";
             try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(path)))) {
-                sut = new RequestMessage(bis);
+                sut = RequestMessageParser.parse(bis);
             }
         }
 
@@ -41,7 +42,7 @@ public class RequestMessageParserTest {
         public void GETの場合正しく動作するか() throws Exception {
             String path = "./src/test/resources/GetRequestMessage.txt";
             try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(path)))) {
-                sut = new RequestMessage(bis);
+                sut = RequestMessageParser.parse(bis);
                 assertThat(sut.getMethod(), is("GET"));
                 assertThat(sut.getUri(), is("/index.html"));
                 assertThat(sut.getProtocolVersion(), is("HTTP/1.1"));
@@ -72,7 +73,7 @@ public class RequestMessageParserTest {
         public void POSTの場合正しく動作するか() throws Exception {
             String path = "./src/test/resources/PostRequestMessage.txt";
             try (FileInputStream fis = new FileInputStream(new File(path))) {
-                sut = new RequestMessage(fis);
+                sut = RequestMessageParser.parse(fis);
                 assertThat(sut.getMethod(), is("POST"));
                 assertThat(sut.getUri(), is("/program/board/index.html"));
                 assertThat(sut.getProtocolVersion(), is("HTTP/1.1"));
@@ -89,8 +90,12 @@ public class RequestMessageParserTest {
                 assertThat(sut.findHeaderByName("Content-Type"), is("application/x-www-form-urlencoded"));
                 assertThat(sut.findHeaderByName("Content-Length"), is("123"));
 
-                RequestMessageBody rmb = sut.getMessageBody();
-                assertThat(new String(rmb.getMessageBody()), is("name%3dasada%26title%3dtest%26text%3d%e3%81%93%e3%82%93%e3%81%ab%e3%81%a1%e3%81%af%26password%3dtest%26param%3dcontribution"));
+                Map<String, String> messageBody = sut.parseMessageBodyToMapString();
+                assertThat(messageBody.get("name"), is("asada"));
+                assertThat(messageBody.get("title"), is("test"));
+                assertThat(messageBody.get("text"), is("こんにちは"));
+                assertThat(messageBody.get("password"), is("test"));
+                assertThat(messageBody.get("param"), is("contribution"));
             }
         }
     }
@@ -99,7 +104,7 @@ public class RequestMessageParserTest {
 
         @Test(expected = NullPointerException.class)
         public void nullチェック() throws Exception {
-            RequestMessage.readRequestLineAndHeaderField(null);
+            RequestMessageParser.readRequestLineAndHeaderField(null);
         }
 
         @Test
@@ -107,7 +112,7 @@ public class RequestMessageParserTest {
             String path = "./src/test/resources/GetRequestMessage.txt";
             try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(path)))) {
 
-                String[] sut = RequestMessage.readRequestLineAndHeaderField(bis);
+                String[] sut = RequestMessageParser.readRequestLineAndHeaderField(bis);
                 assertThat(sut.length, is(2));
                 assertThat(sut[0], is("GET /index.html?name=asada&like=cat HTTP/1.1"));
                 assertThat(sut[1], is("Host: localhost:8080\n" +
@@ -127,16 +132,21 @@ public class RequestMessageParserTest {
     public static class readMessageBodyメソッドのテスト {
         @Test(expected = NullPointerException.class)
         public void nullチェック() throws Exception {
-            RequestMessage.readMessageBody(null, 0);
+            RequestMessageParser.readMessageBody(null, 0);
         }
 
         @Test
         public void 正しく動作するか() throws Exception {
             String path = "./src/test/resources/PostRequestMessage.txt";
             try (FileInputStream fis = new FileInputStream(new File(path))) {
-                RequestMessage sut = new RequestMessage(fis);
-                RequestMessageBody rmb = sut.getMessageBody();
-                assertThat(new String(rmb.getMessageBody()), is("name%3dasada%26title%3dtest%26text%3d%e3%81%93%e3%82%93%e3%81%ab%e3%81%a1%e3%81%af%26password%3dtest%26param%3dcontribution"));
+                RequestMessage sut = RequestMessageParser.parse(fis);
+                
+                Map<String, String> messageBody = sut.parseMessageBodyToMapString();
+                assertThat(messageBody.get("name"), is("asada"));
+                assertThat(messageBody.get("title"), is("test"));
+                assertThat(messageBody.get("text"), is("こんにちは"));
+                assertThat(messageBody.get("password"), is("test"));
+                assertThat(messageBody.get("param"), is("contribution"));
             }
         }
     }
@@ -144,12 +154,12 @@ public class RequestMessageParserTest {
     public static class splitUriメソッドのテスト {
         @Test(expected = NullPointerException.class)
         public void nullチェック() {
-            RequestMessage.splitUri(null);
+            RequestMessageParser.splitUri(null);
         }
 
         @Test
         public void 空チェック() throws Exception {
-            String[] sut = RequestMessage.splitUri("");
+            String[] sut = RequestMessageParser.splitUri("");
             assertThat(sut.length, is(2));
             assertThat(sut[0], is(""));
             assertThat(sut[1], is(nullValue()));
@@ -157,12 +167,12 @@ public class RequestMessageParserTest {
 
         @Test(expected = RequestParseException.class)
         public void URIシンタックス例外のテスト() throws Exception {
-            RequestMessage.splitUri("{hello world!}");
+            RequestMessageParser.splitUri("{hello world!}");
         }
 
         @Test
         public void 正しく動作するか() throws Exception {
-            String[] sut = RequestMessage.splitUri("/index.html?name=%e6%9c%9d%e7%94%b0&like=cat");
+            String[] sut = RequestMessageParser.splitUri("/index.html?name=%e6%9c%9d%e7%94%b0&like=cat");
             assertThat(sut.length, is(2));
             assertThat(sut[0], is("/index.html"));
             assertThat(sut[1], is("name=朝田&like=cat"));
@@ -173,17 +183,17 @@ public class RequestMessageParserTest {
 
         @Test(expected = NullPointerException.class)
         public void nullチェック() throws Exception {
-            RequestMessage.uriQueryParse(null);
+            RequestMessageParser.uriQueryParse(null);
         }
 
         @Test(expected = RequestParseException.class)
         public void 空チェック() throws Exception {
-            RequestMessage.uriQueryParse("");
+            RequestMessageParser.uriQueryParse("");
         }
 
         @Test
         public void 正しく動作するか() throws Exception {
-            Map<String, String> sut = RequestMessage.uriQueryParse("name=朝田&like=cat");
+            Map<String, String> sut = RequestMessageParser.uriQueryParse("name=朝田&like=cat");
             assertThat(sut.get("name"), is("朝田"));
             assertThat(sut.get("like"), is("cat"));
         }
@@ -193,18 +203,18 @@ public class RequestMessageParserTest {
 
         @Test(expected = NullPointerException.class)
         public void nullチッェク() throws Exception {
-            RequestMessage.headerFieldParse(null);
+            RequestMessageParser.headerFieldParse(null);
         }
 
         @Test(expected = RequestParseException.class)
         public void 空チェック() throws Exception {
-            Map<String, String> sut = RequestMessage.headerFieldParse("");
+            Map<String, String> sut = RequestMessageParser.headerFieldParse("");
             assertThat(sut.size(), is(1));
         }
 
         @Test
         public void 正しく動作するか() throws Exception {
-            Map<String, String> sut = RequestMessage.headerFieldParse(
+            Map<String, String> sut = RequestMessageParser.headerFieldParse(
                     "Host: localhost:8080\n" +
                             "Connection: keep-alive\n" +
                             "Pragma: no-cache\n" +

@@ -68,7 +68,7 @@ public class RequestMessageParser {
      * @param inputStream socketのinputStreamを渡す
      * @return リクエストメッセージのオブジェクトを返す
      */
-    public static RequestMessage parse(InputStream inputStream) {
+    public static RequestMessage parse(InputStream inputStream) throws RequestParseException {
         String method;
         String uri;
         Map<String, String> uriQuery = null;

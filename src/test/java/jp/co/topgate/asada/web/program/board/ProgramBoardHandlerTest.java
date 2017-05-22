@@ -117,7 +117,7 @@ public class ProgramBoardHandlerTest {
                 assertThat(br.readLine(), is("            <p>"));
                 assertThat(br.readLine(), is("                パスワード<input type=\"password\" name=\"password\" size=\"10\" required>(投稿した文を削除するときに使います。)"));
                 assertThat(br.readLine(), is("            </p>"));
-                assertThat(br.readLine(), is("            <input type=\"hidden\" name=\"param\" value=\"contribution\">"));
+                assertThat(br.readLine(), is("            <input type=\"hidden\" name=\"param\" value=\"write\">"));
                 assertThat(br.readLine(), is("            <input type=\"submit\" value=\"投稿\">"));
                 assertThat(br.readLine(), is("        </form>"));
                 assertThat(br.readLine(), is("    </div>"));
@@ -147,7 +147,7 @@ public class ProgramBoardHandlerTest {
                 assertThat(br.readLine(), is("                </td>"));
                 assertThat(br.readLine(), is("                <td>"));
                 assertThat(br.readLine(), is("                    <form action=\"/program/board/\" method=\"post\">"));
-                assertThat(br.readLine(), is("                        <input type=\"hidden\" name=\"param\" value=\"delete1\">"));
+                assertThat(br.readLine(), is("                        <input type=\"hidden\" name=\"param\" value=\"delete_step_1\">"));
                 assertThat(br.readLine(), is("                        <input type=\"hidden\" name=\"number\" value=\"2\">"));
                 assertThat(br.readLine(), is("                        <input type=\"submit\" value=\"このコメントを削除する\">"));
                 assertThat(br.readLine(), is("                    </form>"));
@@ -168,7 +168,7 @@ public class ProgramBoardHandlerTest {
                 assertThat(br.readLine(), is("                </td>"));
                 assertThat(br.readLine(), is("                <td>"));
                 assertThat(br.readLine(), is("                    <form action=\"/program/board/\" method=\"post\">"));
-                assertThat(br.readLine(), is("                        <input type=\"hidden\" name=\"param\" value=\"delete1\">"));
+                assertThat(br.readLine(), is("                        <input type=\"hidden\" name=\"param\" value=\"delete_step_1\">"));
                 assertThat(br.readLine(), is("                        <input type=\"hidden\" name=\"number\" value=\"1\">"));
                 assertThat(br.readLine(), is("                        <input type=\"submit\" value=\"このコメントを削除する\">"));
                 assertThat(br.readLine(), is("                    </form>"));
@@ -242,7 +242,7 @@ public class ProgramBoardHandlerTest {
                 assertThat(br.readLine(), is("            <p>"));
                 assertThat(br.readLine(), is("                パスワード<input type=\"password\" name=\"password\" size=\"10\" required>(投稿した文を削除するときに使います。)"));
                 assertThat(br.readLine(), is("            </p>"));
-                assertThat(br.readLine(), is("            <input type=\"hidden\" name=\"param\" value=\"contribution\">"));
+                assertThat(br.readLine(), is("            <input type=\"hidden\" name=\"param\" value=\"write\">"));
                 assertThat(br.readLine(), is("            <input type=\"submit\" value=\"投稿\">"));
                 assertThat(br.readLine(), is("        </form>"));
                 assertThat(br.readLine(), is("    </div>"));
@@ -264,7 +264,7 @@ public class ProgramBoardHandlerTest {
                 assertThat(br.readLine(), is("                <td>2017/5/11 11:57</td>"));
                 assertThat(br.readLine(), is("                <td>"));
                 assertThat(br.readLine(), is("                    <form action=\"/program/board/\" method=\"post\">"));
-                assertThat(br.readLine(), is("                        <input type=\"hidden\" name=\"param\" value=\"delete1\">"));
+                assertThat(br.readLine(), is("                        <input type=\"hidden\" name=\"param\" value=\"delete_step_1\">"));
                 assertThat(br.readLine(), is("                        <input type=\"hidden\" name=\"number\" value=\"2\">"));
                 assertThat(br.readLine(), is("                        <input type=\"submit\" value=\"このコメントを削除する\">"));
                 assertThat(br.readLine(), is("                    </form>"));
@@ -508,7 +508,7 @@ public class ProgramBoardHandlerTest {
                 assertThat(br.readLine(), is("            <p>"));
                 assertThat(br.readLine(), is("                パスワード<input type=\"password\" name=\"password\" size=\"10\" required>(投稿した文を削除するときに使います。)"));
                 assertThat(br.readLine(), is("            </p>"));
-                assertThat(br.readLine(), is("            <input type=\"hidden\" name=\"param\" value=\"contribution\">"));
+                assertThat(br.readLine(), is("            <input type=\"hidden\" name=\"param\" value=\"write\">"));
                 assertThat(br.readLine(), is("            <input type=\"submit\" value=\"投稿\">"));
                 assertThat(br.readLine(), is("        </form>"));
                 assertThat(br.readLine(), is("    </div>"));
@@ -538,7 +538,7 @@ public class ProgramBoardHandlerTest {
                 assertThat(br.readLine(), is("                </td>"));
                 assertThat(br.readLine(), is("                <td>"));
                 assertThat(br.readLine(), is("                    <form action=\"/program/board/\" method=\"post\">"));
-                assertThat(br.readLine(), is("                        <input type=\"hidden\" name=\"param\" value=\"delete1\">"));
+                assertThat(br.readLine(), is("                        <input type=\"hidden\" name=\"param\" value=\"delete_step_1\">"));
                 assertThat(br.readLine(), is("                        <input type=\"hidden\" name=\"number\" value=\"2\">"));
                 assertThat(br.readLine(), is("                        <input type=\"submit\" value=\"このコメントを削除する\">"));
                 assertThat(br.readLine(), is("                    </form>"));
@@ -559,7 +559,7 @@ public class ProgramBoardHandlerTest {
                 assertThat(br.readLine(), is("                </td>"));
                 assertThat(br.readLine(), is("                <td>"));
                 assertThat(br.readLine(), is("                    <form action=\"/program/board/\" method=\"post\">"));
-                assertThat(br.readLine(), is("                        <input type=\"hidden\" name=\"param\" value=\"delete1\">"));
+                assertThat(br.readLine(), is("                        <input type=\"hidden\" name=\"param\" value=\"delete_step_1\">"));
                 assertThat(br.readLine(), is("                        <input type=\"hidden\" name=\"number\" value=\"1\">"));
                 assertThat(br.readLine(), is("                        <input type=\"submit\" value=\"このコメントを削除する\">"));
                 assertThat(br.readLine(), is("                    </form>"));
