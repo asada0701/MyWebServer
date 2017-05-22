@@ -22,7 +22,7 @@ public final class ModelController {
     private static List<Message> messageList = new ArrayList<>();
 
     /**
-     * メッセージIDのインデックス
+     * 次にaddMessageメソッドが呼ばれたときのメッセージID
      */
     private static int nextMessageID = 1;
 
@@ -77,7 +77,7 @@ public final class ModelController {
      * @param messageID 探したいメッセージのIDを渡す
      * @return ターゲットのメッセージを返す
      */
-    public static Message findMessagebyID(int messageID) {
+    public static Message findMessageByID(int messageID) {
         for (Message message : messageList) {
             if (message.getMessageID() == messageID) {
                 return message;

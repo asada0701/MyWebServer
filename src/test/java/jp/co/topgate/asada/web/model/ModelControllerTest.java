@@ -49,7 +49,7 @@ public class ModelControllerTest {
         assertThat(list.get(1).getDate(), is(now));
 
         //findMessageメソッドのテスト
-        m = ModelController.findMessagebyID(2);
+        m = ModelController.findMessageByID(2);
 
         assertThat(m.getDate(), is(now));
 
