@@ -118,7 +118,6 @@ public class StaticHandlerTest {
                 assertThat(br.readLine(), is("<html><head><title>404 Not Found</title></head><body><h1>Not Found</h1><p>お探しのページは見つかりませんでした。</p></body></html>"));
                 assertThat(br.readLine(), is(nullValue()));
             }
-
         }
     }
 

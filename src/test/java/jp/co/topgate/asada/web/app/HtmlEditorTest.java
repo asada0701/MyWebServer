@@ -16,8 +16,8 @@ import static org.junit.Assert.assertThat;
  * @author asada
  */
 public class HtmlEditorTest {
-    List<Message> messageList = new ArrayList<>();
-    HtmlEditor htmlEditor;
+    private List<Message> messageList = new ArrayList<>();
+    private HtmlEditor htmlEditor;
 
     @Before
     public void setUp() {
@@ -62,178 +62,13 @@ public class HtmlEditorTest {
     }
 
     @Test
-    public void getHtmlメソッドのテスト() {
-        HtmlEditor sut = new HtmlEditor();
-        String index = sut.getHtml(EditHtmlList.INDEX_HTML);
-        String search = sut.getHtml(EditHtmlList.SEARCH_HTML);
-        String delete = sut.getHtml(EditHtmlList.DELETE_HTML);
-
-        assertThat(index, is("<!DOCTYPE html>\n" +
-                "<html>\n" +
-                "\n" +
-                "<head>\n" +
-                "    <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n" +
-                "    <link rel=\"stylesheet\" type=\"text/css\" href=\"./css/style.css\">\n" +
-                "</head>\n" +
-                "\n" +
-                "<body>\n" +
-                "<center>\n" +
-                "    <div id=\"header\">\n" +
-                "        <h1>掲示板-LightBoard</h1>\n" +
-                "        <a href=\"./caution.html\" target=\"_blank\">注意事項を読む</a>\n" +
-                "    </div>\n" +
-                "    <div id=\"form\">\n" +
-                "        <form action=\"/program/board/\" method=\"post\">\n" +
-                "            <p>\n" +
-                "                名前<input type=\"text\" name=\"name\" size=\"40\" required>\n" +
-                "            </p>\n" +
-                "            <p>\n" +
-                "                タイトル<input type=\"text\" name=\"title\" size=\"40\" required>\n" +
-                "            </p>\n" +
-                "            <p>\n" +
-                "                メッセージ<br>\n" +
-                "                <textarea name=\"text\" rows=\"4\" cols=\"40\" required></textarea>\n" +
-                "            </p>\n" +
-                "            <p>\n" +
-                "                パスワード<input type=\"password\" name=\"password\" size=\"10\" required>(投稿した文を削除するときに使います。)\n" +
-                "            </p>\n" +
-                "            <input type=\"hidden\" name=\"param\" value=\"contribution\">\n" +
-                "            <input type=\"submit\" value=\"投稿\">\n" +
-                "        </form>\n" +
-                "    </div>\n" +
-                "    <div id=\"log\">\n" +
-                "        <table border=\"1\">\n" +
-                "            <tr>\n" +
-                "                <th>ナンバー</th>\n" +
-                "                <th>タイトル</th>\n" +
-                "                <th>本文</th>\n" +
-                "                <th>ユーザー名</th>\n" +
-                "                <th>日付</th>\n" +
-                "                <th></th>\n" +
-                "                <th></th>\n" +
-                "            </tr>\n" +
-                "        </table>\n" +
-                "    </div>\n" +
-                "</center>\n" +
-                "</body>\n" +
-                "\n" +
-                "</html>\n"));
-
-        assertThat(search, is("<!DOCTYPE html>\n" +
-                "<html>\n" +
-                "\n" +
-                "<head>\n" +
-                "    <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n" +
-                "    <link rel=\"stylesheet\" type=\"text/css\" href=\"./css/style.css\">\n" +
-                "</head>\n" +
-                "\n" +
-                "<body>\n" +
-                "<center>\n" +
-                "    <div id=\"header\">\n" +
-                "        <h1>掲示板-LightBoard</h1>\n" +
-                "        <a href=\"./caution.html\" target=\"_blank\">注意事項を読む</a>\n" +
-                "    </div>\n" +
-                "    <div id=\"form\">\n" +
-                "        <form action=\"/program/board/\" method=\"post\">\n" +
-                "            <p>\n" +
-                "                名前<input type=\"text\" name=\"name\" size=\"40\" required>\n" +
-                "            </p>\n" +
-                "            <p>\n" +
-                "                タイトル<input type=\"text\" name=\"title\" size=\"40\" required>\n" +
-                "            </p>\n" +
-                "            <p>\n" +
-                "                メッセージ<br>\n" +
-                "                <textarea name=\"text\" rows=\"4\" cols=\"40\" required></textarea>\n" +
-                "            </p>\n" +
-                "            <p>\n" +
-                "                パスワード<input type=\"password\" name=\"password\" size=\"10\" required>(投稿した文を削除するときに使います。)\n" +
-                "            </p>\n" +
-                "            <input type=\"hidden\" name=\"param\" value=\"contribution\">\n" +
-                "            <input type=\"submit\" value=\"投稿\">\n" +
-                "        </form>\n" +
-                "    </div>\n" +
-                "    <div id=\"log\">\n" +
-                "        <table border=\"1\">\n" +
-                "            <tr>\n" +
-                "                <th>ナンバー</th>\n" +
-                "                <th>タイトル</th>\n" +
-                "                <th>本文</th>\n" +
-                "                <th>ユーザー名</th>\n" +
-                "                <th>日付</th>\n" +
-                "                <th></th>\n" +
-                "            </tr>\n" +
-                "        </table>\n" +
-                "    </div>\n" +
-                "    <div id=\"back\">\n" +
-                "        <form action=\"/program/board/\" method=\"post\">\n" +
-                "            <input type=\"hidden\" name=\"param\" value=\"back\">\n" +
-                "            <input type=\"submit\" value=\"topへ戻る\">\n" +
-                "        </form>\n" +
-                "    </div>\n" +
-                "</center>\n" +
-                "</body>\n" +
-                "\n" +
-                "</html>\n"));
-
-        assertThat(delete, is("<!DOCTYPE html>\n" +
-                "<html>\n" +
-                "\n" +
-                "<head>\n" +
-                "    <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">\n" +
-                "    <link rel=\"stylesheet\" type=\"text/css\" href=\"./css/deleteStyle.css\">\n" +
-                "</head>\n" +
-                "\n" +
-                "<body>\n" +
-                "<center>\n" +
-                "    <div id=\"header\">\n" +
-                "        <h1>掲示板-LightBoard</h1>\n" +
-                "        <a href=\"./caution.html\" target=\"_blank\">注意事項を読む</a>\n" +
-                "    </div>\n" +
-                "    <div id=\"log\">\n" +
-                "        <h2>削除するメッセージ</h2>\n" +
-                "        <table border=\"1\">\n" +
-                "            <tr>\n" +
-                "                <th>ナンバー</th>\n" +
-                "                <th>タイトル</th>\n" +
-                "                <th>本文</th>\n" +
-                "                <th>ユーザー名</th>\n" +
-                "                <th>日付</th>\n" +
-                "            </tr>\n" +
-                "        </table>\n" +
-                "    </div>\n" +
-                "    <div id=\"form\">\n" +
-                "        <p>投稿した時に入力したパスワードを入力してください。</p>\n" +
-                "        <form action=\"/program/board/\" method=\"post\">\n" +
-                "            <p>\n" +
-                "                パスワード<input type=\"password\" name=\"password\" size=\"10\" required>\n" +
-                "            </p>\n" +
-                "            <input type=\"hidden\" name=\"number\" value=\"\">\n" +
-                "            <input type=\"hidden\" name=\"param\" value=\"delete2\">\n" +
-                "            <input type=\"submit\" value=\"削除する\">\n" +
-                "        </form>\n" +
-                "    </div>\n" +
-                "    <div id=\"back\">\n" +
-                "        <form action=\"/program/board/\" method=\"post\">\n" +
-                "            <input type=\"hidden\" name=\"param\" value=\"back\">\n" +
-                "            <input type=\"submit\" value=\"戻る\">\n" +
-                "        </form>\n" +
-                "    </div>\n" +
-                "</center>\n" +
-                "</body>\n" +
-                "\n" +
-                "</html>\n"));
-    }
-
-    @Test
     public void editIndexOrSearchHtmlメソッドのテスト() {
         HtmlEditor sut = new HtmlEditor();
         EditHtmlList indexEnum = EditHtmlList.INDEX_HTML;
         EditHtmlList searchEnum = EditHtmlList.SEARCH_HTML;
-        String rawIndex = sut.getHtml(indexEnum);
-        String rawSearch = sut.getHtml(searchEnum);
 
-        String resultIndex = sut.editIndexOrSearchHtml(indexEnum, rawIndex, messageList);
-        String resultSearch = sut.editIndexOrSearchHtml(searchEnum, rawSearch, messageList);
+        String resultIndex = sut.editIndexOrSearchHtml(indexEnum, messageList);
+        String resultSearch = sut.editIndexOrSearchHtml(searchEnum, messageList);
 
         String[] index = resultIndex.split("\n");
         String[] search = resultSearch.split("\n");
@@ -492,7 +327,6 @@ public class HtmlEditorTest {
     @Test
     public void editDeleteメソッドのテスト() {
         HtmlEditor sut = new HtmlEditor();
-        String rawHtml = sut.getHtml(EditHtmlList.DELETE_HTML);
         Message m;
         m = new Message();
         m.setMessageID(1);
@@ -502,7 +336,7 @@ public class HtmlEditorTest {
         m.setText("こんにちは");
         m.setDate("2017/5/11 11:56");
 
-        String resultHtml = sut.editDeleteHtml(rawHtml, m);
+        String resultHtml = sut.editDeleteHtml(m);
 
         String[] delete = resultHtml.split("\n");
 
@@ -624,6 +458,25 @@ public class HtmlEditorTest {
         assertThat(result[i++], is("                <td>こんにちは</td>"));
         assertThat(result[i++], is("                <td>管理者</td>"));
         assertThat(result[i], is("                <td>2017/5/11 11:56</td>"));
+    }
+
+    @Test
+    public void changeLineFeedToBrメソッドのテスト() throws Exception {
+        String raw = "";
+        String data = HtmlEditor.changeLineFeedToBr(raw);
+        assertThat(data, is(""));
+
+        raw = "改行\nテスト";
+        data = HtmlEditor.changeLineFeedToBr(raw);
+        assertThat(data, is("改行<br>テスト"));
+
+        raw = "改行\r\nテスト";
+        data = HtmlEditor.changeLineFeedToBr(raw);
+        assertThat(data, is("改行<br>テスト"));
+
+        raw = "複数\r\n改行\r\nテスト";
+        data = HtmlEditor.changeLineFeedToBr(raw);
+        assertThat(data, is("複数<br>改行<br>テスト"));
     }
 
     @Test

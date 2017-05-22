@@ -41,23 +41,26 @@ public class ResponseMessage {
      * @param sl       ステータスライン
      * @param filePath リソースファイルのパスを渡す
      *                 （例）./src/main/resources/index.html
-     * @throws IOException レスポンスメッセージを書き込み中に例外発生
      */
-    public void returnResponse(OutputStream os, StatusLine sl, String filePath) throws IOException {
-        os.write(getResponseLine(protocolVersion, sl).getBytes());
-        os.write(getHeader(headerField).getBytes());
+    public void returnResponse(OutputStream os, StatusLine sl, String filePath) {
+        try {
+            os.write(getResponseLine(protocolVersion, sl).getBytes());
+            os.write(getHeader(headerField).getBytes());
 
-        if (sl.equals(StatusLine.OK)) {
-            try (InputStream in = new FileInputStream(filePath)) {
-                int num;
-                while ((num = in.read()) != -1) {
-                    os.write(num);
+            if (sl.equals(StatusLine.OK)) {
+                try (InputStream in = new FileInputStream(filePath)) {
+                    int num;
+                    while ((num = in.read()) != -1) {
+                        os.write(num);
+                    }
                 }
+            } else {
+                os.write(getErrorMessageBody(sl).getBytes());
             }
-        } else {
-            os.write(getErrorMessageBody(sl).getBytes());
+            os.flush();
+        } catch (IOException e) {
+
         }
-        os.flush();
     }
 
     /**
@@ -67,18 +70,21 @@ public class ResponseMessage {
      * @param os     ソケットの出力ストリーム
      * @param sl     ステータスライン
      * @param target byteの配列でレスポンスのメッセージボディを渡す
-     * @throws IOException レスポンスメッセージを書き込み中に例外発生
      */
-    public void returnResponse(OutputStream os, StatusLine sl, byte[] target) throws IOException {
-        os.write(getResponseLine(protocolVersion, sl).getBytes());
-        os.write(getHeader(headerField).getBytes());
+    void returnResponse(OutputStream os, StatusLine sl, byte[] target) {
+        try {
+            os.write(getResponseLine(protocolVersion, sl).getBytes());
+            os.write(getHeader(headerField).getBytes());
 
-        if (sl.equals(StatusLine.OK)) {
-            os.write(target);
-        } else {
-            os.write(getErrorMessageBody(sl).getBytes());
+            if (sl.equals(StatusLine.OK)) {
+                os.write(target);
+            } else {
+                os.write(getErrorMessageBody(sl).getBytes());
+            }
+            os.flush();
+        } catch (IOException e) {
+
         }
-        os.flush();
     }
 
     /**
@@ -160,7 +166,7 @@ public class ResponseMessage {
      *
      * @param protocolVersion プロトコルバージョン
      */
-    public void setProtocolVersion(String protocolVersion) {
+    void setProtocolVersion(String protocolVersion) {
         if (protocolVersion != null) {
             this.protocolVersion = protocolVersion;
         }

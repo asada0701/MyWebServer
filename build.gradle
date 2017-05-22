@@ -22,9 +22,9 @@ repositories {
         url 'https://repo.spring.io/libs-milestone'
     }
 
-//    maven {
-//        url 'https://mvnrepository.com/artifact/commons-fileupload/commons-fileupload'
-//    }
+    maven {
+        url 'https://mvnrepository.com/artifact/commons-fileupload/commons-fileupload'
+    }
 }
 
 dependencies {
@@ -37,8 +37,8 @@ dependencies {
     //スプリングのBCrypt
     compile 'org.springframework.security:spring-security-web:5.0.0.M1'
 
-    //ファイルアップロード(引数がServlet前提なので中止
-    //compile group: 'commons-fileupload', name: 'commons-fileupload', version: '1.3.1'
+    //数値チェック
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.1'
 
     // Use JUnit test framework
     testCompile 'junit:junit:4.12'

@@ -2,6 +2,7 @@ package jp.co.topgate.asada.web;
 
 import jp.co.topgate.asada.web.app.Handler;
 import jp.co.topgate.asada.web.app.StatusLine;
+import jp.co.topgate.asada.web.exception.HtmlInitializeException;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 import jp.co.topgate.asada.web.exception.SocketRuntimeException;
 
@@ -81,26 +82,27 @@ class Server extends Thread {
 
                     handler.doResponseProcess(socket.getOutputStream(), sl);
 
-                } catch (RequestParseException e) {
+                } catch (RequestParseException e) {                 //リクエストメッセージに問題があった場合の例外処理
                     ResponseMessage rm = new ResponseMessage();
-                    try {
-                        rm.returnResponse(socket.getOutputStream(), StatusLine.BAD_REQUEST, "");
-                    } catch (IOException e1) {
+                    rm.returnResponse(socket.getOutputStream(), StatusLine.BAD_REQUEST, "");
 
-                    }
+                } catch (HtmlInitializeException e) {               //HTMLファイルに問題が発生した場合の例外処理
+                    ResponseMessage rm = new ResponseMessage();
+                    rm.returnResponse(socket.getOutputStream(), StatusLine.INTERNAL_SERVER_ERROR, "");
+                    throw new SocketRuntimeException(e.getMessage());
                 }
 
                 socket.close();
                 socket = null;
             }
 
-        } catch (NullPointerException | BindException e) {
+        } catch (BindException e) {
             throw new SocketRuntimeException(e.getMessage());
 
         } catch (SocketException e) {
-            //e.printStackTrace();
 
-        } catch (IOException | RuntimeException e) {
+
+        } catch (IOException e) {
             throw new SocketRuntimeException(e.getMessage());
         }
     }

@@ -41,9 +41,9 @@ public class RequestMessageBody {
     }
 
     /**
-     * メッセージボディをそのまま返すメソッド
+     * メッセージボディをパースせずにそのまま返すメソッド
      *
-     * @return パースせずにバイトのまま返す
+     * @return byteの配列で返す
      */
     public byte[] getMessageBody() {
         return this.messageBody;

@@ -16,7 +16,7 @@ import java.util.List;
 public class CsvHelper {
 
     /**
-     * ファイルパス
+     * CSVのファイルパス
      */
     private static final String csvPath = "./src/main/resources/data/message.csv";
 

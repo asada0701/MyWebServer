@@ -14,6 +14,18 @@ import java.util.Map;
  * @author asada
  */
 public class HtmlEditor {
+
+    /**
+     * HTMLの編集する場所のスタート地点を
+     * div id = "log" で探す
+     */
+    private static final String SEARCH_DIV_ID = "<div id=\"log\">";
+
+    /**
+     * div id = "log"の後の t の閉じタグの次から編集を開始する
+     */
+    private static final String EDIT_START_POINT = "</tr>";
+
     /**
      * 編集するHTMLの初期状態を保存するリスト
      */
@@ -58,37 +70,26 @@ public class HtmlEditor {
     }
 
     /**
-     * htmlContentに保存してあるhtmlを返す
-     *
-     * @param ehl 取得したいhtmlのEnum
-     * @return HTML文章
-     */
-    String getHtml(EditHtmlList ehl) {
-        return htmlContent.get(ehl);
-    }
-
-    /**
      * indexまたはsearchのHTML文章を編集する
      *
-     * @param ehl     編集したいHTMLのEnum
-     * @param rawHtml 編集前のHTML文章
-     * @param list    HTML文章に書き込みたいMessageのリスト
+     * @param ehl  編集したいHTMLのEnum
+     * @param list HTML文章に書き込みたいMessageのリスト
      * @return 編集後のHTML文章
      */
-    String editIndexOrSearchHtml(EditHtmlList ehl, String rawHtml, List<Message> list) {
-        String[] lineArray = rawHtml.split("\n");     //改行で分割
+    String editIndexOrSearchHtml(EditHtmlList ehl, List<Message> list) {
+        String[] lineArray = htmlContent.get(ehl).split("\n");     //改行で分割
         StringBuilder builder = new StringBuilder();
 
         for (int i = 0; i < lineArray.length; i++) {
             String line = lineArray[i];
-            if (line.endsWith("<div id=\"log\">")) {         //<div id="log">の箇所を探す
-                while (!line.endsWith("</tr>")) {            //</tr>の次の行から編集する
+            if (line.endsWith(SEARCH_DIV_ID)) {         //<div id="log">の箇所を探す
+                while (!line.endsWith(EDIT_START_POINT)) {            //</tr>の次の行から編集する
                     builder.append(line).append("\n");
                     line = lineArray[++i];
                 }
-                builder.append(lineArray[i]).append("\n");  //</tr>を結合
+                builder.append(lineArray[i]).append("\n");  //</tr>をappend
 
-                for (int k = list.size() - 1; k > -1; k--) {                //ここからがメッセージの部分
+                for (int k = list.size() - 1; k > -1; k--) {                //ここからが掲示板のメッセージの部分
                     builder.append(messageChangeToHtml(ehl, list.get(k)));
                     builder.append(line).append("\n");
                 }
@@ -102,18 +103,17 @@ public class HtmlEditor {
     /**
      * deleteのHTML文章を編集する
      *
-     * @param rawHtml 編集前のHTML文章
      * @param message メッセージのオブジェクト
      * @return 編集後のHTML文章
      */
-    String editDeleteHtml(String rawHtml, Message message) {
-        String[] lineArray = rawHtml.split("\n");     //改行で分割
+    String editDeleteHtml(Message message) {
+        String[] lineArray = htmlContent.get(EditHtmlList.DELETE_HTML).split("\n");     //改行で分割
         StringBuilder builder = new StringBuilder();
 
         for (int i = 0; i < lineArray.length; i++) {
             String line = lineArray[i];
-            if (line.endsWith("<div id=\"log\">")) {         //<div id="log">の箇所を探す
-                while (!line.endsWith("</tr>")) {            //</tr>の次の行から編集する
+            if (line.endsWith(SEARCH_DIV_ID)) {         //<div id="log">の箇所を探す
+                while (!line.endsWith(EDIT_START_POINT)) {            //</tr>の次の行から編集する
                     builder.append(line).append("\n");
                     line = lineArray[++i];
                 }
@@ -143,11 +143,6 @@ public class HtmlEditor {
      * @return HTML文章
      */
     static String messageChangeToHtml(EditHtmlList ehl, Message message) {
-        if (message.getText().contains("\r\n")) {
-            message.setText(message.getText().replaceAll("\r\n", "<br>"));
-        } else if (message.getText().contains("\n")) {
-            message.setText(message.getText().replaceAll("\n", "<br>"));
-        }
         String result = "            <tr id=\"No." + message.getMessageID() + "\">" + "\n" +
                 "                <td>No." + message.getMessageID() + "</td>" + "\n" +
                 "                <td>" + message.getTitle() + "</td>" + "\n" +
@@ -174,11 +169,28 @@ public class HtmlEditor {
                         "                        <input type=\"submit\" value=\"このコメントを削除する\">" + "\n" +
                         "                    </form>" + "\n" +
                         "                </td>" + "\n";
-                
+
             case DELETE_HTML:
             default:
         }
         return result;
+    }
+
+    /**
+     * 改行コードをHTMLのbrタグに変更するメソッド
+     *
+     * @param str HTMLに書き込みたい文章を渡す
+     * @return 改行コードを全てbrタグに修正して返す
+     */
+    static String changeLineFeedToBr(String str) {
+        if (str.contains("\r\n")) {
+            return str.replaceAll("\r\n", "<br>");
+
+        } else if (str.contains("\n")) {
+            return str.replaceAll("\n", "<br>");
+        }
+
+        return str;
     }
 
     /**
@@ -197,33 +209,50 @@ public class HtmlEditor {
 }
 
 /**
- * filePathとhtmlContentのインデックスを揃えるenum
+ * URIとファイルのパスのEnum
  *
  * @author asada
  */
 enum EditHtmlList {
     /**
      * index.html
-     * 添え字、ファイルのパス
+     * URI、ファイルのパス
      */
-    INDEX_HTML("./src/main/resources/2/index.html"),
+    INDEX_HTML("/program/board/index.html", "./src/main/resources/2/index.html"),
 
     /**
      * search.html
      */
-    SEARCH_HTML("./src/main/resources/2/search.html"),
+    SEARCH_HTML("/program/board/search.html", "./src/main/resources/2/search.html"),
 
     /**
      * delete.html
      */
-    DELETE_HTML("./src/main/resources/2/delete.html");
+    DELETE_HTML("/program/board/delete.html", "./src/main/resources/2/delete.html");
+
+    private final String uri;
 
     private final String path;
 
-    EditHtmlList(String path) {
+    EditHtmlList(String uri, String path) {
+        this.uri = uri;
         this.path = path;
     }
 
+    /**
+     * URIを取得するメソッド
+     *
+     * @return URIを返す
+     */
+    public String getUri() {
+        return uri;
+    }
+
+    /**
+     * ファイルのパスを取得するメソッド
+     *
+     * @return ファイルのパスを返す
+     */
     public String getPath() {
         return path;
     }

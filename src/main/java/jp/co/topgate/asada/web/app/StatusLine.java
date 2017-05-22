@@ -3,7 +3,7 @@ package jp.co.topgate.asada.web.app;
 import org.jetbrains.annotations.Contract;
 
 /**
- * ステータスラインの列挙型
+ * ステータスラインのEnum
  * ステータスコードとリーズンフレーズを用意する
  *
  * @author asada
@@ -53,11 +53,21 @@ public enum StatusLine {
         this.reasonPhrase = reasonPhrase;
     }
 
+    /**
+     * ステータスコードを取得するメソッド
+     *
+     * @return ステータスコードを返す
+     */
     @Contract(pure = true)
     public int getStatusCode() {
         return statusCode;
     }
 
+    /**
+     * リーズンフレーズを取得するメソッド
+     *
+     * @return リーズンフレーズを返す
+     */
     @Contract(pure = true)
     public String getReasonPhrase() {
         return reasonPhrase;

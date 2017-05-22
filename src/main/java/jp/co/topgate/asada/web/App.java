@@ -74,8 +74,9 @@ public class App {
      *
      * @param choices 選択した文字
      * @return サーバーの状態を文字列で返す
-     * @throws IOException          {@link Server}を参照
-     * @throws ServerStateException サーバークラスの状態が予期しないものになった場合に発生する
+     * @throws IOException            {@link Server}を参照
+     * @throws SocketRuntimeException {@link Server#run()}を参照
+     * @throws ServerStateException   サーバークラスの状態が予期しないものになった場合に発生する
      */
     @NotNull
     static String controlServer(Server server, Choices choices) throws IOException, SocketRuntimeException, ServerStateException {

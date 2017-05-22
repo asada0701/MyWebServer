@@ -4,7 +4,6 @@ import jp.co.topgate.asada.web.app.Handler;
 import jp.co.topgate.asada.web.app.StatusLine;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.OutputStream;
 
 /**
@@ -14,9 +13,6 @@ import java.io.OutputStream;
  */
 public class StaticHandler extends Handler {
 
-    /**
-     * リクエストメッセージ
-     */
     private RequestMessage requestMessage;
 
     /**
@@ -31,7 +27,7 @@ public class StaticHandler extends Handler {
     /**
      * リクエストの処理を行うメソッド
      *
-     * @return レスポンスラインの状態行(StatusLine)を返す
+     * @return レスポンスメッセージの状態行(StatusLine)を返す
      */
     @Override
     public final StatusLine doRequestProcess() {
@@ -40,32 +36,6 @@ public class StaticHandler extends Handler {
         String protocolVersion = requestMessage.getProtocolVersion();
 
         return StaticHandler.getStatusLine(method, uri, protocolVersion);
-    }
-
-    /**
-     * レスポンスの処理を行うメソッド
-     *
-     * @param os SocketのOutputStream
-     * @param sl ステータスラインの列挙型
-     */
-    @Override
-    public void doResponseProcess(OutputStream os, StatusLine sl) {
-        ResponseMessage rm = new ResponseMessage();
-        String path = Handler.FILE_PATH + requestMessage.getUri();
-
-        if (sl.equals(StatusLine.OK)) {
-            ContentType ct = new ContentType(path);
-            rm.addHeader("Content-Type", ct.getContentType());
-            rm.addHeader("Content-Length", String.valueOf(new File(path).length()));
-        } else {
-            rm.addHeader("Content-Type", "text/html; charset=UTF-8");
-        }
-
-        try {
-            rm.returnResponse(os, sl, path);
-        } catch (IOException e) {
-
-        }
     }
 
     /**
@@ -78,7 +48,7 @@ public class StaticHandler extends Handler {
      * @param method          リクエストメッセージのメソッドを渡す
      * @param uri             URIを渡す
      * @param protocolVersion プロトコルバージョンを渡す
-     * @return レスポンスラインの状態行(StatusLine)を返す
+     * @return レスポンスメッセージの状態行(StatusLine)を返す
      */
     static StatusLine getStatusLine(String method, String uri, String protocolVersion) {
         if (!"HTTP/1.1".equals(protocolVersion)) {
@@ -94,6 +64,28 @@ public class StaticHandler extends Handler {
             }
         }
         return StatusLine.OK;
+    }
+
+    /**
+     * レスポンスの処理を行うメソッド
+     *
+     * @param os SocketのOutputStreamを渡す
+     * @param sl ステータスラインの列挙型を渡す
+     */
+    @Override
+    public void doResponseProcess(OutputStream os, StatusLine sl) {
+        ResponseMessage rm = new ResponseMessage();
+        String path = Handler.FILE_PATH + requestMessage.getUri();
+
+        if (sl.equals(StatusLine.OK)) {
+            ContentType ct = new ContentType(path);
+            rm.addHeader("Content-Type", ct.getContentType());
+            rm.addHeader("Content-Length", String.valueOf(new File(path).length()));
+        } else {
+            rm.addHeader("Content-Type", "text/html; charset=UTF-8");
+        }
+
+        rm.returnResponse(os, sl, path);
     }
 
     //テスト用

@@ -98,7 +98,7 @@ public class RequestMessageTest {
         }
     }
 
-    public static class readRequestLineAndHaderFieldメソッドのテスト {
+    public static class readRequestLineAndHeaderFieldメソッドのテスト {
 
         @Test(expected = NullPointerException.class)
         public void nullチェック() throws Exception {
@@ -131,6 +131,16 @@ public class RequestMessageTest {
         @Test(expected = NullPointerException.class)
         public void nullチェック() throws Exception {
             RequestMessage.readMessageBody(null, 0);
+        }
+
+        @Test
+        public void 正しく動作するか() throws Exception {
+            String path = "./src/test/resources/PostRequestMessage.txt";
+            try (FileInputStream fis = new FileInputStream(new File(path))) {
+                RequestMessage sut = new RequestMessage(fis);
+                RequestMessageBody rmb = sut.getMessageBody();
+                assertThat(new String(rmb.getMessageBody()), is("name%3dasada%26title%3dtest%26text%3d%e3%81%93%e3%82%93%e3%81%ab%e3%81%a1%e3%81%af%26password%3dtest%26param%3dcontribution"));
+            }
         }
     }
 
