@@ -1,9 +1,12 @@
-package jp.co.topgate.asada.web.app;
+package jp.co.topgate.asada.web.program.board;
 
 import jp.co.topgate.asada.web.RequestMessage;
+import jp.co.topgate.asada.web.RequestMessageParser;
 import jp.co.topgate.asada.web.StaticHandler;
+import jp.co.topgate.asada.web.StatusLine;
 import jp.co.topgate.asada.web.model.Message;
 import jp.co.topgate.asada.web.model.ModelController;
+import org.hamcrest.Matchers;
 import org.junit.*;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -30,15 +33,15 @@ public class ProgramBoardHandlerTest {
     public static class コンストラクタのテスト {
         @Test
         public void コンストラクタ() throws Exception {
-            RequestMessage rm;
+            RequestMessage requestMessage;
 
             String path = "./src/test/resources/GetRequestMessage.txt";
             try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(path)))) {
-                rm = new RequestMessage(bis);
+                requestMessage = RequestMessageParser.parse(bis);
             }
-            ProgramBoardHandler sut = new ProgramBoardHandler(rm);
+            ProgramBoardHandler sut = new ProgramBoardHandler(requestMessage);
 
-            assertThat(sut.getRequestMessage(), is(rm));
+            assertThat(sut.getRequestMessage(), is(requestMessage));
             assertThat(sut.getHtmlEditor(), is(instanceOf(HtmlEditor.class)));
         }
     }
@@ -46,6 +49,7 @@ public class ProgramBoardHandlerTest {
     public static class doRequestProcessメソッドのテスト {
         static HtmlEditor he = new HtmlEditor();
         static List<Message> testList = new ArrayList<>();
+
         static {
             Message m = new Message();
             m.setMessageID(1);
@@ -76,11 +80,11 @@ public class ProgramBoardHandlerTest {
             String path = "./src/test/resources/getProgramBoard.txt";
             ProgramBoardHandler handler;
             try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(path)))) {
-                handler = new ProgramBoardHandler(new RequestMessage(bis));
+                RequestMessage requestMessage = RequestMessageParser.parse(bis);
+                handler = new ProgramBoardHandler(requestMessage);
             }
-            StatusLine sut = handler.doRequestProcess();
-
-            assertThat(sut.getStatusCode(), is(200));
+            handler.doRequestProcess();
+            assertThat(handler.getStatusLine(), is(StatusLine.OK));
 
             path = "./src/main/resources/2/index.html";
             try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(path))))) {
@@ -178,7 +182,7 @@ public class ProgramBoardHandlerTest {
                 assertThat(br.readLine(), is("</html>"));
             }
 
-            he.allInitialization();
+            he.resetAllFiles();
         }
 
         @Test
@@ -186,13 +190,14 @@ public class ProgramBoardHandlerTest {
             String path = "./src/test/resources/NotContainsUrlPatternTest.txt";
             ProgramBoardHandler handler;
             try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(path)))) {
-                handler = new ProgramBoardHandler(new RequestMessage(bis));
+                RequestMessage requestMessage = RequestMessageParser.parse(bis);
+                handler = new ProgramBoardHandler(requestMessage);
             }
-            StatusLine sut = handler.doRequestProcess();
+            handler.doRequestProcess();
 
-            assertThat(sut.getStatusCode(), is(400));
+            assertThat(handler.getStatusLine(), is(StatusLine.BAD_REQUEST));
 
-            he.allInitialization();
+            he.resetAllFiles();
         }
 
         @Test
@@ -200,10 +205,11 @@ public class ProgramBoardHandlerTest {
             String path = "./src/test/resources/PostSearchTest.txt";
             ProgramBoardHandler handler;
             try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(path)))) {
-                handler = new ProgramBoardHandler(new RequestMessage(bis));
+                RequestMessage requestMessage = RequestMessageParser.parse(bis);
+                handler = new ProgramBoardHandler(requestMessage);
             }
-            StatusLine sut = handler.doRequestProcess();
-            assertThat(sut.getStatusCode(), is(200));
+            handler.doRequestProcess();
+            assertThat(handler.getStatusLine(), is(StatusLine.OK));
 
             path = "./src/main/resources/2/search.html";
             try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(path))))) {
@@ -278,12 +284,12 @@ public class ProgramBoardHandlerTest {
                 assertThat(br.readLine(), is("</html>"));
             }
 
-            he.allInitialization();
+            he.resetAllFiles();
         }
 
         @After
         public void tearDown() throws Exception {
-            he.allInitialization();
+            he.resetAllFiles();
         }
     }
 
@@ -388,9 +394,9 @@ public class ProgramBoardHandlerTest {
             map.put("number", "2");
 
             String sut = ProgramBoardHandler.doPost(he, Param.SEARCH, map);
-            assertThat(sut, is(EditHtmlList.SEARCH_HTML.getUri()));
+            assertThat(sut, Matchers.is(EditHtmlList.SEARCH_HTML.getUri()));
 
-            he.allInitialization();
+            he.resetAllFiles();
         }
 
         @Test
@@ -398,10 +404,10 @@ public class ProgramBoardHandlerTest {
             Map<String, String> map = new HashMap<>();
             map.put("number", "2");
 
-            String sut = ProgramBoardHandler.doPost(he, Param.DELETE1, map);
+            String sut = ProgramBoardHandler.doPost(he, Param.DELETE_STEP_1, map);
             assertThat(sut, is(EditHtmlList.DELETE_HTML.getUri()));
 
-            he.allInitialization();
+            he.resetAllFiles();
         }
 
         @Test
@@ -410,10 +416,10 @@ public class ProgramBoardHandlerTest {
             map.put("number", "2");
             map.put("password", "t");
 
-            String sut = ProgramBoardHandler.doPost(he, Param.DELETE2, map);
+            String sut = ProgramBoardHandler.doPost(he, Param.DELETE_STEP_2, map);
             assertThat(sut, is("/program/board/result.html"));
 
-            he.allInitialization();
+            he.resetAllFiles();
         }
 
         @Test
@@ -424,10 +430,10 @@ public class ProgramBoardHandlerTest {
             map.put("text", "メッセージ");
             map.put("password", "test");
 
-            String sut = ProgramBoardHandler.doPost(he, Param.CONTRIBUTION, map);
+            String sut = ProgramBoardHandler.doPost(he, Param.WRITE, map);
             assertThat(sut, is(EditHtmlList.INDEX_HTML.getUri()));
 
-            he.allInitialization();
+            he.resetAllFiles();
         }
 
         @Test
@@ -435,12 +441,12 @@ public class ProgramBoardHandlerTest {
             String sut = ProgramBoardHandler.doPost(he, Param.BACK, null);
             assertThat(sut, is(EditHtmlList.INDEX_HTML.getUri()));
 
-            he.allInitialization();
+            he.resetAllFiles();
         }
 
         @After
         public void tearDown() {
-            he.allInitialization();
+            he.resetAllFiles();
         }
     }
 
@@ -567,7 +573,7 @@ public class ProgramBoardHandlerTest {
                 assertThat(br.readLine(), is("</html>"));
             }
 
-            he.allInitialization();
+            he.resetAllFiles();
         }
     }
 
@@ -578,11 +584,13 @@ public class ProgramBoardHandlerTest {
             try (FileOutputStream fos = new FileOutputStream(path);
                  FileInputStream is = new FileInputStream(new File("./src/test/resources/GetRequestMessage.txt"))) {
 
-                RequestMessage rm = new RequestMessage(is);
+                RequestMessage rm = RequestMessageParser.parse(is);
                 StaticHandler sut = new StaticHandler(rm);
-                StatusLine sl = sut.doRequestProcess();
+                sut.doRequestProcess();
 
-                sut.doResponseProcess(fos, sl);
+                assertThat(sut.getStatusLine(), is(StatusLine.OK));
+
+                sut.doResponseProcess(fos);
             }
             try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(path))))) {
 
@@ -628,11 +636,13 @@ public class ProgramBoardHandlerTest {
             try (FileOutputStream fos = new FileOutputStream(path);
                  FileInputStream is = new FileInputStream(new File("./src/test/resources/NotFound.txt"))) {
 
-                RequestMessage rm = new RequestMessage(is);
+                RequestMessage rm = RequestMessageParser.parse(is);
                 StaticHandler sut = new StaticHandler(rm);
-                StatusLine sl = sut.doRequestProcess();
+                sut.doRequestProcess();
 
-                sut.doResponseProcess(fos, sl);
+                assertThat(sut.getStatusLine(), is(StatusLine.NOT_FOUND));
+
+                sut.doResponseProcess(fos);
             }
             try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(path))))) {
                 assertThat(br.readLine(), is("HTTP/1.1 404 Not Found"));

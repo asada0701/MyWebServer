@@ -1,4 +1,4 @@
-package jp.co.topgate.asada.web.app;
+package jp.co.topgate.asada.web.util;
 
 import com.google.common.base.Strings;
 import jp.co.topgate.asada.web.exception.CsvRuntimeException;
@@ -18,7 +18,7 @@ public class CsvHelper {
     /**
      * CSVのファイルパス
      */
-    private static final String csvPath = "./src/main/resources/data/message.csv";
+    private static final String CSV_FILE_PATH = "./src/main/resources/data/message.csv";
 
     /**
      * CSVファイルの項目を分割する
@@ -37,12 +37,12 @@ public class CsvHelper {
      * @throws CsvRuntimeException CSVファイルの中身が規定の形になっていないもしくはファイル読み込みに失敗した
      */
     public static List<Message> readMessage() throws CsvRuntimeException {
-        List<Message> list = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(new File(csvPath)))) {
-            String str;
-            while (!Strings.isNullOrEmpty(str = br.readLine())) {
+        List<Message> messageList = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(new File(CSV_FILE_PATH)))) {
+            String line;
+            while (!Strings.isNullOrEmpty(line = br.readLine())) {
 
-                String[] s = str.split(CSV_SEPARATOR);
+                String[] s = line.split(CSV_SEPARATOR);
                 if (s.length == MESSAGE_NUM_ITEMS) {
                     Message m = new Message();
                     int i = 0;
@@ -53,7 +53,7 @@ public class CsvHelper {
                     m.setText(s[i++]);
                     m.setDate(s[i]);
 
-                    list.add(m);
+                    messageList.add(m);
                 } else {
                     throw new CsvRuntimeException("指定されたCSVが規定の形にそっていないため読み込めません。");
                 }
@@ -61,18 +61,18 @@ public class CsvHelper {
         } catch (IOException e) {
             throw new CsvRuntimeException(e.getMessage());
         }
-        return list;
+        return messageList;
     }
 
     /**
      * MessageListを、CSVファイルに書き出すメソッド
      *
-     * @param list CSVに書き込みたいListを渡す
+     * @param messageList CSVに書き込みたいListを渡す
      * @throws CsvRuntimeException CSVファイルの書き込み中に失敗したもしくは書き込みに失敗した
      */
-    public static void writeMessage(List<Message> list) throws CsvRuntimeException {
-        try (OutputStream os = new FileOutputStream(new File(csvPath))) {
-            for (Message m : list) {
+    public static void writeMessage(List<Message> messageList) throws CsvRuntimeException {
+        try (OutputStream os = new FileOutputStream(new File(CSV_FILE_PATH))) {
+            for (Message m : messageList) {
                 String messageID = String.valueOf(m.getMessageID());
                 String password = m.getPassword();
                 String name = m.getName();

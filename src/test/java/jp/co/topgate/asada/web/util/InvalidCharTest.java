@@ -1,4 +1,4 @@
-package jp.co.topgate.asada.web.app;
+package jp.co.topgate.asada.web.util;
 
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;

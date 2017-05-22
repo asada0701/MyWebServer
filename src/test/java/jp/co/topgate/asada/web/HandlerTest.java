@@ -1,12 +1,10 @@
-package jp.co.topgate.asada.web.app;
+package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.StaticHandler;
-import jp.co.topgate.asada.web.exception.RequestParseException;
+import jp.co.topgate.asada.web.program.board.ProgramBoardHandler;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -25,10 +23,11 @@ public class HandlerTest {
     public static class getHandlerメソッドのテスト {
         @Test
         public void 正しいリクエストメッセージを送る() throws Exception {
-            try (InputStream is = new FileInputStream(new File("./src/test/resources/GetRequestMessage.txt"));
-                 BufferedInputStream bis = new BufferedInputStream(is)) {
+            try (InputStream is = new FileInputStream(new File("./src/test/resources/GetRequestMessage.txt"))) {
 
-                Handler sut = Handler.getHandler(bis);
+                RequestMessage requestMessage = RequestMessageParser.parse(is);
+
+                Handler sut = Handler.getHandler(requestMessage);
 
                 assertThat(sut, is(instanceOf(StaticHandler.class)));
             }
@@ -36,10 +35,11 @@ public class HandlerTest {
 
         @Test
         public void urlPattern以外のPOSTのテスト() throws Exception {
-            try (InputStream is = new FileInputStream(new File("./src/test/resources/NotContainsUrlPatternTest.txt"));
-                 BufferedInputStream bis = new BufferedInputStream(is)) {
+            try (InputStream is = new FileInputStream(new File("./src/test/resources/NotContainsUrlPatternTest.txt"))) {
 
-                Handler sut = Handler.getHandler(bis);
+                RequestMessage requestMessage = RequestMessageParser.parse(is);
+
+                Handler sut = Handler.getHandler(requestMessage);
 
                 assertThat(sut, is(instanceOf(StaticHandler.class)));
             }
@@ -47,21 +47,13 @@ public class HandlerTest {
 
         @Test
         public void WebAppHandlerが返されるテスト() throws Exception {
-            try (InputStream is = new FileInputStream(new File("./src/test/resources/PostRequestMessage.txt"));
-                 BufferedInputStream bis = new BufferedInputStream(is)) {
+            try (InputStream is = new FileInputStream(new File("./src/test/resources/PostRequestMessage.txt"))) {
 
-                Handler sut = Handler.getHandler(bis);
+                RequestMessage requestMessage = RequestMessageParser.parse(is);
+
+                Handler sut = Handler.getHandler(requestMessage);
 
                 assertThat(sut, is(instanceOf(ProgramBoardHandler.class)));
-            }
-        }
-
-        @Test(expected = RequestParseException.class)
-        public void 誤ったリクエストメッセージを送ると例外が発生する() throws Exception {
-            try (InputStream is = new FileInputStream(new File("./src/test/resources/emptyRequestMessage.txt"));
-                 BufferedInputStream bis = new BufferedInputStream(is)) {
-
-                Handler.getHandler(bis);
             }
         }
     }

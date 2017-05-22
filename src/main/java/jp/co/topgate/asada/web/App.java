@@ -1,12 +1,13 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.app.CsvHelper;
-import jp.co.topgate.asada.web.app.HtmlEditor;
+import jp.co.topgate.asada.web.util.CsvHelper;
+import jp.co.topgate.asada.web.program.board.HtmlEditor;
 import jp.co.topgate.asada.web.exception.CsvRuntimeException;
 import jp.co.topgate.asada.web.exception.HtmlInitializeException;
 import jp.co.topgate.asada.web.exception.ServerStateException;
 import jp.co.topgate.asada.web.exception.SocketRuntimeException;
 import jp.co.topgate.asada.web.model.ModelController;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -19,37 +20,40 @@ import java.util.Scanner;
  * @author asada
  */
 public class App {
+
+    private static int portNumber;
+
     /**
      * メインメソッド
      */
     public static void main(String[] args) {
-        System.out.println("this server's port number is 8080..");
+        Server server = setPortNumber();
+
         try {
-            Server server = new Server();
-            String choices;
-            Scanner scan = new Scanner(System.in);
+            String choice;
+            Scanner scanner = new Scanner(System.in);
 
             ModelController.setMessageList(CsvHelper.readMessage());                            //CSVファイル読み込み
-            HtmlEditor he = new HtmlEditor();                                                   //HTMLファイル読み込み
+            HtmlEditor htmlEditor = new HtmlEditor();                                                   //HTMLファイル読み込み
 
             do {
                 System.out.println("--------------------");
-                System.out.println(Choices.START.getId() + ": START");
-                System.out.println(Choices.STOP.getId() + ": STOP");
-                System.out.println(Choices.END + ": END");
+                System.out.println(ServerCommand.START.getId() + ": START");
+                System.out.println(ServerCommand.STOP.getId() + ": STOP");
+                System.out.println(ServerCommand.END + ": END");
 
                 do {
                     System.out.print("please select :");
-                    choices = scan.next();
-                } while (!isSelect(choices));
+                    choice = scanner.next();
+                } while (!ServerCommand.contains(choice));
 
-                String msg = controlServer(server, Choices.getEnum(choices));
-                System.out.println(msg);
+                String message = controlServer(server, ServerCommand.getServerCommand(choice));
+                System.out.println(message);
 
-            } while (!choices.equals(Choices.END.getId()));
+            } while (!choice.equals(ServerCommand.END.getId()));
 
             CsvHelper.writeMessage(ModelController.getAllMessage());                                //CSVファイルに書き込み
-            he.allInitialization();                                                                 //HTMLファイルの初期化
+            htmlEditor.resetAllFiles();                                                                 //HTMLファイルの初期化
 
         } catch (ServerStateException | CsvRuntimeException | SocketRuntimeException | HtmlInitializeException | IOException e) {
             System.out.println(e.getMessage());
@@ -57,37 +61,44 @@ public class App {
         }
     }
 
-    /**
-     * 文字列を渡すとChoicesの列挙型を返してくれる
-     *
-     * @param choices 渡す文字列
-     * @return 列挙型のChoices
-     */
-    static boolean isSelect(String choices) {
-        return choices.equals(Choices.START.getId()) ||
-                choices.equals(Choices.STOP.getId()) ||
-                choices.equals(Choices.END.getId());
+    static Server setPortNumber() {
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            System.out.print("What port number is this server? : ");
+            String userInput = scanner.next();
+            try {
+                if (NumberUtils.isNumber(userInput)) {
+                    Server server = new Server(Integer.parseInt(userInput));
+                    portNumber = Integer.parseInt(userInput);
+                    return server;
+                }
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
+            }
+        }
     }
 
     /**
      * サーバーを操作するメソッド
      *
-     * @param choices 選択した文字
+     * @param serverCommand ユーザーが選択したサーバーの操作
      * @return サーバーの状態を文字列で返す
      * @throws IOException            {@link Server}を参照
      * @throws SocketRuntimeException {@link Server#run()}を参照
      * @throws ServerStateException   サーバークラスの状態が予期しないものになった場合に発生する
      */
     @NotNull
-    static String controlServer(Server server, Choices choices) throws IOException, SocketRuntimeException, ServerStateException {
+    static String controlServer(Server server, ServerCommand serverCommand) throws IOException, SocketRuntimeException, ServerStateException {
 
-        switch (choices) {
+        switch (serverCommand) {
             case START:
                 switch (server.getState()) {
-                    case TERMINATED:
-                        server = new Server();
-
                     case NEW:
+                        server.startServer();
+                        return "start up http server..";
+
+                    case TERMINATED:
+                        server = new Server(portNumber);
                         server.startServer();
                         return "start up http server..";
 
@@ -102,6 +113,7 @@ public class App {
             case STOP:
                 switch (server.getState()) {
                     case NEW:
+                        return "http server is not running..";
 
                     case TERMINATED:
                         return "http server is not running..";
@@ -133,7 +145,7 @@ public class App {
  *
  * @author asada
  */
-enum Choices {
+enum ServerCommand {
     /**
      * Serverを立ち上げる
      */
@@ -151,7 +163,7 @@ enum Choices {
 
     private final String id;
 
-    Choices(String id) {
+    ServerCommand(String id) {
         this.id = id;
     }
 
@@ -166,14 +178,26 @@ enum Choices {
      * @param str 文字列（例）1
      * @return Enum（例）Param.START
      */
-    public static Choices getEnum(String str) {
-        Choices[] enumArray = Choices.values();
+    public static ServerCommand getServerCommand(String str) {
+        ServerCommand[] enumArray = ServerCommand.values();
 
-        for (Choices enumStr : enumArray) {
+        for (ServerCommand enumStr : enumArray) {
             if (str.equals(enumStr.id)) {
                 return enumStr;
             }
         }
-        return Choices.END;
+        return ServerCommand.END;
+    }
+
+    /**
+     * ユーザーが入力した文字がServerCommandに登録されているか判定するメソッド
+     *
+     * @param str ユーザーが入力した文字
+     * @return trueの場合はServerCommandに登録されている。falseの場合は登録されていない。
+     */
+    static boolean contains(String str) {
+        return str.equals(START.getId()) ||
+                str.equals(STOP.getId()) ||
+                str.equals(END.getId());
     }
 }

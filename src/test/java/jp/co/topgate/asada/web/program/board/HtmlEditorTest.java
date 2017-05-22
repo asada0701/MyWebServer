@@ -1,4 +1,4 @@
-package jp.co.topgate.asada.web.app;
+package jp.co.topgate.asada.web.program.board;
 
 import jp.co.topgate.asada.web.model.Message;
 import org.junit.*;
@@ -490,11 +490,11 @@ public class HtmlEditorTest {
             assertThat(br.readLine(), is("test"));
         }
 
-        he.allInitialization();
+        he.resetAllFiles();
     }
 
     @After
     public void tearDown() {
-        htmlEditor.allInitialization();
+        htmlEditor.resetAllFiles();
     }
 }

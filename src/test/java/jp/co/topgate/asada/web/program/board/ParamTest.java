@@ -1,4 +1,4 @@
-package jp.co.topgate.asada.web.app;
+package jp.co.topgate.asada.web.program.board;
 
 import org.junit.Test;
 
@@ -14,8 +14,8 @@ import static org.junit.Assert.assertThat;
 public class ParamTest {
     @Test
     public void contributionのテスト() {
-        Param sut = Param.getEnum("contribution");
-        assertThat(sut, is(Param.CONTRIBUTION));
+        Param sut = Param.getEnum("write");
+        assertThat(sut, is(Param.WRITE));
     }
 
     @Test
@@ -26,14 +26,14 @@ public class ParamTest {
 
     @Test
     public void delete1のテスト() {
-        Param sut = Param.getEnum("delete1");
-        assertThat(sut, is(Param.DELETE1));
+        Param sut = Param.getEnum("delete_step_1");
+        assertThat(sut, is(Param.DELETE_STEP_1));
     }
 
     @Test
     public void delete2のテスト() {
-        Param sut = Param.getEnum("delete2");
-        assertThat(sut, is(Param.DELETE2));
+        Param sut = Param.getEnum("delete_step_2");
+        assertThat(sut, is(Param.DELETE_STEP_2));
     }
 
     @Test

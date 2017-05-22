@@ -49,12 +49,12 @@ public class ModelControllerTest {
         assertThat(list.get(1).getDate(), is(now));
 
         //findMessageメソッドのテスト
-        m = ModelController.findMessage(2);
+        m = ModelController.findMessagebyID(2);
 
         assertThat(m.getDate(), is(now));
 
         //findSameNameMessageメソッドのテスト
-        list = ModelController.findSameNameMessage("name2");
+        list = ModelController.findMessageByName("name2");
 
         assertThat(list.size(), is(2));
 

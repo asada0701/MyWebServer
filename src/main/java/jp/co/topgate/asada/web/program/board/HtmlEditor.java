@@ -1,4 +1,4 @@
-package jp.co.topgate.asada.web.app;
+package jp.co.topgate.asada.web.program.board;
 
 import jp.co.topgate.asada.web.exception.HtmlInitializeException;
 import jp.co.topgate.asada.web.model.Message;
@@ -27,7 +27,7 @@ public class HtmlEditor {
     private static final String EDIT_START_POINT = "</tr>";
 
     /**
-     * 編集するHTMLの初期状態を保存するリスト
+     * 編集するHTMLの初期状態を保存するマップ
      */
     private static Map<EditHtmlList, String> htmlContent = new HashMap<>();
 
@@ -38,14 +38,14 @@ public class HtmlEditor {
      * @throws HtmlInitializeException HTMLファイルの読み込み中にエラー発生
      */
     public HtmlEditor() throws HtmlInitializeException {
-        for (EditHtmlList eh : EditHtmlList.values()) {
-            try (BufferedReader br = new BufferedReader(new FileReader(new File(eh.getPath())))) {
-                String str;
+        for (EditHtmlList editHtmlList : EditHtmlList.values()) {
+            try (BufferedReader br = new BufferedReader(new FileReader(new File(editHtmlList.getPath())))) {
+                String line;
                 StringBuilder builder = new StringBuilder();
-                while ((str = br.readLine()) != null) {
-                    builder.append(str).append("\n");
+                while ((line = br.readLine()) != null) {
+                    builder.append(line).append("\n");
                 }
-                htmlContent.put(eh, builder.toString());
+                htmlContent.put(editHtmlList, builder.toString());
 
             } catch (IOException e) {
                 throw new HtmlInitializeException(e.getMessage());
@@ -58,11 +58,11 @@ public class HtmlEditor {
      *
      * @throws HtmlInitializeException HTMLファイルに書き込み中にエラー発生
      */
-    public void allInitialization() throws HtmlInitializeException {
-        for (EditHtmlList eh : EditHtmlList.values()) {
-            try (OutputStream os = new FileOutputStream(new File(eh.getPath()))) {
-                os.write(htmlContent.get(eh).getBytes());
-                os.flush();
+    public void resetAllFiles() throws HtmlInitializeException {
+        for (EditHtmlList editHtmlList : EditHtmlList.values()) {
+            try (OutputStream outputStream = new FileOutputStream(new File(editHtmlList.getPath()))) {
+                outputStream.write(htmlContent.get(editHtmlList).getBytes());
+                outputStream.flush();
             } catch (IOException e) {
                 throw new HtmlInitializeException(e.getMessage());
             }
@@ -72,12 +72,12 @@ public class HtmlEditor {
     /**
      * indexまたはsearchのHTML文章を編集する
      *
-     * @param ehl  編集したいHTMLのEnum
-     * @param list HTML文章に書き込みたいMessageのリスト
+     * @param editHtmlList 編集したいHTMLのEnum
+     * @param messageList  HTML文章に書き込みたいMessageのリスト
      * @return 編集後のHTML文章
      */
-    String editIndexOrSearchHtml(EditHtmlList ehl, List<Message> list) {
-        String[] lineArray = htmlContent.get(ehl).split("\n");     //改行で分割
+    String editIndexOrSearchHtml(EditHtmlList editHtmlList, List<Message> messageList) {
+        String[] lineArray = htmlContent.get(editHtmlList).split("\n");     //改行で分割
         StringBuilder builder = new StringBuilder();
 
         for (int i = 0; i < lineArray.length; i++) {
@@ -89,8 +89,8 @@ public class HtmlEditor {
                 }
                 builder.append(lineArray[i]).append("\n");  //</tr>をappend
 
-                for (int k = list.size() - 1; k > -1; k--) {                //ここからが掲示板のメッセージの部分
-                    builder.append(messageChangeToHtml(ehl, list.get(k)));
+                for (int k = messageList.size() - 1; k > -1; k--) {                //ここからが掲示板のメッセージの部分
+                    builder.append(messageChangeToHtml(editHtmlList, messageList.get(k)));
                     builder.append(line).append("\n");
                 }
                 line = lineArray[++i];
@@ -138,43 +138,63 @@ public class HtmlEditor {
     /**
      * messageをHTML文章にする
      *
-     * @param ehl     編集したいHTMLのEnum
-     * @param message 書き込みたいMessageのオブジェクト
+     * @param editHtmlList 編集したいHTMLのEnum
+     * @param message      書き込みたいMessageのオブジェクト
      * @return HTML文章
      */
-    static String messageChangeToHtml(EditHtmlList ehl, Message message) {
-        String result = "            <tr id=\"No." + message.getMessageID() + "\">" + "\n" +
-                "                <td>No." + message.getMessageID() + "</td>" + "\n" +
-                "                <td>" + message.getTitle() + "</td>" + "\n" +
-                "                <td>" + message.getText() + "</td>" + "\n" +
-                "                <td>" + message.getName() + "</td>" + "\n" +
-                "                <td>" + message.getDate() + "</td>" + "\n";
-        switch (ehl) {
+    static String messageChangeToHtml(EditHtmlList editHtmlList, Message message) {
+        switch (editHtmlList) {
             case INDEX_HTML:
-                result = result +
+                return "            <tr id=\"No." + message.getMessageID() + "\">" + "\n" +
+                        "                <td>No." + message.getMessageID() + "</td>" + "\n" +
+                        "                <td>" + message.getTitle() + "</td>" + "\n" +
+                        "                <td>" + message.getText() + "</td>" + "\n" +
+                        "                <td>" + message.getName() + "</td>" + "\n" +
+                        "                <td>" + message.getDate() + "</td>" + "\n" +
                         "                <td>\n" +
                         "                    <form action=\"/program/board/\" method=\"post\">\n" +
                         "                        <input type=\"hidden\" name=\"param\" value=\"search\">\n" +
                         "                        <input type=\"hidden\" name=\"number\" value=\"" + message.getMessageID() + "\">\n" +
                         "                        <input type=\"submit\" value=\"このコメントを投稿した人の他のコメントを見てみる\">\n" +
                         "                    </form>\n" +
-                        "                </td>\n";
+                        "                </td>\n" +
 
-            case SEARCH_HTML:
-                result = result +
                         "                <td>" + "\n" +
                         "                    <form action=\"/program/board/\" method=\"post\">" + "\n" +
-                        "                        <input type=\"hidden\" name=\"param\" value=\"delete1\">" + "\n" +
+                        "                        <input type=\"hidden\" name=\"param\" value=\"delete_step_1\">" + "\n" +
+                        "                        <input type=\"hidden\" name=\"number\" value=\"" + message.getMessageID() + "\">" + "\n" +
+                        "                        <input type=\"submit\" value=\"このコメントを削除する\">" + "\n" +
+                        "                    </form>" + "\n" +
+                        "                </td>" + "\n";
+
+            case SEARCH_HTML:
+                return "            <tr id=\"No." + message.getMessageID() + "\">" + "\n" +
+                        "                <td>No." + message.getMessageID() + "</td>" + "\n" +
+                        "                <td>" + message.getTitle() + "</td>" + "\n" +
+                        "                <td>" + message.getText() + "</td>" + "\n" +
+                        "                <td>" + message.getName() + "</td>" + "\n" +
+                        "                <td>" + message.getDate() + "</td>" + "\n" +
+                        "                <td>" + "\n" +
+                        "                    <form action=\"/program/board/\" method=\"post\">" + "\n" +
+                        "                        <input type=\"hidden\" name=\"param\" value=\"delete_step_1\">" + "\n" +
                         "                        <input type=\"hidden\" name=\"number\" value=\"" + message.getMessageID() + "\">" + "\n" +
                         "                        <input type=\"submit\" value=\"このコメントを削除する\">" + "\n" +
                         "                    </form>" + "\n" +
                         "                </td>" + "\n";
 
             case DELETE_HTML:
+                return "            <tr id=\"No." + message.getMessageID() + "\">" + "\n" +
+                        "                <td>No." + message.getMessageID() + "</td>" + "\n" +
+                        "                <td>" + message.getTitle() + "</td>" + "\n" +
+                        "                <td>" + message.getText() + "</td>" + "\n" +
+                        "                <td>" + message.getName() + "</td>" + "\n" +
+                        "                <td>" + message.getDate() + "</td>" + "\n";
+
             default:
+                return null;
         }
-        return result;
     }
+
 
     /**
      * 改行コードをHTMLのbrタグに変更するメソッド
@@ -196,14 +216,14 @@ public class HtmlEditor {
     /**
      * HTMLファイルに文章を書き込むメソッド
      *
-     * @param ehl  書き込みたいHTMLのEnum
-     * @param html 書き込みたい文字列
+     * @param editHtmlList 書き込みたいHTMLのEnum
+     * @param html         書き込みたい文字列
      * @throws IOException 書き込み中の例外
      */
-    void writeHtml(EditHtmlList ehl, String html) throws IOException {
-        try (OutputStream os = new FileOutputStream(new File(ehl.getPath()))) {
-            os.write(html.getBytes());
-            os.flush();
+    void writeHtml(EditHtmlList editHtmlList, String html) throws IOException {
+        try (OutputStream outputStream = new FileOutputStream(new File(editHtmlList.getPath()))) {
+            outputStream.write(html.getBytes());
+            outputStream.flush();
         }
     }
 }

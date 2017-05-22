@@ -1,6 +1,5 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.app.StatusLine;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;

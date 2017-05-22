@@ -1,5 +1,6 @@
-package jp.co.topgate.asada.web.app;
+package jp.co.topgate.asada.web.program.board;
 
+import jp.co.topgate.asada.web.program.board.EditHtmlList;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.is;

@@ -1,4 +1,4 @@
-package jp.co.topgate.asada.web.app;
+package jp.co.topgate.asada.web.util;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,7 +8,7 @@ import java.util.Map;
  *
  * @author asada
  */
-class InvalidChar {
+public class InvalidChar {
 
     private static Map<String, String> invalidChar = new HashMap<>();
 
@@ -25,7 +25,7 @@ class InvalidChar {
      * @param rawStr 生の文字列
      * @return 置き換えた文字列
      */
-    static String replace(String rawStr) {
+    public static String replace(String rawStr) {
         rawStr = rawStr.replaceAll("&", "&amp;");
         for (String key : invalidChar.keySet()) {
             rawStr = rawStr.replaceAll(key, invalidChar.get(key));
