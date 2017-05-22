@@ -6,37 +6,21 @@ import jp.co.topgate.asada.web.ResponseMessage;
 import jp.co.topgate.asada.web.exception.HtmlInitializeException;
 import jp.co.topgate.asada.web.model.Message;
 import jp.co.topgate.asada.web.model.ModelController;
+import org.apache.commons.lang3.math.NumberUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 /**
- * WebAppの処理を行うハンドラークラス
+ * ProgramBoardの配信を行うハンドラークラス
  *
  * @author asada
  */
 public class ProgramBoardHandler extends Handler {
 
-    /**
-     * 不正な入力値を置き換える
-     */
-    private static Map<String, String> invalidChar = new HashMap<>();
-
-    static {
-        invalidChar.put("<", "&lt;");
-        invalidChar.put(">", "&gt;");
-        invalidChar.put("&", "&amp;");
-        invalidChar.put("\"", "&quot;");
-        invalidChar.put("\'", "&#39;");
-    }
-
-    /**
-     * リクエストメッセージ
-     */
     private RequestMessage requestMessage;
 
     private HtmlEditor he;
@@ -53,22 +37,33 @@ public class ProgramBoardHandler extends Handler {
     }
 
     /**
-     * 抽象メソッド、リクエストの処理を行うメソッド
-     * TemplateMethodパターン
+     * リクエストの処理を行うメソッド
+     *
+     * @return レスポンスメッセージの状態行(StatusLine)を返す
      */
     @Override
-    public StatusLine requestComes() {
+    public StatusLine doRequestProcess() {
         String method = requestMessage.getMethod();
         String uri = requestMessage.getUri();
         String protocolVersion = requestMessage.getProtocolVersion();
+
         StatusLine sl = ProgramBoardHandler.getStatusLine(method, uri, protocolVersion);
 
+        if (!StatusLine.OK.equals(sl)) {
+            return sl;
+        }
         try {
-            if ("POST".equals(requestMessage.getMethod())) {
-                doPost(requestMessage);
+            if ("GET".equals(requestMessage.getMethod()) && uri.endsWith("/index.html")) {
+                writeIndex(he);
 
-            } else if ("GET".equals(requestMessage.getMethod())) {
-                HtmlEditor.writeIndexHtml();
+            } else if ("POST".equals(requestMessage.getMethod())) {
+                Map<String, String> messageBody = requestMessage.getMessageBody().parseToStringMap();
+                String param = messageBody.get("param");
+                if (param != null) {
+                    requestMessage.setUri(doPost(he, Param.getEnum(param), messageBody));
+                } else {
+                    return StatusLine.BAD_REQUEST;
+                }
             }
         } catch (IOException e) {
             return StatusLine.INTERNAL_SERVER_ERROR;
@@ -78,11 +73,15 @@ public class ProgramBoardHandler extends Handler {
 
     /**
      * リクエストメッセージのmethod,uri,protocolVersionから、レスポンスのステータスコードを決定するメソッド
+     * 1.プロトコルバージョンがHTTP/1.1以外の場合は500:HTTP Version Not Supported
+     * 2.GET,POST以外のメソッドの場合は501:Not Implemented
+     * 3.URIで指定されたファイルがリソースフォルダにない、もしくはディレクトリの場合は404:Not Found
+     * 4.1,2,3でチェックして問題がなければ200:OK
      *
      * @param method          リクエストメッセージのメソッドを渡す
      * @param uri             URIを渡す
      * @param protocolVersion プロトコルバージョンを渡す
-     * @return StatusLineを返す
+     * @return レスポンスラインの状態行(StatusLine)を返す
      */
     static StatusLine getStatusLine(String method, String uri, String protocolVersion) {
         if (!"HTTP/1.1".equals(protocolVersion)) {
@@ -92,127 +91,222 @@ public class ProgramBoardHandler extends Handler {
             return StatusLine.NOT_IMPLEMENTED;
 
         } else {
-            File file = new File(Handler.getFilePath(uri));
-            if (!file.exists() || !file.isFile()) {
-                return StatusLine.NOT_FOUND;
-            } else {
-                return StatusLine.OK;
+            if ("GET".equals(method)) {
+                String path = Handler.getFilePath(UrlPattern.PROGRAM_BOARD, uri);
+                File file = new File(path);
+                if (!file.exists() || !file.isFile()) {
+                    return StatusLine.NOT_FOUND;
+                }
+
+            } else if ("POST".equals(method)) {
+                if (!EditHtmlList.INDEX_HTML.getUri().equals(uri)) {
+                    return StatusLine.BAD_REQUEST;
+                }
             }
         }
+        return StatusLine.OK;
     }
 
     /**
      * POSTの場合の処理
      *
-     * @param requestMessage リクエストメッセージクラスのオブジェクトを渡す
-     * @throws IOException
-     * @throws NullPointerException 引数がnull
+     * @param he          HtmlEditorのオブジェクトを渡す
+     * @param param       メッセージボディで送られてくるparamのEnum
+     * @param messageBody リクエストのメッセージボディを渡す
+     * @return レスポンスメッセージのボディの参照を変更
+     * @throws IOException HTMLファイルに書き込み中に例外発生
      */
-    void doPost(RequestMessage requestMessage) throws IOException, NullPointerException {
-        Objects.requireNonNull(requestMessage);
+    static String doPost(HtmlEditor he, Param param, Map<String, String> messageBody) throws IOException {
+        EditHtmlList ehl;
+        switch (param) {
+            case SEARCH: {
+                String number = messageBody.get("number");
+                if (number == null || !NumberUtils.isNumber(number)) {
+                    return writeIndex(he);
+                }
+                String name = ModelController.getName(Integer.parseInt(number));
+                List<Message> messageList = ModelController.findSameNameMessage(name);
 
-        String param = requestMessage.findMessageBody("param");
-        if (param != null && requestMessage.getUri().startsWith("/program/board/")) {
-            Message message;
+                if (messageList.size() > 0) {
+                    ehl = EditHtmlList.SEARCH_HTML;
+                    he.writeHtml(ehl, he.editIndexOrSearchHtml(ehl, messageList));
+                    return EditHtmlList.SEARCH_HTML.getUri();
 
-            switch (param) {
-                case "contribution":
-                    String name = requestMessage.findMessageBody("name");
-                    String title = requestMessage.findMessageBody("title");
-                    String text = requestMessage.findMessageBody("text");
-                    String password = requestMessage.findMessageBody("password");
+                } else {
+                    return writeIndex(he);
+                }
+            }
 
-                    name = replaceInputValue(name);
-                    title = replaceInputValue(title);
-                    text = replaceInputValue(text);
+            case DELETE1: {
+                String number = messageBody.get("number");
+                if (number == null || !NumberUtils.isNumber(number)) {
+                    return writeIndex(he);
+                }
 
-                    ModelController.addMessage(name, title, text, password);
-                    HtmlEditor.writeIndexHtml();
-                    break;
+                Message message = ModelController.findMessage(Integer.parseInt(number));
+                if (message != null) {
+                    ehl = EditHtmlList.DELETE_HTML;
+                    he.writeHtml(ehl, he.editDeleteHtml(message));
+                    return EditHtmlList.DELETE_HTML.getUri();
 
-                case "search":
-                    requestMessage.setUri("/program/board/search.html");
-                    int number = Integer.parseInt(requestMessage.findMessageBody("number"));
-                    String nameToFind = ModelController.getName(number);
-                    HtmlEditor.writeSearchHtml(nameToFind);
-                    break;
+                } else {
+                    return writeIndex(he);
+                }
+            }
 
-                case "delete1":
-                    requestMessage.setUri("/program/board/delete.html");
-                    message = ModelController.findMessage(Integer.parseInt(requestMessage.findMessageBody("number")));
-                    HtmlEditor.writeDeleteHtml(message);
-                    break;
+            case DELETE2: {
+                String number = messageBody.get("number");
+                String password = messageBody.get("password");
+                if (number == null || !NumberUtils.isNumber(number) || password == null) {
+                    return writeIndex(he);
+                }
 
-                case "delete2":
-                    int num = Integer.parseInt(requestMessage.findMessageBody("number"));
-                    password = requestMessage.findMessageBody("password");
+                if (ModelController.deleteMessage(Integer.parseInt(number), password)) {
+                    return "/program/board/result.html";
 
-                    if (ModelController.deleteMessage(num, password)) {
-                        requestMessage.setUri("/program/board/result.html");
+                } else {
+                    Message message = ModelController.findMessage(Integer.parseInt(messageBody.get("number")));
+
+                    if (message != null) {
+                        ehl = EditHtmlList.DELETE_HTML;
+                        he.writeHtml(ehl, he.editDeleteHtml(message));
+                        return EditHtmlList.DELETE_HTML.getUri();
 
                     } else {
-                        requestMessage.setUri("/program/board/result.html");
-                        message = ModelController.findMessage(Integer.parseInt(requestMessage.findMessageBody("number")));
-                        HtmlEditor.writeDeleteHtml(message);
+                        return writeIndex(he);
                     }
-                    break;
-
-                case "back":
-                    requestMessage.setUri("/program/board/index.html");
-                    HtmlEditor.writeIndexHtml();
-                    break;
-
-                default:
-                    requestMessage.setUri("/program/board/index.html");
-                    HtmlEditor.writeIndexHtml();
+                }
             }
+
+            case CONTRIBUTION: {
+                String name = messageBody.get("name");
+                String title = messageBody.get("title");
+                String text = messageBody.get("text");
+                String password = messageBody.get("password");
+
+                if (name == null || title == null || text == null || password == null) {
+                    return writeIndex(he);
+                }
+
+                name = InvalidChar.replace(name);
+                title = InvalidChar.replace(title);
+                text = InvalidChar.replace(text);
+                password = InvalidChar.replace(password);
+
+                text = HtmlEditor.changeLineFeedToBr(text);
+
+                ModelController.addMessage(name, title, text, password);
+            }
+            case BACK:
+            default:
+                return writeIndex(he);
         }
     }
 
     /**
-     * セキュリティに問題のある入力値(<script></script>など)をHTMLの特殊文字に置き換えるメソッド
+     * index.htmlファイルを編集する操作をまとめたメソッド
      *
-     * @param str 生の文字列
-     * @return 置き換えた文字列
-     * @throws NullPointerException 引数がnull
+     * @param he HtmlEditorのオブジェクト
+     * @return レスポンスメッセージのボディの参照を変更
+     * @throws IOException HTMLファイルに書き込み中に例外発生
      */
-    static String replaceInputValue(String str) throws NullPointerException {
-        Objects.requireNonNull(str);
-
-        for (String key : invalidChar.keySet()) {
-            str = str.replaceAll(key, invalidChar.get(key));
-        }
-        return str;
+    static String writeIndex(HtmlEditor he) throws IOException {
+        String html = he.editIndexOrSearchHtml(EditHtmlList.INDEX_HTML, ModelController.getAllMessage());
+        he.writeHtml(EditHtmlList.INDEX_HTML, html);
+        return EditHtmlList.INDEX_HTML.getUri();
     }
 
     /**
-     * レスポンスを返すときに呼び出すメソッド
+     * レスポンスの処理を行うメソッド
      *
-     * @param os SocketのOutputStream
-     * @throws NullPointerException    引数がnull
+     * @param os SocketのOutputStreamを渡す
+     * @param sl ステータスラインの列挙型を渡す
      * @throws HtmlInitializeException {@link HtmlEditor#allInitialization()}を参照
      */
     @Override
-    public void returnResponse(OutputStream os, StatusLine sl) throws HtmlInitializeException {
-        Objects.requireNonNull(os);
-        Objects.requireNonNull(sl);
-
-        ResponseMessage rm;
+    public void doResponseProcess(OutputStream os, StatusLine sl) throws HtmlInitializeException {
+        ResponseMessage rm = new ResponseMessage();
+        String path = Handler.getFilePath(UrlPattern.PROGRAM_BOARD, requestMessage.getUri());
 
         if (sl.equals(StatusLine.OK)) {
-            String path = Handler.getFilePath(requestMessage.getUri());
-            rm = new ResponseMessage(os, sl, path);
             ContentType ct = new ContentType(path);
             rm.addHeader("Content-Type", ct.getContentType());
+            rm.addHeader("Content-Length", String.valueOf(new File(path).length()));
 
         } else {
-            String path = "";
-            rm = new ResponseMessage(os, sl, path);
             rm.addHeader("Content-Type", "text/html; charset=UTF-8");
         }
 
-        rm.doResponse();
+        rm.returnResponse(os, sl, path);
 
         he.allInitialization();
+    }
+
+    //テスト用
+
+    RequestMessage getRequestMessage() {
+        return requestMessage;
+    }
+
+    HtmlEditor getHtmlEditor() {
+        return he;
+    }
+}
+
+/**
+ * POSTで送られてくるparamのEnum
+ */
+enum Param {
+
+    /**
+     * index.htmlでメッセージを投稿する場合
+     */
+    CONTRIBUTION("contribution"),
+
+    /**
+     * index.htmlで投稿者の名前で検索する場合
+     */
+    SEARCH("search"),
+
+    /**
+     * index.htmlで投稿したメッセージを削除する場合
+     */
+    DELETE1("delete1"),
+
+    /**
+     * delete.htmlでパスワードの確認する場合
+     */
+    DELETE2("delete2"),
+
+    /**
+     * index.htmlのページに戻る
+     */
+    BACK("back");
+
+    private String name;
+
+    public String getName() {
+        return name;
+    }
+
+    Param(String name) {
+        this.name = name;
+    }
+
+    /**
+     * このメソッドは、文字列を元に、enumを返します。
+     *
+     * @param str 文字列（例）search
+     * @return Enum（例）Param.SEARCH
+     */
+    public static Param getEnum(String str) {
+        Param[] enumArray = Param.values();
+
+        for (Param enumStr : enumArray) {
+            if (str.equals(enumStr.name)) {
+                return enumStr;
+            }
+        }
+        return null;
     }
 }

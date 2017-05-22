@@ -5,7 +5,6 @@ import jp.co.topgate.asada.web.app.StatusLine;
 
 import java.io.File;
 import java.io.OutputStream;
-import java.util.Objects;
 
 /**
  * 静的なコンテンツの配信を行うハンドラー
@@ -14,14 +13,6 @@ import java.util.Objects;
  */
 public class StaticHandler extends Handler {
 
-    /**
-     * リソースファイルのパス
-     */
-    private static final String FILE_PATH = "./src/main/resources";
-
-    /**
-     * リクエストメッセージ
-     */
     private RequestMessage requestMessage;
 
     /**
@@ -35,9 +26,11 @@ public class StaticHandler extends Handler {
 
     /**
      * リクエストの処理を行うメソッド
+     *
+     * @return レスポンスメッセージの状態行(StatusLine)を返す
      */
     @Override
-    public final StatusLine requestComes() {
+    public final StatusLine doRequestProcess() {
         String method = requestMessage.getMethod();
         String uri = requestMessage.getUri();
         String protocolVersion = requestMessage.getProtocolVersion();
@@ -47,11 +40,15 @@ public class StaticHandler extends Handler {
 
     /**
      * リクエストメッセージのmethod,uri,protocolVersionから、レスポンスのステータスコードを決定するメソッド
+     * 1.プロトコルバージョンがHTTP/1.1以外の場合は505:HTTP Version Not Supported
+     * 2.GET,POST以外のメソッドの場合は501:Not Implemented
+     * 3.URIで指定されたファイルがリソースフォルダにない、もしくはディレクトリの場合は404:Not Found
+     * 4.1,2,3でチェックして問題がなければ200:OK
      *
      * @param method          リクエストメッセージのメソッドを渡す
      * @param uri             URIを渡す
      * @param protocolVersion プロトコルバージョンを渡す
-     * @return StatusLineを返す
+     * @return レスポンスメッセージの状態行(StatusLine)を返す
      */
     static StatusLine getStatusLine(String method, String uri, String protocolVersion) {
         if (!"HTTP/1.1".equals(protocolVersion)) {
@@ -61,41 +58,38 @@ public class StaticHandler extends Handler {
             return StatusLine.NOT_IMPLEMENTED;
 
         } else {
-            File file = new File(StaticHandler.FILE_PATH + uri);
+            File file = new File(Handler.FILE_PATH + uri);
             if (!file.exists() || !file.isFile()) {
                 return StatusLine.NOT_FOUND;
-            } else {
-                return StatusLine.OK;
             }
         }
+        return StatusLine.OK;
     }
 
     /**
-     * レスポンスを返すときに呼び出すメソッド
+     * レスポンスの処理を行うメソッド
      *
-     * @param os SocketのOutputStream
-     * @param sl ステータスラインの列挙型
-     * @throws NullPointerException 引数がnull
+     * @param os SocketのOutputStreamを渡す
+     * @param sl ステータスラインの列挙型を渡す
      */
     @Override
-    public void returnResponse(OutputStream os, StatusLine sl) throws NullPointerException {
-        Objects.requireNonNull(os);
-        Objects.requireNonNull(sl);
-
-        ResponseMessage rm;
+    public void doResponseProcess(OutputStream os, StatusLine sl) {
+        ResponseMessage rm = new ResponseMessage();
+        String path = Handler.FILE_PATH + requestMessage.getUri();
 
         if (sl.equals(StatusLine.OK)) {
-            String path = StaticHandler.FILE_PATH + requestMessage.getUri();
-            rm = new ResponseMessage(os, sl, path);
             ContentType ct = new ContentType(path);
             rm.addHeader("Content-Type", ct.getContentType());
-
+            rm.addHeader("Content-Length", String.valueOf(new File(path).length()));
         } else {
-            String path = "";
-            rm = new ResponseMessage(os, sl, path);
             rm.addHeader("Content-Type", "text/html; charset=UTF-8");
         }
 
-        rm.doResponse();
+        rm.returnResponse(os, sl, path);
+    }
+
+    //テスト用
+    RequestMessage getRequestMessage() {
+        return this.requestMessage;
     }
 }

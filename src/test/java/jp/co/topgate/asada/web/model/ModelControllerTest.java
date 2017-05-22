@@ -10,7 +10,9 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 /**
- * Created by yusuke-pc on 2017/05/09.
+ * ModelControllerクラスのテスト
+ *
+ * @author asada
  */
 public class ModelControllerTest {
     @Test
