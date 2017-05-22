@@ -341,12 +341,143 @@ public class ProgramBoardHandlerTest {
         }
     }
 
+    public static class doGetメソッドのテスト {
+        @Before
+        public void setUp() {
+            List<Message> messageList = new ArrayList<>();
+            Message m;
+            m = new Message();
+            m.setMessageID(1);
+            m.setPassword(new BCryptPasswordEncoder().encode("test"));
+            m.setName("管理者");
+            m.setTitle("test");
+            m.setText("こんにちは");
+            m.setDate("2017/5/11 11:56");
+            messageList.add(m);
+
+            m = new Message();
+            m.setMessageID(2);
+            m.setPassword(new BCryptPasswordEncoder().encode("t"));
+            m.setName("asada");
+            m.setTitle("t");
+            m.setText("こんにちは");
+            m.setDate("2017/5/11 11:57");
+            messageList.add(m);
+
+            ModelController.setMessageList(messageList);
+        }
+
+        @Test
+        public void 正しく動作するか() throws Exception {
+            HtmlEditor htmlEditor = new HtmlEditor();
+            ProgramBoardHandler.doGet(htmlEditor);
+
+            String path = "./src/main/resources/2/index.html";
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(path))))) {
+                assertThat(br.readLine(), is("<!DOCTYPE html>"));
+                assertThat(br.readLine(), is("<html>"));
+                assertThat(br.readLine(), is(""));
+                assertThat(br.readLine(), is("<head>"));
+                assertThat(br.readLine(), is("    <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">"));
+                assertThat(br.readLine(), is("    <link rel=\"stylesheet\" type=\"text/css\" href=\"./css/style.css\">"));
+                assertThat(br.readLine(), is("</head>"));
+                assertThat(br.readLine(), is(""));
+                assertThat(br.readLine(), is("<body>"));
+                assertThat(br.readLine(), is("<center>"));
+                assertThat(br.readLine(), is("    <div id=\"header\">"));
+                assertThat(br.readLine(), is("        <h1>掲示板-LightBoard</h1>"));
+                assertThat(br.readLine(), is("        <a href=\"./caution.html\" target=\"_blank\">注意事項を読む</a>"));
+                assertThat(br.readLine(), is("    </div>"));
+                assertThat(br.readLine(), is("    <div id=\"form\">"));
+                assertThat(br.readLine(), is("        <form action=\"/program/board/\" method=\"post\">"));
+                assertThat(br.readLine(), is("            <p>"));
+                assertThat(br.readLine(), is("                名前<input type=\"text\" name=\"name\" size=\"40\" required>"));
+                assertThat(br.readLine(), is("            </p>"));
+                assertThat(br.readLine(), is("            <p>"));
+                assertThat(br.readLine(), is("                タイトル<input type=\"text\" name=\"title\" size=\"40\" required>"));
+                assertThat(br.readLine(), is("            </p>"));
+                assertThat(br.readLine(), is("            <p>"));
+                assertThat(br.readLine(), is("                メッセージ<br>"));
+                assertThat(br.readLine(), is("                <textarea name=\"text\" rows=\"4\" cols=\"40\" required></textarea>"));
+                assertThat(br.readLine(), is("            </p>"));
+                assertThat(br.readLine(), is("            <p>"));
+                assertThat(br.readLine(), is("                パスワード<input type=\"password\" name=\"password\" size=\"10\" required>(投稿した文を削除するときに使います。)"));
+                assertThat(br.readLine(), is("            </p>"));
+                assertThat(br.readLine(), is("            <input type=\"hidden\" name=\"param\" value=\"write\">"));
+                assertThat(br.readLine(), is("            <input type=\"submit\" value=\"投稿\">"));
+                assertThat(br.readLine(), is("        </form>"));
+                assertThat(br.readLine(), is("    </div>"));
+                assertThat(br.readLine(), is("    <div id=\"log\">"));
+                assertThat(br.readLine(), is("        <table border=\"1\">"));
+                assertThat(br.readLine(), is("            <tr>"));
+                assertThat(br.readLine(), is("                <th>ナンバー</th>"));
+                assertThat(br.readLine(), is("                <th>タイトル</th>"));
+                assertThat(br.readLine(), is("                <th>本文</th>"));
+                assertThat(br.readLine(), is("                <th>ユーザー名</th>"));
+                assertThat(br.readLine(), is("                <th>日付</th>"));
+                assertThat(br.readLine(), is("                <th></th>"));
+                assertThat(br.readLine(), is("                <th></th>"));
+                assertThat(br.readLine(), is("            </tr>"));
+                assertThat(br.readLine(), is("            <tr id=\"No.2\">"));
+                assertThat(br.readLine(), is("                <td>No.2</td>"));
+                assertThat(br.readLine(), is("                <td>t</td>"));
+                assertThat(br.readLine(), is("                <td>こんにちは</td>"));
+                assertThat(br.readLine(), is("                <td>asada</td>"));
+                assertThat(br.readLine(), is("                <td>2017/5/11 11:57</td>"));
+                assertThat(br.readLine(), is("                <td>"));
+                assertThat(br.readLine(), is("                    <form action=\"/program/board/\" method=\"post\">"));
+                assertThat(br.readLine(), is("                        <input type=\"hidden\" name=\"param\" value=\"search\">"));
+                assertThat(br.readLine(), is("                        <input type=\"hidden\" name=\"number\" value=\"2\">"));
+                assertThat(br.readLine(), is("                        <input type=\"submit\" value=\"このコメントを投稿した人の他のコメントを見てみる\">"));
+                assertThat(br.readLine(), is("                    </form>"));
+                assertThat(br.readLine(), is("                </td>"));
+                assertThat(br.readLine(), is("                <td>"));
+                assertThat(br.readLine(), is("                    <form action=\"/program/board/\" method=\"post\">"));
+                assertThat(br.readLine(), is("                        <input type=\"hidden\" name=\"param\" value=\"delete_step_1\">"));
+                assertThat(br.readLine(), is("                        <input type=\"hidden\" name=\"number\" value=\"2\">"));
+                assertThat(br.readLine(), is("                        <input type=\"submit\" value=\"このコメントを削除する\">"));
+                assertThat(br.readLine(), is("                    </form>"));
+                assertThat(br.readLine(), is("                </td>"));
+                assertThat(br.readLine(), is("            </tr>"));
+                assertThat(br.readLine(), is("            <tr id=\"No.1\">"));
+                assertThat(br.readLine(), is("                <td>No.1</td>"));
+                assertThat(br.readLine(), is("                <td>test</td>"));
+                assertThat(br.readLine(), is("                <td>こんにちは</td>"));
+                assertThat(br.readLine(), is("                <td>管理者</td>"));
+                assertThat(br.readLine(), is("                <td>2017/5/11 11:56</td>"));
+                assertThat(br.readLine(), is("                <td>"));
+                assertThat(br.readLine(), is("                    <form action=\"/program/board/\" method=\"post\">"));
+                assertThat(br.readLine(), is("                        <input type=\"hidden\" name=\"param\" value=\"search\">"));
+                assertThat(br.readLine(), is("                        <input type=\"hidden\" name=\"number\" value=\"1\">"));
+                assertThat(br.readLine(), is("                        <input type=\"submit\" value=\"このコメントを投稿した人の他のコメントを見てみる\">"));
+                assertThat(br.readLine(), is("                    </form>"));
+                assertThat(br.readLine(), is("                </td>"));
+                assertThat(br.readLine(), is("                <td>"));
+                assertThat(br.readLine(), is("                    <form action=\"/program/board/\" method=\"post\">"));
+                assertThat(br.readLine(), is("                        <input type=\"hidden\" name=\"param\" value=\"delete_step_1\">"));
+                assertThat(br.readLine(), is("                        <input type=\"hidden\" name=\"number\" value=\"1\">"));
+                assertThat(br.readLine(), is("                        <input type=\"submit\" value=\"このコメントを削除する\">"));
+                assertThat(br.readLine(), is("                    </form>"));
+                assertThat(br.readLine(), is("                </td>"));
+                assertThat(br.readLine(), is("            </tr>"));
+                assertThat(br.readLine(), is("        </table>"));
+                assertThat(br.readLine(), is("    </div>"));
+                assertThat(br.readLine(), is("</center>"));
+                assertThat(br.readLine(), is("</body>"));
+                assertThat(br.readLine(), is(""));
+                assertThat(br.readLine(), is("</html>"));
+            }
+
+            htmlEditor.resetAllFiles();
+        }
+    }
+
     public static class doPostメソッドのテスト {
-        static HtmlEditor he;
+        static HtmlEditor htmlEditor;
 
         @Before
         public void setUp() {
-            he = new HtmlEditor();
+            htmlEditor = new HtmlEditor();
             List<Message> messageList = new ArrayList<>();
             Message m;
             m = new Message();
@@ -393,10 +524,10 @@ public class ProgramBoardHandlerTest {
             Map<String, String> map = new HashMap<>();
             map.put("number", "2");
 
-            String sut = ProgramBoardHandler.doPost(he, Param.SEARCH, map);
+            String sut = ProgramBoardHandler.doPost(htmlEditor, Param.SEARCH, map);
             assertThat(sut, Matchers.is(EditHtmlList.SEARCH_HTML.getUri()));
 
-            he.resetAllFiles();
+            htmlEditor.resetAllFiles();
         }
 
         @Test
@@ -404,10 +535,10 @@ public class ProgramBoardHandlerTest {
             Map<String, String> map = new HashMap<>();
             map.put("number", "2");
 
-            String sut = ProgramBoardHandler.doPost(he, Param.DELETE_STEP_1, map);
+            String sut = ProgramBoardHandler.doPost(htmlEditor, Param.DELETE_STEP_1, map);
             assertThat(sut, is(EditHtmlList.DELETE_HTML.getUri()));
 
-            he.resetAllFiles();
+            htmlEditor.resetAllFiles();
         }
 
         @Test
@@ -416,10 +547,10 @@ public class ProgramBoardHandlerTest {
             map.put("number", "2");
             map.put("password", "t");
 
-            String sut = ProgramBoardHandler.doPost(he, Param.DELETE_STEP_2, map);
+            String sut = ProgramBoardHandler.doPost(htmlEditor, Param.DELETE_STEP_2, map);
             assertThat(sut, is("/program/board/result.html"));
 
-            he.resetAllFiles();
+            htmlEditor.resetAllFiles();
         }
 
         @Test
@@ -430,30 +561,30 @@ public class ProgramBoardHandlerTest {
             map.put("text", "メッセージ");
             map.put("password", "test");
 
-            String sut = ProgramBoardHandler.doPost(he, Param.WRITE, map);
+            String sut = ProgramBoardHandler.doPost(htmlEditor, Param.WRITE, map);
             assertThat(sut, is(EditHtmlList.INDEX_HTML.getUri()));
 
-            he.resetAllFiles();
+            htmlEditor.resetAllFiles();
         }
 
         @Test
         public void switchのbackをテスト() throws Exception {
-            String sut = ProgramBoardHandler.doPost(he, Param.BACK, null);
+            String sut = ProgramBoardHandler.doPost(htmlEditor, Param.BACK, null);
             assertThat(sut, is(EditHtmlList.INDEX_HTML.getUri()));
 
-            he.resetAllFiles();
+            htmlEditor.resetAllFiles();
         }
 
         @After
         public void tearDown() {
-            he.resetAllFiles();
+            htmlEditor.resetAllFiles();
         }
     }
 
     public static class writeIndexメソッドのテスト {
         @Test
         public void 正しく動作するか() throws Exception {
-            HtmlEditor he = new HtmlEditor();
+            HtmlEditor htmlEditor = new HtmlEditor();
 
             List<Message> testList = new ArrayList<>();
             Message m = new Message();
@@ -474,7 +605,7 @@ public class ProgramBoardHandlerTest {
             testList.add(m);
             ModelController.setMessageList(testList);
 
-            String s = ProgramBoardHandler.writeIndex(he);
+            String s = ProgramBoardHandler.writeIndex(htmlEditor);
             assertThat(s, is(EditHtmlList.INDEX_HTML.getUri()));
 
             String path = "./src/main/resources/2/index.html";
@@ -573,7 +704,7 @@ public class ProgramBoardHandlerTest {
                 assertThat(br.readLine(), is("</html>"));
             }
 
-            he.resetAllFiles();
+            htmlEditor.resetAllFiles();
         }
     }
 
@@ -584,8 +715,8 @@ public class ProgramBoardHandlerTest {
             try (FileOutputStream fos = new FileOutputStream(path);
                  FileInputStream is = new FileInputStream(new File("./src/test/resources/GetRequestMessage.txt"))) {
 
-                RequestMessage rm = RequestMessageParser.parse(is);
-                StaticHandler sut = new StaticHandler(rm);
+                RequestMessage requestMessage = RequestMessageParser.parse(is);
+                StaticHandler sut = new StaticHandler(requestMessage);
                 sut.doRequestProcess();
 
                 assertThat(sut.getStatusLine(), is(StatusLine.OK));
@@ -636,8 +767,8 @@ public class ProgramBoardHandlerTest {
             try (FileOutputStream fos = new FileOutputStream(path);
                  FileInputStream is = new FileInputStream(new File("./src/test/resources/NotFound.txt"))) {
 
-                RequestMessage rm = RequestMessageParser.parse(is);
-                StaticHandler sut = new StaticHandler(rm);
+                RequestMessage requestMessage = RequestMessageParser.parse(is);
+                StaticHandler sut = new StaticHandler(requestMessage);
                 sut.doRequestProcess();
 
                 assertThat(sut.getStatusLine(), is(StatusLine.NOT_FOUND));

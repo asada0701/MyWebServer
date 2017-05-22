@@ -1,6 +1,7 @@
 package jp.co.topgate.asada.web.program.board;
 
 import jp.co.topgate.asada.web.*;
+import jp.co.topgate.asada.web.exception.RequestParseException;
 import jp.co.topgate.asada.web.util.*;
 import jp.co.topgate.asada.web.exception.DoPostException;
 import jp.co.topgate.asada.web.exception.HtmlInitializeException;
@@ -61,7 +62,7 @@ public class ProgramBoardHandler extends Handler {
                 if ("application/x-www-form-urlencoded".equals(requestMessage.findHeaderByName("Content-Type"))) {
                     Map<String, String> messageBody = requestMessage.parseMessageBodyToMapString();
                     String param = messageBody.get("param");
-                    String newUri = doPost(htmlEditor, Param.getEnum(param), messageBody);
+                    String newUri = doPost(htmlEditor, Param.getParam(param), messageBody);
                     requestMessage.setUri(newUri);
                     this.statusLine = statusLine;
                 } else {
@@ -72,7 +73,7 @@ public class ProgramBoardHandler extends Handler {
                 this.statusLine = statusLine;
             }
 
-        } catch (DoPostException e) {
+        } catch (RequestParseException | DoPostException e) {
             this.statusLine = StatusLine.BAD_REQUEST;
 
         } catch (IOException e) {
@@ -191,7 +192,7 @@ public class ProgramBoardHandler extends Handler {
                     throw new DoPostException("param:" + param + " number:" + number + " numberに問題があります。");
                 }
 
-                Message message = ModelController.findMessagebyID(Integer.parseInt(number));
+                Message message = ModelController.findMessageByID(Integer.parseInt(number));
                 if (message != null) {
                     editHtmlList = EditHtmlList.DELETE_HTML;
                     htmlEditor.writeHtml(editHtmlList, htmlEditor.editDeleteHtml(message));
@@ -213,7 +214,7 @@ public class ProgramBoardHandler extends Handler {
                     return "/program/board/result.html";
 
                 } else {
-                    Message message = ModelController.findMessagebyID(Integer.parseInt(messageBody.get("number")));
+                    Message message = ModelController.findMessageByID(Integer.parseInt(messageBody.get("number")));
 
                     if (message != null) {
                         editHtmlList = EditHtmlList.DELETE_HTML;
@@ -329,7 +330,7 @@ enum Param {
      * @param str 文字列（例）search
      * @return Enum（例）Param.SEARCH
      */
-    public static Param getEnum(String str) {
+    public static Param getParam(String str) {
         if (str == null) {
             return null;
         }

@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -50,5 +51,25 @@ public class RequestMessageTest {
         assertThat(messageBody.get("text"), is("こんにちは"));
         assertThat(messageBody.get("password"), is("test"));
         assertThat(messageBody.get("param"), is("contribution"));
+    }
+
+    @Test
+    public void uriQueryのテスト() {
+        Map<String, String> uriQuery = new HashMap<>();
+        uriQuery.put("name", "asada");
+        uriQuery.put("from", "japan");
+
+        String method = "GET";
+        String uri = "/";
+        String protocolVersion = "HTTP/1.1";
+        Map<String, String> headerField = new HashMap<>();
+        headerField.put("Content-Type", "application/x-www-form-urlencoded");
+        RequestMessage sut = new RequestMessage(method, uri, protocolVersion, headerField);
+
+        sut.setUriQuery(uriQuery);
+
+        assertThat(sut.findUriQuery("name"), is("asada"));
+        assertThat(sut.findUriQuery("from"), is("japan"));
+        assertThat(sut.findUriQuery("hoge"), is(nullValue()));
     }
 }

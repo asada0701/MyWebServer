@@ -74,7 +74,7 @@ public class RequestMessage {
      * @param name 探したいQuery名
      * @return Query値を返す。URIに含まれていなかった場合はNullを返す
      */
-    public String findUriQuery(String name) {
+    String findUriQuery(String name) {
         return uriQuery.getOrDefault(name, null);
     }
 
