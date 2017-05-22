@@ -30,7 +30,8 @@ public class StaticHandler extends Handler {
         String uri = requestMessage.getUri();
         String protocolVersion = requestMessage.getProtocolVersion();
 
-        this.statusLine = StaticHandler.getStatusLine(method, uri, protocolVersion);
+        this.statusLine = StaticHandler.decideStatusLine(method, uri, protocolVersion);
+        this.statusLine = StaticHandler.decideStatusLine(method, uri, protocolVersion);
     }
 
     /**
@@ -45,7 +46,7 @@ public class StaticHandler extends Handler {
      * @param protocolVersion プロトコルバージョンを渡す
      * @return レスポンスメッセージの状態行(StatusLine)を返す
      */
-    static StatusLine getStatusLine(String method, String uri, String protocolVersion) {
+    static StatusLine decideStatusLine(String method, String uri, String protocolVersion) {
         if (!"HTTP/1.1".equals(protocolVersion)) {
             return StatusLine.HTTP_VERSION_NOT_SUPPORTED;
 

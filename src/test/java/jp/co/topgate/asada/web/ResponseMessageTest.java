@@ -21,69 +21,69 @@ import static org.junit.Assert.assertThat;
 @RunWith(Enclosed.class)
 public class ResponseMessageTest {
 
-    public static class getResponseLineメソッドのテスト {
+    public static class createResponseLineメソッドのテスト {
         @Test(expected = NullPointerException.class)
         public void 引数StatusLineのnullチェック() {
-            ResponseMessage.getResponseLine("HTTP/1.1", null);
+            ResponseMessage.createResponseLine("HTTP/1.1", null);
         }
 
         @Test
         public void 引数protocolVersionのnullチェック() {
-            ResponseMessage.getResponseLine(null, StatusLine.OK);
+            ResponseMessage.createResponseLine(null, StatusLine.OK);
         }
 
         @Test(expected = NullPointerException.class)
         public void 引数両方のnullチェック() {
-            ResponseMessage.getResponseLine(null, null);
+            ResponseMessage.createResponseLine(null, null);
         }
 
         @Test
         public void ステータスコード200のテスト() {
-            String responseLine = ResponseMessage.getResponseLine("HTTP/2", StatusLine.OK);
+            String responseLine = ResponseMessage.createResponseLine("HTTP/2", StatusLine.OK);
             assertThat(responseLine, is("HTTP/2 200 OK\n"));
         }
 
         @Test
         public void ステータスコード400のテスト() {
-            String responseLine = ResponseMessage.getResponseLine("HTTP/1.1", StatusLine.BAD_REQUEST);
+            String responseLine = ResponseMessage.createResponseLine("HTTP/1.1", StatusLine.BAD_REQUEST);
             assertThat(responseLine, is("HTTP/1.1 400 Bad Request\n"));
         }
 
         @Test
         public void ステータスコード404のテスト() {
-            String responseLine = ResponseMessage.getResponseLine("HTTP/1.1", StatusLine.NOT_FOUND);
+            String responseLine = ResponseMessage.createResponseLine("HTTP/1.1", StatusLine.NOT_FOUND);
             assertThat(responseLine, is("HTTP/1.1 404 Not Found\n"));
         }
 
         @Test
         public void ステータスコード500のテスト() {
-            String responseLine = ResponseMessage.getResponseLine("HTTP/1.1", StatusLine.INTERNAL_SERVER_ERROR);
+            String responseLine = ResponseMessage.createResponseLine("HTTP/1.1", StatusLine.INTERNAL_SERVER_ERROR);
             assertThat(responseLine, is("HTTP/1.1 500 Internal Server Error\n"));
         }
 
         @Test
         public void ステータスコード501のテスト() {
-            String responseLine = ResponseMessage.getResponseLine("HTTP/1.1", StatusLine.NOT_IMPLEMENTED);
+            String responseLine = ResponseMessage.createResponseLine("HTTP/1.1", StatusLine.NOT_IMPLEMENTED);
             assertThat(responseLine, is("HTTP/1.1 501 Not Implemented\n"));
         }
 
         @Test
         public void ステータスコード505のテスト() {
-            String responseLine = ResponseMessage.getResponseLine("HTTP/1.1", StatusLine.HTTP_VERSION_NOT_SUPPORTED);
+            String responseLine = ResponseMessage.createResponseLine("HTTP/1.1", StatusLine.HTTP_VERSION_NOT_SUPPORTED);
             assertThat(responseLine, is("HTTP/1.1 505 HTTP Version Not Supported\n"));
         }
     }
 
-    public static class getHeaderメソッドのテスト {
+    public static class createHeaderメソッドのテスト {
         @Test(expected = NullPointerException.class)
         public void nullチェック() {
-            ResponseMessage.getHeader(null);
+            ResponseMessage.createHeader(null);
         }
 
         @Test
         public void 空チェック() {
             List<String> list = new ArrayList<>();
-            String sut = ResponseMessage.getHeader(list);
+            String sut = ResponseMessage.createHeader(list);
             assertThat(sut, is("\n"));
         }
 
@@ -93,7 +93,7 @@ public class ResponseMessageTest {
             list.add("Connection: Keep-Alive");
             list.add("Content-Type: text/html; charset=UTF-8");
 
-            String sut = ResponseMessage.getHeader(list);
+            String sut = ResponseMessage.createHeader(list);
             assertThat(sut, is("Connection: Keep-Alive\nContent-Type: text/html; charset=UTF-8\n\n"));
         }
     }

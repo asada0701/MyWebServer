@@ -46,7 +46,7 @@ public class ProgramBoardHandler extends Handler {
         String uri = requestMessage.getUri();
         String protocolVersion = requestMessage.getProtocolVersion();
 
-        StatusLine statusLine = ProgramBoardHandler.getStatusLine(method, uri, protocolVersion);
+        StatusLine statusLine = ProgramBoardHandler.decideStatusLine(method, uri, protocolVersion);
 
         if (!StatusLine.OK.equals(statusLine)) {                                                        //OKでない場合はこのままリターン
             this.statusLine = statusLine;
@@ -93,7 +93,7 @@ public class ProgramBoardHandler extends Handler {
      * @param protocolVersion プロトコルバージョンを渡す
      * @return レスポンスラインの状態行(StatusLine)を返す
      */
-    static StatusLine getStatusLine(String method, String uri, String protocolVersion) {
+    static StatusLine decideStatusLine(String method, String uri, String protocolVersion) {
         if (!"HTTP/1.1".equals(protocolVersion)) {
             return StatusLine.HTTP_VERSION_NOT_SUPPORTED;
 
@@ -161,7 +161,7 @@ public class ProgramBoardHandler extends Handler {
                 text = InvalidChar.replace(text);
                 password = InvalidChar.replace(password);
 
-                text = HtmlEditor.changeLineFeedToBr(text);
+                text = HtmlEditor.changeLineFeedToBrTag(text);
 
                 ModelController.addMessage(name, title, text, password);
 
@@ -260,8 +260,8 @@ public class ProgramBoardHandler extends Handler {
         String path = Handler.getFilePath(UrlPattern.PROGRAM_BOARD, requestMessage.getUri());
 
         if (statusLine.equals(StatusLine.OK)) {
-            ContentType ct = new ContentType(path);
-            responseMessage.addHeader("Content-Type", ct.getContentType());
+            ContentType contentType = new ContentType(path);
+            responseMessage.addHeader("Content-Type", contentType.getContentType());
             responseMessage.addHeader("Content-Length", String.valueOf(new File(path).length()));
 
         } else {
@@ -285,7 +285,9 @@ public class ProgramBoardHandler extends Handler {
 }
 
 /**
- * POSTで送られてくるparamのEnum
+ * POSTで送られてくるparam
+ *
+ * @author asada
  */
 enum Param {
 

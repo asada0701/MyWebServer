@@ -72,7 +72,7 @@ public final class ModelController {
     }
 
     /**
-     * 登録されているかメッセージを探すメソッド
+     * messageListの中のmessageIDが同じものを返す
      *
      * @param messageID 探したいメッセージのIDを渡す
      * @return ターゲットのメッセージを返す
@@ -90,7 +90,7 @@ public final class ModelController {
      * messageListの中のname属性が同じものを返す
      *
      * @param name 探したい投稿者の名前を渡す
-     * @return 見つからない場合はnull、見つかった場合はListで返す
+     * @return メッセージのリストを返す。見つからない場合はListを空で返す
      */
     public static List<Message> findMessageByName(String name) {
         List<Message> result = new ArrayList<>();

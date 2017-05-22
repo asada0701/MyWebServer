@@ -25,7 +25,7 @@ public class HandlerTest {
         public void 正しいリクエストメッセージを送る() throws Exception {
             try (InputStream is = new FileInputStream(new File("./src/test/resources/GetRequestMessage.txt"))) {
 
-                RequestMessage requestMessage = RequestMessageParser.parse(is);
+                RequestMessage requestMessage = RequestMessageParser.parseRequestMessage(is);
 
                 Handler sut = Handler.getHandler(requestMessage);
 
@@ -37,7 +37,7 @@ public class HandlerTest {
         public void urlPattern以外のPOSTのテスト() throws Exception {
             try (InputStream is = new FileInputStream(new File("./src/test/resources/NotContainsUrlPatternTest.txt"))) {
 
-                RequestMessage requestMessage = RequestMessageParser.parse(is);
+                RequestMessage requestMessage = RequestMessageParser.parseRequestMessage(is);
 
                 Handler sut = Handler.getHandler(requestMessage);
 
@@ -49,7 +49,7 @@ public class HandlerTest {
         public void WebAppHandlerが返されるテスト() throws Exception {
             try (InputStream is = new FileInputStream(new File("./src/test/resources/PostRequestMessage.txt"))) {
 
-                RequestMessage requestMessage = RequestMessageParser.parse(is);
+                RequestMessage requestMessage = RequestMessageParser.parseRequestMessage(is);
 
                 Handler sut = Handler.getHandler(requestMessage);
 

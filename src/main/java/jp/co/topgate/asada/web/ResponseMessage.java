@@ -43,8 +43,8 @@ public class ResponseMessage {
      */
     public void returnResponse(OutputStream outputStream, StatusLine statusLine, String filePath) {
         try {
-            outputStream.write(getResponseLine(protocolVersion, statusLine).getBytes());
-            outputStream.write(getHeader(headerField).getBytes());
+            outputStream.write(createResponseLine(protocolVersion, statusLine).getBytes());
+            outputStream.write(createHeader(headerField).getBytes());
 
             if (statusLine.equals(StatusLine.OK)) {
                 try (InputStream in = new FileInputStream(filePath)) {
@@ -72,8 +72,8 @@ public class ResponseMessage {
      */
     void returnResponse(OutputStream outputStream, StatusLine statusLine, byte[] target) {
         try {
-            outputStream.write(getResponseLine(protocolVersion, statusLine).getBytes());
-            outputStream.write(getHeader(headerField).getBytes());
+            outputStream.write(createResponseLine(protocolVersion, statusLine).getBytes());
+            outputStream.write(createHeader(headerField).getBytes());
 
             if (statusLine.equals(StatusLine.OK)) {
                 outputStream.write(target);
@@ -94,7 +94,7 @@ public class ResponseMessage {
      * @return レスポンスラインの文字列が返される
      */
     @NotNull
-    static String getResponseLine(String protocolVersion, StatusLine statusLine) {
+    static String createResponseLine(String protocolVersion, StatusLine statusLine) {
         String[] str = {protocolVersion, String.valueOf(statusLine.getStatusCode()), statusLine.getReasonPhrase()};
         return String.join(REQUEST_LINE_SEPARATOR, str) + "\n";
     }
@@ -106,7 +106,7 @@ public class ResponseMessage {
      * @return ヘッダーフィールドの文字列が返される
      */
     @NotNull
-    static String getHeader(List<String> headerField) {
+    static String createHeader(List<String> headerField) {
         StringBuilder builder = new StringBuilder();
         for (String s : headerField) {
             builder.append(s).append("\n");
