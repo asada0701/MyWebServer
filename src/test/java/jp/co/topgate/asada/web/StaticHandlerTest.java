@@ -28,7 +28,7 @@ public class StaticHandlerTest {
         public void 正しく動作するか() throws Exception {
             String path = "./src/test/resources/GetRequestMessage.txt";
             try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(path)))) {
-                RequestMessage requestMessage = RequestMessageParser.parse(bis);
+                RequestMessage requestMessage = RequestMessageParser.parseRequestMessage(bis);
                 StaticHandler sut = new StaticHandler(requestMessage);
                 assertThat(sut.getRequestMessage(), is(requestMessage));
             }
@@ -40,7 +40,7 @@ public class StaticHandlerTest {
         public void 正しく動作するか() throws Exception {
             String path = "./src/test/resources/GetRequestMessage.txt";
             try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(path)))) {
-                RequestMessage rm = RequestMessageParser.parse(bis);
+                RequestMessage rm = RequestMessageParser.parseRequestMessage(bis);
                 StaticHandler sut = new StaticHandler(rm);
                 sut.doRequestProcess();
                 assertThat(sut.getStatusLine(), is(StatusLine.OK));
@@ -55,7 +55,7 @@ public class StaticHandlerTest {
             try (FileOutputStream fos = new FileOutputStream(path);
                  FileInputStream is = new FileInputStream(new File("./src/test/resources/GetRequestMessage.txt"))) {
 
-                RequestMessage rm = RequestMessageParser.parse(is);
+                RequestMessage rm = RequestMessageParser.parseRequestMessage(is);
                 StaticHandler sut = new StaticHandler(rm);
                 sut.doRequestProcess();
 
@@ -107,7 +107,7 @@ public class StaticHandlerTest {
             try (FileOutputStream fos = new FileOutputStream(path);
                  FileInputStream is = new FileInputStream(new File("./src/test/resources/NotFound.txt"))) {
 
-                RequestMessage rm = RequestMessageParser.parse(is);
+                RequestMessage rm = RequestMessageParser.parseRequestMessage(is);
                 StaticHandler sut = new StaticHandler(rm);
                 sut.doRequestProcess();
 
@@ -125,44 +125,44 @@ public class StaticHandlerTest {
         }
     }
 
-    public static class getStatusLineのテスト {
+    public static class decideStatusLineのテスト {
         @Test
         public void GETリクエスト200() throws Exception {
-            StatusLine sut = StaticHandler.getStatusLine("GET", "/index.html", "HTTP/1.1");
+            StatusLine sut = StaticHandler.decideStatusLine("GET", "/index.html", "HTTP/1.1");
             assertThat(sut.getStatusCode(), is(200));
         }
 
         @Test
         public void POSTリクエスト200() throws Exception {
-            StatusLine sut = StaticHandler.getStatusLine("POST", "/index.html", "HTTP/1.1");
+            StatusLine sut = StaticHandler.decideStatusLine("POST", "/index.html", "HTTP/1.1");
             assertThat(sut.getStatusCode(), is(200));
         }
 
         @Test
         public void 存在しないファイルを指定すると404() throws Exception {
-            StatusLine sut = StaticHandler.getStatusLine("GET", "/hogehoge", "HTTP/1.1");
+            StatusLine sut = StaticHandler.decideStatusLine("GET", "/hogehoge", "HTTP/1.1");
             assertThat(sut.getStatusCode(), is(404));
         }
 
         @Test
         public void ディレクトリを指定すると404() throws Exception {
-            StatusLine sut = StaticHandler.getStatusLine("GET", "/", "HTTP/1.1");
+            StatusLine sut = StaticHandler.decideStatusLine("GET", "/", "HTTP/1.1");
             assertThat(sut.getStatusCode(), is(404));
         }
 
         @Test
         public void GETとPOST以外は501() throws Exception {
             StatusLine sut;
-            sut = StaticHandler.getStatusLine("PUT", "/", "HTTP/1.1");
+            sut = StaticHandler.decideStatusLine("PUT", "/", "HTTP/1.1");
             assertThat(sut.getStatusCode(), is(501));
 
-            sut = StaticHandler.getStatusLine("DELETE", "/", "HTTP/1.1");
+            sut = StaticHandler.decideStatusLine("DELETE", "/", "HTTP/1.1");
             assertThat(sut.getStatusCode(), is(501));
         }
 
         @Test
         public void HTTPのバージョンが指定と異なる505() throws Exception {
-            StatusLine sut = StaticHandler.getStatusLine("GET", "/", "HTTP/2.0");
+            StatusLine sut = StaticHandler.decideStatusLine("GET", "/", "HTTP/2.0");
             assertThat(sut.getStatusCode(), is(505));
         }
     }

@@ -29,7 +29,7 @@ public class HtmlEditor {
     /**
      * 編集するHTMLの初期状態を保存するマップ
      */
-    private static Map<EditHtmlList, String> htmlContent = new HashMap<>();
+    private static Map<EditHtmlList, String> rawHtml = new HashMap<>();
 
     /**
      * コンストラクタ
@@ -45,7 +45,7 @@ public class HtmlEditor {
                 while ((line = br.readLine()) != null) {
                     builder.append(line).append("\n");
                 }
-                htmlContent.put(editHtmlList, builder.toString());
+                rawHtml.put(editHtmlList, builder.toString());
 
             } catch (IOException e) {
                 throw new HtmlInitializeException(e.getMessage());
@@ -61,7 +61,7 @@ public class HtmlEditor {
     public void resetAllFiles() throws HtmlInitializeException {
         for (EditHtmlList editHtmlList : EditHtmlList.values()) {
             try (OutputStream outputStream = new FileOutputStream(new File(editHtmlList.getPath()))) {
-                outputStream.write(htmlContent.get(editHtmlList).getBytes());
+                outputStream.write(rawHtml.get(editHtmlList).getBytes());
                 outputStream.flush();
             } catch (IOException e) {
                 throw new HtmlInitializeException(e.getMessage());
@@ -77,7 +77,7 @@ public class HtmlEditor {
      * @return 編集後のHTML文章
      */
     String editIndexOrSearchHtml(EditHtmlList editHtmlList, List<Message> messageList) {
-        String[] lineArray = htmlContent.get(editHtmlList).split("\n");     //改行で分割
+        String[] lineArray = rawHtml.get(editHtmlList).split("\n");     //改行で分割
         StringBuilder builder = new StringBuilder();
 
         for (int i = 0; i < lineArray.length; i++) {
@@ -90,7 +90,7 @@ public class HtmlEditor {
                 builder.append(lineArray[i]).append("\n");  //</tr>をappend
 
                 for (int k = messageList.size() - 1; k > -1; k--) {                //ここからが掲示板のメッセージの部分
-                    builder.append(messageChangeToHtml(editHtmlList, messageList.get(k)));
+                    builder.append(changeMessageToHtml(editHtmlList, messageList.get(k)));
                     builder.append(line).append("\n");
                 }
                 line = lineArray[++i];
@@ -107,7 +107,7 @@ public class HtmlEditor {
      * @return 編集後のHTML文章
      */
     String editDeleteHtml(Message message) {
-        String[] lineArray = htmlContent.get(EditHtmlList.DELETE_HTML).split("\n");     //改行で分割
+        String[] lineArray = rawHtml.get(EditHtmlList.DELETE_HTML).split("\n");     //改行で分割
         StringBuilder builder = new StringBuilder();
 
         for (int i = 0; i < lineArray.length; i++) {
@@ -120,7 +120,7 @@ public class HtmlEditor {
                 line = lineArray[i];
                 builder.append(line).append("\n");
 
-                builder.append(messageChangeToHtml(EditHtmlList.DELETE_HTML, message));
+                builder.append(changeMessageToHtml(EditHtmlList.DELETE_HTML, message));
                 line = lineArray[i];
             }
             if (line.endsWith("<input type=\"hidden\" name=\"number\" value=\"\">")) {
@@ -142,7 +142,7 @@ public class HtmlEditor {
      * @param message      書き込みたいMessageのオブジェクト
      * @return HTML文章
      */
-    static String messageChangeToHtml(EditHtmlList editHtmlList, Message message) {
+    static String changeMessageToHtml(EditHtmlList editHtmlList, Message message) {
         switch (editHtmlList) {
             case INDEX_HTML:
                 return "            <tr id=\"No." + message.getMessageID() + "\">" + "\n" +
@@ -202,7 +202,7 @@ public class HtmlEditor {
      * @param str HTMLに書き込みたい文章を渡す
      * @return 改行コードを全てbrタグに修正して返す
      */
-    static String changeLineFeedToBr(String str) {
+    static String changeLineFeedToBrTag(String str) {
         if (str.contains("\r\n")) {
             return str.replaceAll("\r\n", "<br>");
 
@@ -229,7 +229,7 @@ public class HtmlEditor {
 }
 
 /**
- * URIとファイルのパスのEnum
+ * 編集するHTMLのリスト
  *
  * @author asada
  */

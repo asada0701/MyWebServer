@@ -69,7 +69,7 @@ class Server extends Thread {
             while (true) {
                 clientSocket = serverSocket.accept();
                 try {
-                    RequestMessage requestMessage = RequestMessageParser.parse(clientSocket.getInputStream());
+                    RequestMessage requestMessage = RequestMessageParser.parseRequestMessage(clientSocket.getInputStream());
 
                     Handler handler = Handler.getHandler(requestMessage);
 

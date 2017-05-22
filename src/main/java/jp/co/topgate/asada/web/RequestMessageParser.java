@@ -68,7 +68,7 @@ public class RequestMessageParser {
      * @param inputStream socketのinputStreamを渡す
      * @return リクエストメッセージのオブジェクトを返す
      */
-    public static RequestMessage parse(InputStream inputStream) throws RequestParseException {
+    public static RequestMessage parseRequestMessage(InputStream inputStream) throws RequestParseException {
         String method;
         String uri;
         Map<String, String> uriQuery = null;
@@ -93,11 +93,11 @@ public class RequestMessageParser {
             String[] s = splitUri(requestLine[1]);
             uri = s[0];
             if (s[1] != null) {
-                uriQuery = uriQueryParse(s[1]);
+                uriQuery = parseUriQuery(s[1]);
             }
             protocolVersion = requestLine[2];
 
-            headerField = headerFieldParse(requestLineAndHeader[1]);
+            headerField = parseHeaderField(requestLineAndHeader[1]);
 
             if ("POST".equals(method)) {
                 bis.reset();
@@ -208,7 +208,7 @@ public class RequestMessageParser {
      * @return URIクエリーのマップを返す(名前, 値)
      * @throws RequestParseException URIのクエリーに問題があった
      */
-    static Map<String, String> uriQueryParse(String strUri) throws RequestParseException {
+    static Map<String, String> parseUriQuery(String strUri) throws RequestParseException {
         Map<String, String> uriQuery = new HashMap<>();
         String[] s = strUri.split(URI_EACH_QUERY_SEPARATOR);
         for (String s2 : s) {
@@ -228,7 +228,7 @@ public class RequestMessageParser {
      * @param headerField パースしたい文字列
      * @return パースした結果をMapで返す
      */
-    static Map<String, String> headerFieldParse(String headerField) {
+    static Map<String, String> parseHeaderField(String headerField) {
         Map<String, String> result = new HashMap<>();
         String[] str = headerField.split("\n");
         for (String s : str) {

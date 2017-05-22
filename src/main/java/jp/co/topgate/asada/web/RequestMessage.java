@@ -45,7 +45,7 @@ public class RequestMessage {
      * @param protocolVersion プロトコルバージョンを渡す
      * @param headerField     ヘッダーフィールドを渡す
      */
-    protected RequestMessage(String method, String uri, String protocolVersion, Map<String, String> headerField) {
+    RequestMessage(String method, String uri, String protocolVersion, Map<String, String> headerField) {
         this.method = method;
         this.uri = uri;
         this.protocolVersion = protocolVersion;

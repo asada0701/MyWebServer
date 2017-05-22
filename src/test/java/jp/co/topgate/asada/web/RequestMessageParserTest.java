@@ -34,7 +34,7 @@ public class RequestMessageParserTest {
         public void 空チェック() throws Exception {
             String path = "./src/test/resources/emptyRequestMessage.txt";
             try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(path)))) {
-                sut = RequestMessageParser.parse(bis);
+                sut = RequestMessageParser.parseRequestMessage(bis);
             }
         }
 
@@ -42,7 +42,7 @@ public class RequestMessageParserTest {
         public void GETの場合正しく動作するか() throws Exception {
             String path = "./src/test/resources/GetRequestMessage.txt";
             try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(path)))) {
-                sut = RequestMessageParser.parse(bis);
+                sut = RequestMessageParser.parseRequestMessage(bis);
                 assertThat(sut.getMethod(), is("GET"));
                 assertThat(sut.getUri(), is("/index.html"));
                 assertThat(sut.getProtocolVersion(), is("HTTP/1.1"));
@@ -73,7 +73,7 @@ public class RequestMessageParserTest {
         public void POSTの場合正しく動作するか() throws Exception {
             String path = "./src/test/resources/PostRequestMessage.txt";
             try (FileInputStream fis = new FileInputStream(new File(path))) {
-                sut = RequestMessageParser.parse(fis);
+                sut = RequestMessageParser.parseRequestMessage(fis);
                 assertThat(sut.getMethod(), is("POST"));
                 assertThat(sut.getUri(), is("/program/board/index.html"));
                 assertThat(sut.getProtocolVersion(), is("HTTP/1.1"));
@@ -139,7 +139,7 @@ public class RequestMessageParserTest {
         public void 正しく動作するか() throws Exception {
             String path = "./src/test/resources/PostRequestMessage.txt";
             try (FileInputStream fis = new FileInputStream(new File(path))) {
-                RequestMessage sut = RequestMessageParser.parse(fis);
+                RequestMessage sut = RequestMessageParser.parseRequestMessage(fis);
                 
                 Map<String, String> messageBody = sut.parseMessageBodyToMapString();
                 assertThat(messageBody.get("name"), is("asada"));
@@ -179,42 +179,42 @@ public class RequestMessageParserTest {
         }
     }
 
-    public static class uriQueryParseメソッドのテスト {
+    public static class parseUriQueryメソッドのテスト {
 
         @Test(expected = NullPointerException.class)
         public void nullチェック() throws Exception {
-            RequestMessageParser.uriQueryParse(null);
+            RequestMessageParser.parseUriQuery(null);
         }
 
         @Test(expected = RequestParseException.class)
         public void 空チェック() throws Exception {
-            RequestMessageParser.uriQueryParse("");
+            RequestMessageParser.parseUriQuery("");
         }
 
         @Test
         public void 正しく動作するか() throws Exception {
-            Map<String, String> sut = RequestMessageParser.uriQueryParse("name=朝田&like=cat");
+            Map<String, String> sut = RequestMessageParser.parseUriQuery("name=朝田&like=cat");
             assertThat(sut.get("name"), is("朝田"));
             assertThat(sut.get("like"), is("cat"));
         }
     }
 
-    public static class headerFieldParseメソッドのテスト {
+    public static class parseHeaderFieldメソッドのテスト {
 
         @Test(expected = NullPointerException.class)
         public void nullチッェク() throws Exception {
-            RequestMessageParser.headerFieldParse(null);
+            RequestMessageParser.parseHeaderField(null);
         }
 
         @Test(expected = RequestParseException.class)
         public void 空チェック() throws Exception {
-            Map<String, String> sut = RequestMessageParser.headerFieldParse("");
+            Map<String, String> sut = RequestMessageParser.parseHeaderField("");
             assertThat(sut.size(), is(1));
         }
 
         @Test
         public void 正しく動作するか() throws Exception {
-            Map<String, String> sut = RequestMessageParser.headerFieldParse(
+            Map<String, String> sut = RequestMessageParser.parseHeaderField(
                     "Host: localhost:8080\n" +
                             "Connection: keep-alive\n" +
                             "Pragma: no-cache\n" +

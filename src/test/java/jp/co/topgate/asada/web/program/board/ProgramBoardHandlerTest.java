@@ -37,7 +37,7 @@ public class ProgramBoardHandlerTest {
 
             String path = "./src/test/resources/GetRequestMessage.txt";
             try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(path)))) {
-                requestMessage = RequestMessageParser.parse(bis);
+                requestMessage = RequestMessageParser.parseRequestMessage(bis);
             }
             ProgramBoardHandler sut = new ProgramBoardHandler(requestMessage);
 
@@ -80,7 +80,7 @@ public class ProgramBoardHandlerTest {
             String path = "./src/test/resources/getProgramBoard.txt";
             ProgramBoardHandler handler;
             try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(path)))) {
-                RequestMessage requestMessage = RequestMessageParser.parse(bis);
+                RequestMessage requestMessage = RequestMessageParser.parseRequestMessage(bis);
                 handler = new ProgramBoardHandler(requestMessage);
             }
             handler.doRequestProcess();
@@ -190,7 +190,7 @@ public class ProgramBoardHandlerTest {
             String path = "./src/test/resources/NotContainsUrlPatternTest.txt";
             ProgramBoardHandler handler;
             try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(path)))) {
-                RequestMessage requestMessage = RequestMessageParser.parse(bis);
+                RequestMessage requestMessage = RequestMessageParser.parseRequestMessage(bis);
                 handler = new ProgramBoardHandler(requestMessage);
             }
             handler.doRequestProcess();
@@ -205,7 +205,7 @@ public class ProgramBoardHandlerTest {
             String path = "./src/test/resources/PostSearchTest.txt";
             ProgramBoardHandler handler;
             try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(path)))) {
-                RequestMessage requestMessage = RequestMessageParser.parse(bis);
+                RequestMessage requestMessage = RequestMessageParser.parseRequestMessage(bis);
                 handler = new ProgramBoardHandler(requestMessage);
             }
             handler.doRequestProcess();
@@ -293,50 +293,50 @@ public class ProgramBoardHandlerTest {
         }
     }
 
-    public static class getStatusLineメソッドのテスト {
+    public static class decideStatusLineメソッドのテスト {
         @Test
         public void GETリクエスト200() throws Exception {
-            StatusLine sut = ProgramBoardHandler.getStatusLine("GET", "/index.html", "HTTP/1.1");
+            StatusLine sut = ProgramBoardHandler.decideStatusLine("GET", "/index.html", "HTTP/1.1");
             assertThat(sut.getStatusCode(), is(200));
         }
 
         @Test
         public void POSTリクエスト200() throws Exception {
-            StatusLine sut = ProgramBoardHandler.getStatusLine("POST", "/program/board/index.html", "HTTP/1.1");
+            StatusLine sut = ProgramBoardHandler.decideStatusLine("POST", "/program/board/index.html", "HTTP/1.1");
             assertThat(sut.getStatusCode(), is(200));
         }
 
         @Test
         public void 存在しないファイルを指定すると404() throws Exception {
-            StatusLine sut = ProgramBoardHandler.getStatusLine("GET", "/hogehoge", "HTTP/1.1");
+            StatusLine sut = ProgramBoardHandler.decideStatusLine("GET", "/hogehoge", "HTTP/1.1");
             assertThat(sut.getStatusCode(), is(404));
         }
 
         @Test
         public void ディレクトリを指定すると404() throws Exception {
-            StatusLine sut = ProgramBoardHandler.getStatusLine("GET", "/", "HTTP/1.1");
+            StatusLine sut = ProgramBoardHandler.decideStatusLine("GET", "/", "HTTP/1.1");
             assertThat(sut.getStatusCode(), is(404));
         }
 
         @Test
         public void POSTの時にURIが想定外のものだと400() throws Exception {
-            StatusLine sut = ProgramBoardHandler.getStatusLine("POST", "/", "HTTP/1.1");
+            StatusLine sut = ProgramBoardHandler.decideStatusLine("POST", "/", "HTTP/1.1");
             assertThat(sut.getStatusCode(), is(400));
         }
 
         @Test
         public void GETとPOST以外は501() throws Exception {
             StatusLine sut;
-            sut = ProgramBoardHandler.getStatusLine("PUT", "/", "HTTP/1.1");
+            sut = ProgramBoardHandler.decideStatusLine("PUT", "/", "HTTP/1.1");
             assertThat(sut.getStatusCode(), is(501));
 
-            sut = ProgramBoardHandler.getStatusLine("DELETE", "/", "HTTP/1.1");
+            sut = ProgramBoardHandler.decideStatusLine("DELETE", "/", "HTTP/1.1");
             assertThat(sut.getStatusCode(), is(501));
         }
 
         @Test
         public void HTTPのバージョンが指定と異なる505() throws Exception {
-            StatusLine sut = ProgramBoardHandler.getStatusLine("GET", "/", "HTTP/2.0");
+            StatusLine sut = ProgramBoardHandler.decideStatusLine("GET", "/", "HTTP/2.0");
             assertThat(sut.getStatusCode(), is(505));
         }
     }
@@ -715,7 +715,7 @@ public class ProgramBoardHandlerTest {
             try (FileOutputStream fos = new FileOutputStream(path);
                  FileInputStream is = new FileInputStream(new File("./src/test/resources/GetRequestMessage.txt"))) {
 
-                RequestMessage requestMessage = RequestMessageParser.parse(is);
+                RequestMessage requestMessage = RequestMessageParser.parseRequestMessage(is);
                 StaticHandler sut = new StaticHandler(requestMessage);
                 sut.doRequestProcess();
 
@@ -767,7 +767,7 @@ public class ProgramBoardHandlerTest {
             try (FileOutputStream fos = new FileOutputStream(path);
                  FileInputStream is = new FileInputStream(new File("./src/test/resources/NotFound.txt"))) {
 
-                RequestMessage requestMessage = RequestMessageParser.parse(is);
+                RequestMessage requestMessage = RequestMessageParser.parseRequestMessage(is);
                 StaticHandler sut = new StaticHandler(requestMessage);
                 sut.doRequestProcess();
 

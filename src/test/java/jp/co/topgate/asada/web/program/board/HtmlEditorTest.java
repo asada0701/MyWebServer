@@ -394,11 +394,11 @@ public class HtmlEditorTest {
         assertThat(delete[i++], is("</center>"));
         assertThat(delete[i++], is("</body>"));
         assertThat(delete[i++], is(""));
-        assertThat(delete[i++], is("</html>"));
+        assertThat(delete[i], is("</html>"));
     }
 
     @Test
-    public void messageChangeToHtmlメソッドのテスト() {
+    public void changeMessageToHtmlメソッドのテスト() throws Exception {
         Message m;
         m = new Message();
         m.setMessageID(1);
@@ -407,9 +407,9 @@ public class HtmlEditorTest {
         m.setTitle("test");
         m.setText("こんにちは");
         m.setDate("2017/5/11 11:56");
-        String index = HtmlEditor.messageChangeToHtml(EditHtmlList.INDEX_HTML, m);
-        String search = HtmlEditor.messageChangeToHtml(EditHtmlList.SEARCH_HTML, m);
-        String delete = HtmlEditor.messageChangeToHtml(EditHtmlList.DELETE_HTML, m);
+        String index = HtmlEditor.changeMessageToHtml(EditHtmlList.INDEX_HTML, m);
+        String search = HtmlEditor.changeMessageToHtml(EditHtmlList.SEARCH_HTML, m);
+        String delete = HtmlEditor.changeMessageToHtml(EditHtmlList.DELETE_HTML, m);
 
         String[] result = index.split("\n");
         int i = 0;
@@ -461,21 +461,21 @@ public class HtmlEditorTest {
     }
 
     @Test
-    public void changeLineFeedToBrメソッドのテスト() throws Exception {
+    public void changeLineFeedToBrTagメソッドのテスト() throws Exception {
         String raw = "";
-        String data = HtmlEditor.changeLineFeedToBr(raw);
+        String data = HtmlEditor.changeLineFeedToBrTag(raw);
         assertThat(data, is(""));
 
         raw = "改行\nテスト";
-        data = HtmlEditor.changeLineFeedToBr(raw);
+        data = HtmlEditor.changeLineFeedToBrTag(raw);
         assertThat(data, is("改行<br>テスト"));
 
         raw = "改行\r\nテスト";
-        data = HtmlEditor.changeLineFeedToBr(raw);
+        data = HtmlEditor.changeLineFeedToBrTag(raw);
         assertThat(data, is("改行<br>テスト"));
 
         raw = "複数\r\n改行\r\nテスト";
-        data = HtmlEditor.changeLineFeedToBr(raw);
+        data = HtmlEditor.changeLineFeedToBrTag(raw);
         assertThat(data, is("複数<br>改行<br>テスト"));
     }
 
