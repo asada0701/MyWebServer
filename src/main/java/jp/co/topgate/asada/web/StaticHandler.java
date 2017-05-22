@@ -1,8 +1,5 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.app.Handler;
-import jp.co.topgate.asada.web.app.StatusLine;
-
 import java.io.File;
 import java.io.OutputStream;
 
@@ -26,16 +23,14 @@ public class StaticHandler extends Handler {
 
     /**
      * リクエストの処理を行うメソッド
-     *
-     * @return レスポンスメッセージの状態行(StatusLine)を返す
      */
     @Override
-    public final StatusLine doRequestProcess() {
+    public final void doRequestProcess() {
         String method = requestMessage.getMethod();
         String uri = requestMessage.getUri();
         String protocolVersion = requestMessage.getProtocolVersion();
 
-        return StaticHandler.getStatusLine(method, uri, protocolVersion);
+        this.statusLine = StaticHandler.getStatusLine(method, uri, protocolVersion);
     }
 
     /**
@@ -69,23 +64,22 @@ public class StaticHandler extends Handler {
     /**
      * レスポンスの処理を行うメソッド
      *
-     * @param os SocketのOutputStreamを渡す
-     * @param sl ステータスラインの列挙型を渡す
+     * @param outputStream SocketのOutputStreamを渡す
      */
     @Override
-    public void doResponseProcess(OutputStream os, StatusLine sl) {
-        ResponseMessage rm = new ResponseMessage();
+    public void doResponseProcess(OutputStream outputStream) {
+        ResponseMessage responseMessage = new ResponseMessage();
         String path = Handler.FILE_PATH + requestMessage.getUri();
 
-        if (sl.equals(StatusLine.OK)) {
+        if (statusLine.equals(StatusLine.OK)) {
             ContentType ct = new ContentType(path);
-            rm.addHeader("Content-Type", ct.getContentType());
-            rm.addHeader("Content-Length", String.valueOf(new File(path).length()));
+            responseMessage.addHeader("Content-Type", ct.getContentType());
+            responseMessage.addHeader("Content-Length", String.valueOf(new File(path).length()));
         } else {
-            rm.addHeader("Content-Type", "text/html; charset=UTF-8");
+            responseMessage.addHeader("Content-Type", "text/html; charset=UTF-8");
         }
 
-        rm.returnResponse(os, sl, path);
+        responseMessage.returnResponse(outputStream, statusLine, path);
     }
 
     //テスト用

@@ -1,16 +1,11 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.app.Handler;
-import jp.co.topgate.asada.web.app.StatusLine;
 import jp.co.topgate.asada.web.exception.HtmlInitializeException;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 import jp.co.topgate.asada.web.exception.SocketRuntimeException;
 
-import java.io.IOException;
-import java.net.BindException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.SocketException;
+import java.io.*;
+import java.net.*;
 
 /**
  * サーバークラス
@@ -18,16 +13,15 @@ import java.net.SocketException;
  * @author asada
  */
 class Server extends Thread {
-    private static final int portNumber = 8080;
     private ServerSocket serverSocket = null;
-    private Socket socket = new Socket();
+    private Socket clientSocket = new Socket();
 
     /**
      * コンストラクタ
      *
      * @throws IOException サーバーソケットでエラーが発生しました
      */
-    Server() throws IOException {
+    Server(int portNumber) throws IOException {
         serverSocket = new ServerSocket(portNumber);
     }
 
@@ -45,12 +39,11 @@ class Server extends Thread {
      * @throws IOException サーバーソケットでエラーが発生しました
      */
     boolean stopServer() throws IOException {
-        boolean result = false;
-        if (socket == null) {
+        if (clientSocket == null) {
             serverSocket.close();
-            result = true;
+            return true;
         }
-        return result;
+        return false;
     }
 
     /**
@@ -60,8 +53,8 @@ class Server extends Thread {
      * @throws IOException サーバーソケットでエラーが発生しました
      */
     void endServer() throws IOException {
-        if (socket != null) {
-            socket.close();
+        if (clientSocket != null) {
+            clientSocket.close();
         }
         serverSocket.close();
     }
@@ -74,26 +67,28 @@ class Server extends Thread {
     public void run() {
         try {
             while (true) {
-                socket = serverSocket.accept();
+                clientSocket = serverSocket.accept();
                 try {
-                    Handler handler = Handler.getHandler(socket.getInputStream());
+                    RequestMessage requestMessage = RequestMessageParser.parse(clientSocket.getInputStream());
 
-                    StatusLine sl = handler.doRequestProcess();
+                    Handler handler = Handler.getHandler(requestMessage);
 
-                    handler.doResponseProcess(socket.getOutputStream(), sl);
+                    handler.doRequestProcess();
+
+                    handler.doResponseProcess(clientSocket.getOutputStream());
 
                 } catch (RequestParseException e) {                 //リクエストメッセージに問題があった場合の例外処理
-                    ResponseMessage rm = new ResponseMessage();
-                    rm.returnResponse(socket.getOutputStream(), StatusLine.BAD_REQUEST, "");
+                    ResponseMessage responseMessage = new ResponseMessage();
+                    responseMessage.returnResponse(clientSocket.getOutputStream(), StatusLine.BAD_REQUEST, "");
 
                 } catch (HtmlInitializeException e) {               //HTMLファイルに問題が発生した場合の例外処理
-                    ResponseMessage rm = new ResponseMessage();
-                    rm.returnResponse(socket.getOutputStream(), StatusLine.INTERNAL_SERVER_ERROR, "");
+                    ResponseMessage responseMessage = new ResponseMessage();
+                    responseMessage.returnResponse(clientSocket.getOutputStream(), StatusLine.INTERNAL_SERVER_ERROR, "");
                     throw new SocketRuntimeException(e.getMessage());
                 }
 
-                socket.close();
-                socket = null;
+                clientSocket.close();
+                clientSocket = null;
             }
 
         } catch (BindException e) {

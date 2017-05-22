@@ -1,6 +1,5 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.app.StatusLine;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
@@ -37,27 +36,27 @@ public class ResponseMessage {
      * リソースファイルを使用したい場合に使用するメソッド
      * レスポンスメッセージを返したいタイミングで呼び出す
      *
-     * @param os       ソケットの出力ストリーム
-     * @param sl       ステータスライン
-     * @param filePath リソースファイルのパスを渡す
-     *                 （例）./src/main/resources/index.html
+     * @param outputStream ソケットの出力ストリーム
+     * @param statusLine   ステータスライン
+     * @param filePath     リソースファイルのパスを渡す
+     *                     （例）./src/main/resources/index.html
      */
-    public void returnResponse(OutputStream os, StatusLine sl, String filePath) {
+    public void returnResponse(OutputStream outputStream, StatusLine statusLine, String filePath) {
         try {
-            os.write(getResponseLine(protocolVersion, sl).getBytes());
-            os.write(getHeader(headerField).getBytes());
+            outputStream.write(getResponseLine(protocolVersion, statusLine).getBytes());
+            outputStream.write(getHeader(headerField).getBytes());
 
-            if (sl.equals(StatusLine.OK)) {
+            if (statusLine.equals(StatusLine.OK)) {
                 try (InputStream in = new FileInputStream(filePath)) {
                     int num;
                     while ((num = in.read()) != -1) {
-                        os.write(num);
+                        outputStream.write(num);
                     }
                 }
             } else {
-                os.write(getErrorMessageBody(sl).getBytes());
+                outputStream.write(getErrorMessageBody(statusLine).getBytes());
             }
-            os.flush();
+            outputStream.flush();
         } catch (IOException e) {
 
         }
@@ -67,21 +66,21 @@ public class ResponseMessage {
      * JSONなど、リソースファイルを使わない場合に使用するメソッド
      * レスポンスメッセージを返したいタイミングで呼び出す
      *
-     * @param os     ソケットの出力ストリーム
-     * @param sl     ステータスライン
-     * @param target byteの配列でレスポンスのメッセージボディを渡す
+     * @param outputStream ソケットの出力ストリーム
+     * @param statusLine   ステータスライン
+     * @param target       byteの配列でレスポンスのメッセージボディを渡す
      */
-    void returnResponse(OutputStream os, StatusLine sl, byte[] target) {
+    void returnResponse(OutputStream outputStream, StatusLine statusLine, byte[] target) {
         try {
-            os.write(getResponseLine(protocolVersion, sl).getBytes());
-            os.write(getHeader(headerField).getBytes());
+            outputStream.write(getResponseLine(protocolVersion, statusLine).getBytes());
+            outputStream.write(getHeader(headerField).getBytes());
 
-            if (sl.equals(StatusLine.OK)) {
-                os.write(target);
+            if (statusLine.equals(StatusLine.OK)) {
+                outputStream.write(target);
             } else {
-                os.write(getErrorMessageBody(sl).getBytes());
+                outputStream.write(getErrorMessageBody(statusLine).getBytes());
             }
-            os.flush();
+            outputStream.flush();
         } catch (IOException e) {
 
         }
@@ -91,25 +90,25 @@ public class ResponseMessage {
      * レスポンスラインを生成する
      *
      * @param protocolVersion プロトコルバージョンを渡す
-     * @param sl              StatusLineを渡す
+     * @param statusLine      StatusLineを渡す
      * @return レスポンスラインの文字列が返される
      */
     @NotNull
-    static String getResponseLine(String protocolVersion, StatusLine sl) {
-        String[] str = {protocolVersion, String.valueOf(sl.getStatusCode()), sl.getReasonPhrase()};
+    static String getResponseLine(String protocolVersion, StatusLine statusLine) {
+        String[] str = {protocolVersion, String.valueOf(statusLine.getStatusCode()), statusLine.getReasonPhrase()};
         return String.join(REQUEST_LINE_SEPARATOR, str) + "\n";
     }
 
     /**
      * ヘッダーを生成する
      *
-     * @param list ヘッダーのリストを渡す
+     * @param headerField ヘッダーのリストを渡す
      * @return ヘッダーフィールドの文字列が返される
      */
     @NotNull
-    static String getHeader(List<String> list) {
+    static String getHeader(List<String> headerField) {
         StringBuilder builder = new StringBuilder();
-        for (String s : list) {
+        for (String s : headerField) {
             builder.append(s).append("\n");
         }
         builder.append("\n");
@@ -120,16 +119,16 @@ public class ResponseMessage {
      * エラーメッセージを保持しているメソッド
      * 引数がnullの場合もHTTPステータスコード:500の文字列を返します
      *
-     * @param sl ステータスライン
+     * @param statusLine ステータスライン
      * @return エラーの場合のレスポンスメッセージの内容
      */
-    static String getErrorMessageBody(StatusLine sl) {
-        if (sl == null) {
+    static String getErrorMessageBody(StatusLine statusLine) {
+        if (statusLine == null) {
             return "<html><head><title>500 Internal Server Error</title></head>" +
                     "<body><h1>Internal Server Error</h1>" +
                     "<p>サーバー内部のエラーにより表示できません。ごめんなさい。</p></body></html>";
         }
-        switch (sl) {
+        switch (statusLine) {
             case BAD_REQUEST:
                 return "<html><head><title>400 Bad Request</title></head>" +
                         "<body><h1>Bad Request</h1>" +

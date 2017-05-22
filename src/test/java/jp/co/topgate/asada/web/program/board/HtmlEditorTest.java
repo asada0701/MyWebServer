@@ -1,4 +1,4 @@
-package jp.co.topgate.asada.web.app;
+package jp.co.topgate.asada.web.program.board;
 
 import jp.co.topgate.asada.web.model.Message;
 import org.junit.*;
@@ -103,7 +103,7 @@ public class HtmlEditorTest {
         assertThat(index[i++], is("            <p>"));
         assertThat(index[i++], is("                パスワード<input type=\"password\" name=\"password\" size=\"10\" required>(投稿した文を削除するときに使います。)"));
         assertThat(index[i++], is("            </p>"));
-        assertThat(index[i++], is("            <input type=\"hidden\" name=\"param\" value=\"contribution\">"));
+        assertThat(index[i++], is("            <input type=\"hidden\" name=\"param\" value=\"write\">"));
         assertThat(index[i++], is("            <input type=\"submit\" value=\"投稿\">"));
         assertThat(index[i++], is("        </form>"));
         assertThat(index[i++], is("    </div>"));
@@ -133,7 +133,7 @@ public class HtmlEditorTest {
         assertThat(index[i++], is("                </td>"));
         assertThat(index[i++], is("                <td>"));
         assertThat(index[i++], is("                    <form action=\"/program/board/\" method=\"post\">"));
-        assertThat(index[i++], is("                        <input type=\"hidden\" name=\"param\" value=\"delete1\">"));
+        assertThat(index[i++], is("                        <input type=\"hidden\" name=\"param\" value=\"delete_step_1\">"));
         assertThat(index[i++], is("                        <input type=\"hidden\" name=\"number\" value=\"4\">"));
         assertThat(index[i++], is("                        <input type=\"submit\" value=\"このコメントを削除する\">"));
         assertThat(index[i++], is("                    </form>"));
@@ -154,7 +154,7 @@ public class HtmlEditorTest {
         assertThat(index[i++], is("                </td>"));
         assertThat(index[i++], is("                <td>"));
         assertThat(index[i++], is("                    <form action=\"/program/board/\" method=\"post\">"));
-        assertThat(index[i++], is("                        <input type=\"hidden\" name=\"param\" value=\"delete1\">"));
+        assertThat(index[i++], is("                        <input type=\"hidden\" name=\"param\" value=\"delete_step_1\">"));
         assertThat(index[i++], is("                        <input type=\"hidden\" name=\"number\" value=\"3\">"));
         assertThat(index[i++], is("                        <input type=\"submit\" value=\"このコメントを削除する\">"));
         assertThat(index[i++], is("                    </form>"));
@@ -175,7 +175,7 @@ public class HtmlEditorTest {
         assertThat(index[i++], is("                </td>"));
         assertThat(index[i++], is("                <td>"));
         assertThat(index[i++], is("                    <form action=\"/program/board/\" method=\"post\">"));
-        assertThat(index[i++], is("                        <input type=\"hidden\" name=\"param\" value=\"delete1\">"));
+        assertThat(index[i++], is("                        <input type=\"hidden\" name=\"param\" value=\"delete_step_1\">"));
         assertThat(index[i++], is("                        <input type=\"hidden\" name=\"number\" value=\"2\">"));
         assertThat(index[i++], is("                        <input type=\"submit\" value=\"このコメントを削除する\">"));
         assertThat(index[i++], is("                    </form>"));
@@ -196,7 +196,7 @@ public class HtmlEditorTest {
         assertThat(index[i++], is("                </td>"));
         assertThat(index[i++], is("                <td>"));
         assertThat(index[i++], is("                    <form action=\"/program/board/\" method=\"post\">"));
-        assertThat(index[i++], is("                        <input type=\"hidden\" name=\"param\" value=\"delete1\">"));
+        assertThat(index[i++], is("                        <input type=\"hidden\" name=\"param\" value=\"delete_step_1\">"));
         assertThat(index[i++], is("                        <input type=\"hidden\" name=\"number\" value=\"1\">"));
         assertThat(index[i++], is("                        <input type=\"submit\" value=\"このコメントを削除する\">"));
         assertThat(index[i++], is("                    </form>"));
@@ -239,7 +239,7 @@ public class HtmlEditorTest {
         assertThat(search[i++], is("            <p>"));
         assertThat(search[i++], is("                パスワード<input type=\"password\" name=\"password\" size=\"10\" required>(投稿した文を削除するときに使います。)"));
         assertThat(search[i++], is("            </p>"));
-        assertThat(search[i++], is("            <input type=\"hidden\" name=\"param\" value=\"contribution\">"));
+        assertThat(search[i++], is("            <input type=\"hidden\" name=\"param\" value=\"write\">"));
         assertThat(search[i++], is("            <input type=\"submit\" value=\"投稿\">"));
         assertThat(search[i++], is("        </form>"));
         assertThat(search[i++], is("    </div>"));
@@ -261,7 +261,7 @@ public class HtmlEditorTest {
         assertThat(search[i++], is("                <td>2017/5/11 11:57</td>"));
         assertThat(search[i++], is("                <td>"));
         assertThat(search[i++], is("                    <form action=\"/program/board/\" method=\"post\">"));
-        assertThat(search[i++], is("                        <input type=\"hidden\" name=\"param\" value=\"delete1\">"));
+        assertThat(search[i++], is("                        <input type=\"hidden\" name=\"param\" value=\"delete_step_1\">"));
         assertThat(search[i++], is("                        <input type=\"hidden\" name=\"number\" value=\"4\">"));
         assertThat(search[i++], is("                        <input type=\"submit\" value=\"このコメントを削除する\">"));
         assertThat(search[i++], is("                    </form>"));
@@ -275,7 +275,7 @@ public class HtmlEditorTest {
         assertThat(search[i++], is("                <td>2017/5/11 11:57</td>"));
         assertThat(search[i++], is("                <td>"));
         assertThat(search[i++], is("                    <form action=\"/program/board/\" method=\"post\">"));
-        assertThat(search[i++], is("                        <input type=\"hidden\" name=\"param\" value=\"delete1\">"));
+        assertThat(search[i++], is("                        <input type=\"hidden\" name=\"param\" value=\"delete_step_1\">"));
         assertThat(search[i++], is("                        <input type=\"hidden\" name=\"number\" value=\"3\">"));
         assertThat(search[i++], is("                        <input type=\"submit\" value=\"このコメントを削除する\">"));
         assertThat(search[i++], is("                    </form>"));
@@ -289,7 +289,7 @@ public class HtmlEditorTest {
         assertThat(search[i++], is("                <td>2017/5/11 11:57</td>"));
         assertThat(search[i++], is("                <td>"));
         assertThat(search[i++], is("                    <form action=\"/program/board/\" method=\"post\">"));
-        assertThat(search[i++], is("                        <input type=\"hidden\" name=\"param\" value=\"delete1\">"));
+        assertThat(search[i++], is("                        <input type=\"hidden\" name=\"param\" value=\"delete_step_1\">"));
         assertThat(search[i++], is("                        <input type=\"hidden\" name=\"number\" value=\"2\">"));
         assertThat(search[i++], is("                        <input type=\"submit\" value=\"このコメントを削除する\">"));
         assertThat(search[i++], is("                    </form>"));
@@ -303,7 +303,7 @@ public class HtmlEditorTest {
         assertThat(search[i++], is("                <td>2017/5/11 11:56</td>"));
         assertThat(search[i++], is("                <td>"));
         assertThat(search[i++], is("                    <form action=\"/program/board/\" method=\"post\">"));
-        assertThat(search[i++], is("                        <input type=\"hidden\" name=\"param\" value=\"delete1\">"));
+        assertThat(search[i++], is("                        <input type=\"hidden\" name=\"param\" value=\"delete_step_1\">"));
         assertThat(search[i++], is("                        <input type=\"hidden\" name=\"number\" value=\"1\">"));
         assertThat(search[i++], is("                        <input type=\"submit\" value=\"このコメントを削除する\">"));
         assertThat(search[i++], is("                    </form>"));
@@ -381,7 +381,7 @@ public class HtmlEditorTest {
         assertThat(delete[i++], is("                パスワード<input type=\"password\" name=\"password\" size=\"10\" required>"));
         assertThat(delete[i++], is("            </p>"));
         assertThat(delete[i++], is("            <input type=\"hidden\" name=\"number\" value=\"1\">"));
-        assertThat(delete[i++], is("            <input type=\"hidden\" name=\"param\" value=\"delete2\">"));
+        assertThat(delete[i++], is("            <input type=\"hidden\" name=\"param\" value=\"delete_step_2\">"));
         assertThat(delete[i++], is("            <input type=\"submit\" value=\"削除する\">"));
         assertThat(delete[i++], is("        </form>"));
         assertThat(delete[i++], is("    </div>"));
@@ -428,7 +428,7 @@ public class HtmlEditorTest {
         assertThat(result[i++], is("                </td>"));
         assertThat(result[i++], is("                <td>"));
         assertThat(result[i++], is("                    <form action=\"/program/board/\" method=\"post\">"));
-        assertThat(result[i++], is("                        <input type=\"hidden\" name=\"param\" value=\"delete1\">"));
+        assertThat(result[i++], is("                        <input type=\"hidden\" name=\"param\" value=\"delete_step_1\">"));
         assertThat(result[i++], is("                        <input type=\"hidden\" name=\"number\" value=\"1\">"));
         assertThat(result[i++], is("                        <input type=\"submit\" value=\"このコメントを削除する\">"));
         assertThat(result[i++], is("                    </form>"));
@@ -444,7 +444,7 @@ public class HtmlEditorTest {
         assertThat(result[i++], is("                <td>2017/5/11 11:56</td>"));
         assertThat(result[i++], is("                <td>"));
         assertThat(result[i++], is("                    <form action=\"/program/board/\" method=\"post\">"));
-        assertThat(result[i++], is("                        <input type=\"hidden\" name=\"param\" value=\"delete1\">"));
+        assertThat(result[i++], is("                        <input type=\"hidden\" name=\"param\" value=\"delete_step_1\">"));
         assertThat(result[i++], is("                        <input type=\"hidden\" name=\"number\" value=\"1\">"));
         assertThat(result[i++], is("                        <input type=\"submit\" value=\"このコメントを削除する\">"));
         assertThat(result[i++], is("                    </form>"));
@@ -490,11 +490,11 @@ public class HtmlEditorTest {
             assertThat(br.readLine(), is("test"));
         }
 
-        he.allInitialization();
+        he.resetAllFiles();
     }
 
     @After
     public void tearDown() {
-        htmlEditor.allInitialization();
+        htmlEditor.resetAllFiles();
     }
 }

@@ -24,7 +24,7 @@ public final class ModelController {
     /**
      * メッセージIDのインデックス
      */
-    private static int messageID = 1;
+    private static int nextMessageID = 1;
 
     /**
      * コンストラクタ
@@ -42,7 +42,7 @@ public final class ModelController {
         ModelController.messageList = messageList;
 
         if (messageList.size() > 0) {
-            messageID = messageList.get(messageList.size() - 1).getMessageID() + 1;
+            nextMessageID = messageList.get(messageList.size() - 1).getMessageID() + 1;
         }
     }
 
@@ -51,7 +51,7 @@ public final class ModelController {
      */
     public static void addMessage(String name, String title, String text, String password) {
         Message message = new Message();
-        message.setMessageID(messageID);
+        message.setMessageID(nextMessageID);
         message.setName(name);
         message.setTitle(title);
         message.setText(text);
@@ -59,7 +59,7 @@ public final class ModelController {
         message.setDate(getNowDate());
         messageList.add(message);
 
-        messageID++;
+        nextMessageID++;
     }
 
     /**
@@ -77,10 +77,10 @@ public final class ModelController {
      * @param messageID 探したいメッセージのIDを渡す
      * @return ターゲットのメッセージを返す
      */
-    public static Message findMessage(int messageID) {
-        for (Message m : messageList) {
-            if (m.getMessageID() == messageID) {
-                return m;
+    public static Message findMessagebyID(int messageID) {
+        for (Message message : messageList) {
+            if (message.getMessageID() == messageID) {
+                return message;
             }
         }
         return null;
@@ -92,14 +92,14 @@ public final class ModelController {
      * @param name 探したい投稿者の名前を渡す
      * @return 見つからない場合はnull、見つかった場合はListで返す
      */
-    public static List<Message> findSameNameMessage(String name) {
-        List<Message> al = new ArrayList<>();
-        for (Message m : messageList) {
-            if (m.getName().equals(name)) {
-                al.add(m);
+    public static List<Message> findMessageByName(String name) {
+        List<Message> result = new ArrayList<>();
+        for (Message message : messageList) {
+            if (message.getName().equals(name)) {
+                result.add(message);
             }
         }
-        return al;
+        return result;
     }
 
     /**
@@ -110,10 +110,10 @@ public final class ModelController {
      * @return 削除に成功するとtrueを返す
      */
     public static boolean deleteMessage(int messageID, String password) {
-        for (Message m : messageList) {
+        for (Message message : messageList) {
             BCryptPasswordEncoder bcrypt = new BCryptPasswordEncoder();
-            if (messageID == m.getMessageID() && bcrypt.matches(password, m.getPassword())) {
-                messageList.remove(m);
+            if (messageID == message.getMessageID() && bcrypt.matches(password, message.getPassword())) {
+                messageList.remove(message);
                 return true;
             }
         }
@@ -128,9 +128,9 @@ public final class ModelController {
      */
     @Nullable
     public static String getName(int messageID) {
-        for (Message m : messageList) {
-            if (messageID == m.getMessageID()) {
-                return m.getName();
+        for (Message message : messageList) {
+            if (messageID == message.getMessageID()) {
+                return message.getName();
             }
         }
         return null;
@@ -153,7 +153,7 @@ public final class ModelController {
      */
     @Contract(pure = true)
     static int getMessageID() {
-        return messageID;
+        return nextMessageID;
     }
 
     /**

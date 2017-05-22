@@ -1,6 +1,5 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.app.StatusLine;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -29,9 +28,9 @@ public class StaticHandlerTest {
         public void 正しく動作するか() throws Exception {
             String path = "./src/test/resources/GetRequestMessage.txt";
             try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(path)))) {
-                RequestMessage rm = new RequestMessage(bis);
-                StaticHandler sut = new StaticHandler(rm);
-                assertThat(sut.getRequestMessage(), is(rm));
+                RequestMessage requestMessage = RequestMessageParser.parse(bis);
+                StaticHandler sut = new StaticHandler(requestMessage);
+                assertThat(sut.getRequestMessage(), is(requestMessage));
             }
         }
     }
@@ -41,9 +40,10 @@ public class StaticHandlerTest {
         public void 正しく動作するか() throws Exception {
             String path = "./src/test/resources/GetRequestMessage.txt";
             try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(path)))) {
-                RequestMessage rm = new RequestMessage(bis);
+                RequestMessage rm = RequestMessageParser.parse(bis);
                 StaticHandler sut = new StaticHandler(rm);
-                assertThat(sut.doRequestProcess(), is(StatusLine.OK));
+                sut.doRequestProcess();
+                assertThat(sut.getStatusLine(), is(StatusLine.OK));
             }
         }
     }
@@ -55,11 +55,13 @@ public class StaticHandlerTest {
             try (FileOutputStream fos = new FileOutputStream(path);
                  FileInputStream is = new FileInputStream(new File("./src/test/resources/GetRequestMessage.txt"))) {
 
-                RequestMessage rm = new RequestMessage(is);
+                RequestMessage rm = RequestMessageParser.parse(is);
                 StaticHandler sut = new StaticHandler(rm);
-                StatusLine sl = sut.doRequestProcess();
+                sut.doRequestProcess();
 
-                sut.doResponseProcess(fos, sl);
+                assertThat(sut.getStatusLine(), is(StatusLine.OK));
+
+                sut.doResponseProcess(fos);
             }
             try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(path))))) {
 
@@ -105,11 +107,13 @@ public class StaticHandlerTest {
             try (FileOutputStream fos = new FileOutputStream(path);
                  FileInputStream is = new FileInputStream(new File("./src/test/resources/NotFound.txt"))) {
 
-                RequestMessage rm = new RequestMessage(is);
+                RequestMessage rm = RequestMessageParser.parse(is);
                 StaticHandler sut = new StaticHandler(rm);
-                StatusLine sl = sut.doRequestProcess();
+                sut.doRequestProcess();
 
-                sut.doResponseProcess(fos, sl);
+                assertThat(sut.getStatusLine(), is(StatusLine.NOT_FOUND));
+
+                sut.doResponseProcess(fos);
             }
             try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(path))))) {
                 assertThat(br.readLine(), is("HTTP/1.1 404 Not Found"));

@@ -1,4 +1,4 @@
-package jp.co.topgate.asada.web.app;
+package jp.co.topgate.asada.web.util;
 
 import jp.co.topgate.asada.web.model.Message;
 import org.junit.AfterClass;
