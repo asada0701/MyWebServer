@@ -34,7 +34,7 @@ public class RequestMessageParserTest {
         public void 空チェック() throws Exception {
             String path = "./src/test/resources/emptyRequestMessage.txt";
             try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(path)))) {
-                sut = RequestMessageParser.parseRequestMessage(bis);
+                sut = RequestMessageParser.parse(bis);
             }
         }
 
@@ -42,7 +42,7 @@ public class RequestMessageParserTest {
         public void GETの場合正しく動作するか() throws Exception {
             String path = "./src/test/resources/GetRequestMessage.txt";
             try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(path)))) {
-                sut = RequestMessageParser.parseRequestMessage(bis);
+                sut = RequestMessageParser.parse(bis);
                 assertThat(sut.getMethod(), is("GET"));
                 assertThat(sut.getUri(), is("/index.html"));
                 assertThat(sut.getProtocolVersion(), is("HTTP/1.1"));
@@ -73,7 +73,7 @@ public class RequestMessageParserTest {
         public void POSTの場合正しく動作するか() throws Exception {
             String path = "./src/test/resources/PostRequestMessage.txt";
             try (FileInputStream fis = new FileInputStream(new File(path))) {
-                sut = RequestMessageParser.parseRequestMessage(fis);
+                sut = RequestMessageParser.parse(fis);
                 assertThat(sut.getMethod(), is("POST"));
                 assertThat(sut.getUri(), is("/program/board/index.html"));
                 assertThat(sut.getProtocolVersion(), is("HTTP/1.1"));
@@ -90,7 +90,7 @@ public class RequestMessageParserTest {
                 assertThat(sut.findHeaderByName("Content-Type"), is("application/x-www-form-urlencoded"));
                 assertThat(sut.findHeaderByName("Content-Length"), is("123"));
 
-                Map<String, String> messageBody = sut.parseMessageBodyToMapString();
+                Map<String, String> messageBody = sut.getMessageBodyToMapString();
                 assertThat(messageBody.get("name"), is("asada"));
                 assertThat(messageBody.get("title"), is("test"));
                 assertThat(messageBody.get("text"), is("こんにちは"));
@@ -139,9 +139,9 @@ public class RequestMessageParserTest {
         public void 正しく動作するか() throws Exception {
             String path = "./src/test/resources/PostRequestMessage.txt";
             try (FileInputStream fis = new FileInputStream(new File(path))) {
-                RequestMessage sut = RequestMessageParser.parseRequestMessage(fis);
+                RequestMessage sut = RequestMessageParser.parse(fis);
                 
-                Map<String, String> messageBody = sut.parseMessageBodyToMapString();
+                Map<String, String> messageBody = sut.getMessageBodyToMapString();
                 assertThat(messageBody.get("name"), is("asada"));
                 assertThat(messageBody.get("title"), is("test"));
                 assertThat(messageBody.get("text"), is("こんにちは"));

@@ -1,8 +1,5 @@
-package jp.co.topgate.asada.web.app;
+package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.RequestMessage;
-import jp.co.topgate.asada.web.StaticHandler;
-import jp.co.topgate.asada.web.StatusLine;
 import jp.co.topgate.asada.web.exception.HtmlInitializeException;
 import jp.co.topgate.asada.web.program.board.HtmlEditor;
 import jp.co.topgate.asada.web.program.board.ProgramBoardHandler;
@@ -18,12 +15,7 @@ public abstract class Handler {
     /**
      * リソースファイルのパス
      */
-    public static final String FILE_PATH = "./src/main/resources";
-
-    /**
-     * レスポンスラインの状態行(StatusLine)
-     */
-    protected StatusLine statusLine;
+    static final String FILE_PATH = "./src/main/resources";
 
     /**
      * ハンドラーのファクトリーメソッド
@@ -35,7 +27,7 @@ public abstract class Handler {
      * @return 今回の接続を担当するハンドラーのオブジェクトを返す
      * @throws HtmlInitializeException {@link HtmlEditor#HtmlEditor()}を参照
      */
-    public static Handler getHandler(RequestMessage requestMessage) throws HtmlInitializeException {
+    static Handler getHandler(RequestMessage requestMessage) throws HtmlInitializeException {
         String uri = requestMessage.getUri();
 
         Handler handler = new StaticHandler(requestMessage);
@@ -56,20 +48,9 @@ public abstract class Handler {
     }
 
     /**
-     * リクエストの処理を行うメソッド
-     */
-    public abstract void doRequestProcess();
-
-    /**
-     * レスポンスの処理を行うメソッド
-     * レスポンスに追加したいヘッダがある場合は、このメソッド内で追加する
+     * リクエストを適切に処理し、ResponseMessageのオブジェクトを生成し、OutputStreamにレスポンスを書き込む
      *
      * @param outputStream SocketのOutputStream
      */
-    public abstract void doResponseProcess(OutputStream outputStream);
-
-    //テスト用
-    public StatusLine getStatusLine() {
-        return this.statusLine;
-    }
+    public abstract void handleRequest(OutputStream outputStream);
 }

@@ -1,10 +1,12 @@
 package jp.co.topgate.asada.web.exception;
 
 /**
- * Created by yusuke-pc on 2017/05/17.
+ * ServerSocketクラスやSocketクラスで発生したIOException
+ *
+ * @author asada
  */
 public class SocketRuntimeException extends RuntimeException {
-    public SocketRuntimeException(String msg){
-        super(msg);
+    public SocketRuntimeException(String msg, Throwable cause) {
+        super(msg, cause);
     }
 }

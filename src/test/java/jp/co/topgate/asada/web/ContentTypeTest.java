@@ -17,13 +17,37 @@ public class ContentTypeTest {
     }
 
     @Test
-    public void 空文字テスト() {
+    public void デフォルトの値が返ってくるテスト() {
         ContentType sut = new ContentType("");
+        assertThat(sut.getContentType(), is("application/octet-stream"));
+
+        sut = new ContentType("hoge");
+        assertThat(sut.getContentType(), is("application/octet-stream"));
+
+        sut = new ContentType("/////////index.html/////////////");
+        assertThat(sut.getContentType(), is("application/octet-stream"));
+
+        sut = new ContentType("日本語.html/");
+        assertThat(sut.getContentType(), is("application/octet-stream"));
+
+        sut = new ContentType("sample.mp4");
         assertThat(sut.getContentType(), is("application/octet-stream"));
     }
 
     @Test
-    public void 正しくコンテンツタイプを取得できるか() {
+    public void 正しく動作するかテスト() {
+        ContentType sut = new ContentType("////////////////index.html");
+        assertThat(sut.getContentType(), is("text/html; charset=UTF-8"));
+
+        sut = new ContentType("//////日本語////////日本語.html");
+        assertThat(sut.getContentType(), is("text/html; charset=UTF-8"));
+
+        sut = new ContentType("html");
+        assertThat(sut.getContentType(), is("text/html; charset=UTF-8"));
+    }
+
+    @Test
+    public void コンテンツタイプの網羅テスト() {
         ContentType sut = new ContentType("/index.htm");
         assertThat(sut.getContentType(), is("text/html; charset=UTF-8"));
 

@@ -4,6 +4,7 @@ import jp.co.topgate.asada.web.exception.HtmlInitializeException;
 import jp.co.topgate.asada.web.model.Message;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,17 +20,33 @@ public class HtmlEditor {
      * HTMLの編集する場所のスタート地点を
      * div id = "log" で探す
      */
-    private static final String SEARCH_DIV_ID = "<div id=\"log\">";
+    private static final String DIV_ID_LOG = "<div id=\"log\">";
 
     /**
-     * div id = "log"の後の t の閉じタグの次から編集を開始する
+     * div id = "log"の後の t の閉じタグの次からメッセージを追加する
      */
-    private static final String EDIT_START_POINT = "</tr>";
+    private static final String INSERT_MESSAGE_FROM = "</tr>";
 
     /**
      * 編集するHTMLの初期状態を保存するマップ
      */
     private static Map<EditHtmlList, String> rawHtml = new HashMap<>();
+
+    /**
+     * ブラウザから送られてきた文字列に含まれている改行コードを
+     * HTMLのbrタグに置換する際に使用するリスト
+     */
+    private static List<String> lineFeedPattern = new ArrayList<>();
+
+    static {
+        lineFeedPattern.add("\r\n");
+        lineFeedPattern.add("\n");
+    }
+
+    /**
+     * HTML文章で改行を表すbrタグ
+     */
+    private static final String LINE_FEED_HTML = "<br>";
 
     /**
      * コンストラクタ
@@ -48,7 +65,7 @@ public class HtmlEditor {
                 rawHtml.put(editHtmlList, builder.toString());
 
             } catch (IOException e) {
-                throw new HtmlInitializeException(e.getMessage());
+                throw new HtmlInitializeException(e.getMessage(), e.getCause());
             }
         }
     }
@@ -64,7 +81,7 @@ public class HtmlEditor {
                 outputStream.write(rawHtml.get(editHtmlList).getBytes());
                 outputStream.flush();
             } catch (IOException e) {
-                throw new HtmlInitializeException(e.getMessage());
+                throw new HtmlInitializeException(e.getMessage(), e.getCause());
             }
         }
     }
@@ -82,8 +99,8 @@ public class HtmlEditor {
 
         for (int i = 0; i < lineArray.length; i++) {
             String line = lineArray[i];
-            if (line.endsWith(SEARCH_DIV_ID)) {         //<div id="log">の箇所を探す
-                while (!line.endsWith(EDIT_START_POINT)) {            //</tr>の次の行から編集する
+            if (line.endsWith(DIV_ID_LOG)) {         //<div id="log">の箇所を探す
+                while (!line.endsWith(INSERT_MESSAGE_FROM)) {            //</tr>の次の行から編集する
                     builder.append(line).append("\n");
                     line = lineArray[++i];
                 }
@@ -112,8 +129,8 @@ public class HtmlEditor {
 
         for (int i = 0; i < lineArray.length; i++) {
             String line = lineArray[i];
-            if (line.endsWith(SEARCH_DIV_ID)) {         //<div id="log">の箇所を探す
-                while (!line.endsWith(EDIT_START_POINT)) {            //</tr>の次の行から編集する
+            if (line.endsWith(DIV_ID_LOG)) {         //<div id="log">の箇所を探す
+                while (!line.endsWith(INSERT_MESSAGE_FROM)) {            //</tr>の次の行から編集する
                     builder.append(line).append("\n");
                     line = lineArray[++i];
                 }
@@ -123,11 +140,9 @@ public class HtmlEditor {
                 builder.append(changeMessageToHtml(EditHtmlList.DELETE_HTML, message));
                 line = lineArray[i];
             }
-            if (line.endsWith("<input type=\"hidden\" name=\"number\" value=\"\">")) {
+            if (line.startsWith("            <input type=\"hidden\" name=\"number\" value=\"")) {
                 builder.append("            <input type=\"hidden\" name=\"number\" value=\"");
                 builder.append(message.getMessageID()).append("\">").append("\n");
-
-                line = lineArray[++i];
             }
 
             builder.append(line).append("\n");
@@ -203,13 +218,11 @@ public class HtmlEditor {
      * @return 改行コードを全てbrタグに修正して返す
      */
     static String changeLineFeedToBrTag(String str) {
-        if (str.contains("\r\n")) {
-            return str.replaceAll("\r\n", "<br>");
-
-        } else if (str.contains("\n")) {
-            return str.replaceAll("\n", "<br>");
+        for (String lineFeed : lineFeedPattern) {
+            if (lineFeed.equals(str)) {
+                return str.replaceAll(lineFeed, LINE_FEED_HTML);
+            }
         }
-
         return str;
     }
 

@@ -1,4 +1,4 @@
-package jp.co.topgate.asada.web.app;
+package jp.co.topgate.asada.web;
 
 /**
  * URLパターンのEnum

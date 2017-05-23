@@ -68,7 +68,7 @@ public class RequestMessageParser {
      * @param inputStream socketのinputStreamを渡す
      * @return リクエストメッセージのオブジェクトを返す
      */
-    public static RequestMessage parseRequestMessage(InputStream inputStream) throws RequestParseException {
+    public static RequestMessage parse(InputStream inputStream) throws RequestParseException {
         RequestMessage requestMessage;
         String method;
         String uri;
@@ -134,7 +134,7 @@ public class RequestMessageParser {
      * @throws IOException inputStreamを読んでいる時に発生する例外
      */
     static String[] readRequestLineAndHeaderField(InputStream inputStream) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
+        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, Main.CHARACTER_ENCODING_SCHEME));
         String[] result = new String[2];
         result[0] = br.readLine();
 
@@ -197,7 +197,7 @@ public class RequestMessageParser {
             return str;
 
         } catch (URISyntaxException e) {
-            throw new RequestParseException(e.getMessage());
+            throw new RequestParseException(e);
         }
     }
 
