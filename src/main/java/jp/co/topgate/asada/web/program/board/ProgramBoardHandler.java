@@ -1,6 +1,8 @@
 package jp.co.topgate.asada.web.program.board;
 
 import jp.co.topgate.asada.web.*;
+import jp.co.topgate.asada.web.app.Handler;
+import jp.co.topgate.asada.web.app.UrlPattern;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 import jp.co.topgate.asada.web.util.*;
 import jp.co.topgate.asada.web.exception.DoPostException;

@@ -1,5 +1,6 @@
 package jp.co.topgate.asada.web;
 
+import jp.co.topgate.asada.web.app.Handler;
 import jp.co.topgate.asada.web.exception.HtmlInitializeException;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 import jp.co.topgate.asada.web.exception.SocketRuntimeException;

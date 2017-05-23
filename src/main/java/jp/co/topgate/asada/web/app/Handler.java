@@ -1,5 +1,8 @@
-package jp.co.topgate.asada.web;
+package jp.co.topgate.asada.web.app;
 
+import jp.co.topgate.asada.web.RequestMessage;
+import jp.co.topgate.asada.web.StaticHandler;
+import jp.co.topgate.asada.web.StatusLine;
 import jp.co.topgate.asada.web.exception.HtmlInitializeException;
 import jp.co.topgate.asada.web.program.board.HtmlEditor;
 import jp.co.topgate.asada.web.program.board.ProgramBoardHandler;
@@ -15,7 +18,7 @@ public abstract class Handler {
     /**
      * リソースファイルのパス
      */
-    static final String FILE_PATH = "./src/main/resources";
+    public static final String FILE_PATH = "./src/main/resources";
 
     /**
      * レスポンスラインの状態行(StatusLine)
@@ -32,7 +35,7 @@ public abstract class Handler {
      * @return 今回の接続を担当するハンドラーのオブジェクトを返す
      * @throws HtmlInitializeException {@link HtmlEditor#HtmlEditor()}を参照
      */
-    static Handler getHandler(RequestMessage requestMessage) throws HtmlInitializeException {
+    public static Handler getHandler(RequestMessage requestMessage) throws HtmlInitializeException {
         String uri = requestMessage.getUri();
 
         Handler handler = new StaticHandler(requestMessage);

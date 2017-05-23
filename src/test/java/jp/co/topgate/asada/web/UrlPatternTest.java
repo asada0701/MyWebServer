@@ -1,5 +1,6 @@
 package jp.co.topgate.asada.web;
 
+import jp.co.topgate.asada.web.app.UrlPattern;
 import org.junit.Test;
 
 import static org.hamcrest.Matchers.is;
