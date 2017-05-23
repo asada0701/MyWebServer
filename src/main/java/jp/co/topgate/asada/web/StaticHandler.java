@@ -31,7 +31,6 @@ public class StaticHandler extends Handler {
         String protocolVersion = requestMessage.getProtocolVersion();
 
         this.statusLine = StaticHandler.decideStatusLine(method, uri, protocolVersion);
-        this.statusLine = StaticHandler.decideStatusLine(method, uri, protocolVersion);
     }
 
     /**

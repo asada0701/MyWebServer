@@ -69,12 +69,11 @@ public class RequestMessageParser {
      * @return リクエストメッセージのオブジェクトを返す
      */
     public static RequestMessage parseRequestMessage(InputStream inputStream) throws RequestParseException {
+        RequestMessage requestMessage;
         String method;
         String uri;
-        Map<String, String> uriQuery = null;
         String protocolVersion;
         Map<String, String> headerField;
-        byte[] messageBody = null;
 
         BufferedInputStream bis = new BufferedInputStream(inputStream);
         try {
@@ -90,16 +89,20 @@ public class RequestMessageParser {
             }
 
             method = requestLine[0];
-            String[] s = splitUri(requestLine[1]);
-            uri = s[0];
-            if (s[1] != null) {
-                uriQuery = parseUriQuery(s[1]);
-            }
+            String[] uriAndUriQuery = splitUri(requestLine[1]);
+            uri = uriAndUriQuery[0];
             protocolVersion = requestLine[2];
 
             headerField = parseHeaderField(requestLineAndHeader[1]);
 
-            if ("POST".equals(method)) {
+            requestMessage = new RequestMessage(method, uri, protocolVersion, headerField);
+
+            if ("GET".equals(method) && uriAndUriQuery[1] != null) {                //GETでクエリーがあった場合の処理
+                Map<String, String> uriQuery = parseUriQuery(uriAndUriQuery[1]);
+                requestMessage.setUriQuery(uriQuery);
+            }
+
+            if ("POST".equals(method)) {                                            //メッセージボディの処理
                 bis.reset();
                 if (!headerField.containsKey("Content-Type") && !headerField.containsKey("Content-Length")) {
                     throw new RequestParseException("Content-TypeかContent-Lengthがリクエストに含まれていません");
@@ -110,17 +113,14 @@ public class RequestMessageParser {
                 } catch (NumberFormatException e) {
                     throw new RequestParseException("Content-Lengthに数字以外の文字が含まれています");
                 }
-                messageBody = readMessageBody(bis, contentLength);
+                byte[] messageBody = readMessageBody(bis, contentLength);
+                requestMessage.setMessageBody(messageBody);
             }
 
         } catch (IOException e) {
             throw new RequestParseException("bufferedInputStream周りでの例外:" + e.getMessage());
 
         }
-
-        RequestMessage requestMessage = new RequestMessage(method, uri, protocolVersion, headerField);
-        requestMessage.setUriQuery(uriQuery);
-        requestMessage.setMessageBody(messageBody);
         return requestMessage;
     }
 

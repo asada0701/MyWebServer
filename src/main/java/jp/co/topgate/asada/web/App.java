@@ -61,10 +61,10 @@ public class App {
         }
     }
 
-    static Server setPortNumber() {
+    private static Server setPortNumber() {
         Scanner scanner = new Scanner(System.in);
         while (true) {
-            System.out.print("What port number is this server? : ");
+            System.out.print("choose this server's port number : ");
             String userInput = scanner.next();
             try {
                 if (NumberUtils.isNumber(userInput)) {
