@@ -121,8 +121,7 @@ public class ProgramBoardHandler extends Handler {
 
         if (statusLine.equals(StatusLine.OK)) {
             String path = Handler.getFilePath(UrlPattern.PROGRAM_BOARD, requestMessage.getUri());
-            responseMessage = new ResponseMessage(statusLine, path);
-
+            responseMessage = new ResponseMessage(statusLine, path, htmlEditor);
 
             ContentType contentType = new ContentType(path);
             responseMessage.addHeaderWithContentType(contentType.getContentType());

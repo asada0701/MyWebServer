@@ -1,5 +1,6 @@
 package jp.co.topgate.asada.web;
 
+import jp.co.topgate.asada.web.program.board.HtmlEditor;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
@@ -37,6 +38,21 @@ public class ResponseMessage {
     private String filePath = null;
 
     private byte[] target = null;
+
+    private HtmlEditor htmlEditor = null;
+
+    /**
+     * リソースファイルを使用する場合に、リソースファイルを初期化を行いたい場合に呼び出すコンストラクタ
+     *
+     * @param statusLine レスポンスメッセージのステータスライン（状態行）
+     * @param filePath   リソースファイルのパスを渡す
+     *                   （例）./src/main/resources/index.html
+     * @param htmlEditor HtmlEditorのオブジェクトを渡す
+     */
+    public ResponseMessage(StatusLine statusLine, String filePath, HtmlEditor htmlEditor) {
+        this(statusLine, filePath);
+        this.htmlEditor = htmlEditor;
+    }
 
     /**
      * JSONなど、リソースファイルを使わない場合に使用するコンストラクタ
@@ -96,6 +112,10 @@ public class ResponseMessage {
             outputStream.flush();
         } catch (IOException e) {
 
+        } finally {
+            if (htmlEditor != null) {
+                htmlEditor.resetAllFiles();
+            }
         }
     }
 
@@ -227,5 +247,9 @@ public class ResponseMessage {
 
     public byte[] getTarget() {
         return this.target;
+    }
+
+    public HtmlEditor getHtmlEditor() {
+        return this.htmlEditor;
     }
 }

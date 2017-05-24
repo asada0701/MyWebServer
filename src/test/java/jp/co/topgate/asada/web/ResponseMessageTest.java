@@ -1,5 +1,6 @@
 package jp.co.topgate.asada.web;
 
+import jp.co.topgate.asada.web.program.board.HtmlEditor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -49,6 +50,14 @@ public class ResponseMessageTest {
             assertThat(sut.getStatusLine(), is(StatusLine.NOT_FOUND));
             assertThat(sut.getFilePath(), is(nullValue()));
             assertThat(sut.getTarget(), is("hoge".getBytes()));
+        }
+
+        @Test
+        public void htmlファイルを編集した場合htmlEditorのオブジェクトを渡すことで初期化してもらう() {
+            HtmlEditor htmlEditor = new HtmlEditor();
+            ResponseMessage sut = new ResponseMessage(null, null, htmlEditor);
+
+            assertThat(sut.getHtmlEditor(), is(htmlEditor));
         }
     }
 

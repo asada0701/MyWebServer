@@ -72,8 +72,6 @@ class Server extends Thread {
 
                 ResponseMessage responseMessage;
 
-                HtmlEditor htmlEditor = new HtmlEditor();
-
                 try {
                     RequestMessage requestMessage = RequestMessageParser.parse(clientSocket.getInputStream());
 
@@ -94,8 +92,6 @@ class Server extends Thread {
                 }
 
                 responseMessage.write(clientSocket.getOutputStream());
-
-                htmlEditor.resetAllFiles();
 
                 clientSocket.close();
                 clientSocket = null;
