@@ -248,4 +248,8 @@ public class ResponseMessage {
     public byte[] getTarget() {
         return this.target;
     }
+
+    public HtmlEditor getHtmlEditor() {
+        return this.htmlEditor;
+    }
 }
