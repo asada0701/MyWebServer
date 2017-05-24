@@ -5,6 +5,7 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 
 import java.io.*;
+import java.util.List;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.IsNull.nullValue;
@@ -40,9 +41,7 @@ public class StaticHandlerTest {
         @Test
         public void ステータスコード200のテスト() throws Exception {
             //SetUp
-            String path = "./src/test/resources/responseMessage.txt";
-            try (FileOutputStream fos = new FileOutputStream(path);
-                 FileInputStream is = new FileInputStream(new File("./src/test/resources/GetRequestMessage.txt"))) {
+            try (FileInputStream is = new FileInputStream(new File("./src/test/resources/GetRequestMessage.txt"))) {
 
                 RequestMessage rm = RequestMessageParser.parse(is);
                 StaticHandler sut = new StaticHandler(rm);
@@ -50,38 +49,23 @@ public class StaticHandlerTest {
                 assertThat(StaticHandler.decideStatusLine(rm.getMethod(), rm.getUri(), rm.getProtocolVersion()), is(StatusLine.OK));
 
                 //Exercise
-                sut.handleRequest(fos);
-            }
+                ResponseMessage responseMessage = sut.handleRequest();
 
-            //Verify
-            StringBuilder builder1 = new StringBuilder();
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(path))))) {
-                String str;
-                while ((str = br.readLine()) != null) {
-                    builder1.append(str).append("\n");
-                }
+                assertThat(responseMessage.getProtocolVersion(), is("HTTP/1.1"));
+                assertThat(responseMessage.getStatusLine(), is(StatusLine.OK));
+                List<String> headerField = responseMessage.getHeaderField();
+                assertThat(headerField.size(), is(2));
+                assertThat(headerField.get(0), is("Content-Type: text/html; charset=UTF-8"));
+                assertThat(headerField.get(1), is("Content-Length: 714"));
+                assertThat(responseMessage.getFilePath(), is("./src/main/resources/index.html"));
+                assertThat(responseMessage.getTarget(), is(nullValue()));
             }
-            path = "./src/test/resources/html/index.html";
-            StringBuilder builder2 = new StringBuilder();
-            builder2.append("HTTP/1.1 200 OK").append("\n");
-            builder2.append("Content-Type: text/html; charset=UTF-8").append("\n");
-            builder2.append("Content-Length: 714").append("\n").append("\n");
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(path))))) {
-                String str;
-                while ((str = br.readLine()) != null) {
-                    builder2.append(str).append("\n");
-                }
-            }
-
-            assertThat(builder1.toString(), is(builder2.toString()));
         }
 
         @Test
         public void ステータスコード200以外のテスト() throws Exception {
             //SetUp
-            String path = "./src/test/resources/responseMessage.txt";
-            try (FileOutputStream fos = new FileOutputStream(path);
-                 FileInputStream is = new FileInputStream(new File("./src/test/resources/NotFound.txt"))) {
+            try (FileInputStream is = new FileInputStream(new File("./src/test/resources/NotFound.txt"))) {
 
                 RequestMessage rm = RequestMessageParser.parse(is);
                 StaticHandler sut = new StaticHandler(rm);
@@ -89,15 +73,15 @@ public class StaticHandlerTest {
                 assertThat(StaticHandler.decideStatusLine(rm.getMethod(), rm.getUri(), rm.getProtocolVersion()), is(StatusLine.NOT_FOUND));
 
                 //Exercise
-                sut.handleRequest(fos);
-            }
-            //Verify
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(path))))) {
-                assertThat(br.readLine(), is("HTTP/1.1 404 Not Found"));
-                assertThat(br.readLine(), is("Content-Type: text/html; charset=UTF-8"));
-                assertThat(br.readLine(), is(""));
-                assertThat(br.readLine(), is("<html><head><title>404 Not Found</title></head><body><h1>Not Found</h1><p>お探しのページは見つかりませんでした。</p></body></html>"));
-                assertThat(br.readLine(), is(nullValue()));
+                ResponseMessage responseMessage = sut.handleRequest();
+
+                assertThat(responseMessage.getProtocolVersion(), is("HTTP/1.1"));
+                assertThat(responseMessage.getStatusLine(), is(StatusLine.NOT_FOUND));
+                List<String> headerField = responseMessage.getHeaderField();
+                assertThat(headerField.size(), is(1));
+                assertThat(headerField.get(0), is("Content-Type: text/html; charset=UTF-8"));
+                assertThat(responseMessage.getFilePath(), is(nullValue()));
+                assertThat(responseMessage.getTarget(), is(nullValue()));
             }
         }
     }

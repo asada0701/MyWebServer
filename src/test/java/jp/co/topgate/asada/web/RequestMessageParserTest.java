@@ -24,7 +24,7 @@ public class RequestMessageParserTest {
 
         @Test
         public void nullチェック() throws Exception {
-            sut = new RequestMessage(null, null, null, null);
+            sut = new RequestMessage(null, null, null);
             assertThat(sut.getMethod(), is(nullValue()));
             assertThat(sut.getUri(), is(nullValue()));
             assertThat(sut.getProtocolVersion(), is(nullValue()));

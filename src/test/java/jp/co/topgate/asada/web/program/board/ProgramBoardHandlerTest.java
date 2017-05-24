@@ -2,6 +2,7 @@ package jp.co.topgate.asada.web.program.board;
 
 import jp.co.topgate.asada.web.RequestMessage;
 import jp.co.topgate.asada.web.RequestMessageParser;
+import jp.co.topgate.asada.web.ResponseMessage;
 import jp.co.topgate.asada.web.StatusLine;
 import jp.co.topgate.asada.web.exception.IllegalRequestException;
 import jp.co.topgate.asada.web.model.Message;
@@ -74,7 +75,7 @@ public class ProgramBoardHandlerTest {
     }
 
     public static class handleRequestメソッドのテスト {
-        static HtmlEditor he = new HtmlEditor();
+        static HtmlEditor htmlEditor = new HtmlEditor();
         static List<Message> testList = new ArrayList<>();
 
         static {
@@ -104,24 +105,31 @@ public class ProgramBoardHandlerTest {
 
         @Test
         public void ステータスコード200のテスト() throws Exception {
-            String path = "./src/test/resources/responseMessage.txt";
-            try (FileOutputStream fos = new FileOutputStream(path);
-                 FileInputStream is = new FileInputStream(new File("./src/test/resources/GetRequestMessage.txt"))) {
+            try (FileInputStream is = new FileInputStream(new File("./src/test/resources/GetRequestMessage.txt"))) {
 
                 RequestMessage rm = RequestMessageParser.parse(is);
 
                 ProgramBoardHandler sut = new ProgramBoardHandler(rm);
 
-                sut.handleRequest(fos);
-            }
-            try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(path))))) {
-                System.out.println(br);
+                ResponseMessage responseMessage = sut.handleRequest();
+
+                responseMessage.addHeaderWithContentType("Test");
+
+                assertThat(responseMessage.getProtocolVersion(), is("HTTP/1.1"));
+                assertThat(responseMessage.getStatusLine(), is(StatusLine.OK));
+                List<String> headerField = responseMessage.getHeaderField();
+                assertThat(headerField.size(), is(3));
+                assertThat(headerField.get(0), is("Content-Type: text/html; charset=UTF-8"));
+                assertThat(headerField.get(1), is("Content-Length: 714"));
+                assertThat(headerField.get(2), is("Content-Type: Test"));
+                assertThat(responseMessage.getFilePath(), is("./src/main/resources/index.html"));
+                assertThat(responseMessage.getTarget(), is(nullValue()));
             }
         }
 
         @After
         public void tearDown() throws Exception {
-            he.resetAllFiles();
+            htmlEditor.resetAllFiles();
         }
     }
 

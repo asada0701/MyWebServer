@@ -68,24 +68,28 @@ class Server extends Thread {
         try {
             while (true) {
                 clientSocket = serverSocket.accept();
+
+                ResponseMessage responseMessage;
                 try {
                     RequestMessage requestMessage = RequestMessageParser.parse(clientSocket.getInputStream());
 
                     Handler handler = Handler.getHandler(requestMessage);
 
-                    handler.handleRequest(clientSocket.getOutputStream());
+                    responseMessage = handler.handleRequest();
 
                 } catch (RequestParseException e) {                 //リクエストメッセージに問題があった場合の例外処理
-                    ResponseMessage responseMessage = new ResponseMessage();
+                    responseMessage = new ResponseMessage(StatusLine.BAD_REQUEST);
                     responseMessage.addHeaderWithContentType(ContentType.ERROR_RESPONSE);
-                    responseMessage.writeToOutputStream(clientSocket.getOutputStream(), StatusLine.BAD_REQUEST, "");
 
                 } catch (HtmlInitializeException e) {               //HTMLファイルに問題が発生した場合の例外処理
-                    ResponseMessage responseMessage = new ResponseMessage();
+                    responseMessage = new ResponseMessage(StatusLine.INTERNAL_SERVER_ERROR);
                     responseMessage.addHeaderWithContentType(ContentType.ERROR_RESPONSE);
-                    responseMessage.writeToOutputStream(clientSocket.getOutputStream(), StatusLine.INTERNAL_SERVER_ERROR, "");
+                    responseMessage.write(clientSocket.getOutputStream());
+
                     throw new SocketRuntimeException(e.getMessage(), e.getCause());
                 }
+
+                responseMessage.write(clientSocket.getOutputStream());
 
                 clientSocket.close();
                 clientSocket = null;

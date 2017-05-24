@@ -75,12 +75,13 @@ public class RequestMessageParser {
         String method;
         String uri;
         String protocolVersion;
-        Map<String, String> headerField;
+        Map<String, String> headerField = null;
 
         BufferedInputStream bis = new BufferedInputStream(inputStream);
         try {
             bis.mark(bis.available());
             String[] requestLineAndHeader = readRequestLineAndHeaderField(bis);
+
             if (requestLineAndHeader[0] == null || requestLineAndHeader[1] == null) {
                 throw new RequestParseException("リクエストラインかヘッダーフィールドに異常があります");
             }
@@ -95,16 +96,19 @@ public class RequestMessageParser {
             uri = uriAndUriQuery[0];
             protocolVersion = requestLine[2];
 
-            headerField = parseHeaderField(requestLineAndHeader[1]);
+            requestMessage = new RequestMessage(method, uri, protocolVersion);
 
-            requestMessage = new RequestMessage(method, uri, protocolVersion, headerField);
+            if (!requestLineAndHeader[1].isEmpty()) {
+                headerField = parseHeaderField(requestLineAndHeader[1]);
+                requestMessage.setHeaderField(headerField);
+            }
 
             if ("GET".equals(method) && uriAndUriQuery[1] != null) {                //GETでクエリーがあった場合の処理
                 Map<String, String> uriQuery = parseUriQuery(uriAndUriQuery[1]);
                 requestMessage.setUriQuery(uriQuery);
             }
 
-            if ("POST".equals(method)) {                                            //メッセージボディの処理
+            if ("POST".equals(method) && headerField != null) {      //メッセージボディの処理
                 bis.reset();
                 if (!headerField.containsKey("Content-Type") && !headerField.containsKey("Content-Length")) {
                     throw new RequestParseException("Content-TypeかContent-Lengthがリクエストに含まれていません");
@@ -146,6 +150,7 @@ public class RequestMessageParser {
             builder.append(str).append("\n");
         }
         result[1] = builder.toString();
+
         return result;
     }
 

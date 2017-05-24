@@ -4,8 +4,6 @@ import jp.co.topgate.asada.web.exception.HtmlInitializeException;
 import jp.co.topgate.asada.web.program.board.HtmlEditor;
 import jp.co.topgate.asada.web.program.board.ProgramBoardHandler;
 
-import java.io.OutputStream;
-
 /**
  * ハンドラー抽象クラス
  *
@@ -49,9 +47,10 @@ public abstract class Handler {
     }
 
     /**
-     * リクエストを適切に処理し、ResponseMessageのオブジェクトを生成し、OutputStreamにレスポンスを書き込む
+     * リクエストを適切に処理し、ResponseMessageのオブジェクトを生成してServerクラスに返す。
+     * レスポンスメッセージを実際に書き込むのはServerが行う。
      *
-     * @param outputStream SocketのOutputStream
+     * @return ResponseMessageのオブジェクトを生成して返す。
      */
-    public abstract void handleRequest(OutputStream outputStream);
+    public abstract ResponseMessage handleRequest();
 }
