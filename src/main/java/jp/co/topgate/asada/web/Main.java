@@ -23,7 +23,7 @@ public class Main {
     /**
      * サーバーのポート番号
      */
-    static final int PORT_NUMBER = 8080;
+    private static final int PORT_NUMBER = 8080;
 
     /**
      * サーバーが扱う文字符号化スキーム

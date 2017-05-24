@@ -30,23 +30,16 @@ import static org.junit.Assert.assertThat;
  */
 @RunWith(Enclosed.class)
 public class ProgramBoardHandlerTest {
-    public static class 定数のテスト {
+    public static class matchMethodのテスト {
         @Test
-        public void プロトコルバージョンのテスト() {
-            assertThat(ProgramBoardHandler.PROTOCOL_VERSION, is("HTTP/1.1"));
-        }
-
-        @Test
-        public void コンテンツタイプのテスト() {
-            assertThat(ProgramBoardHandler.CONTENT_TYPE, is("application/x-www-form-urlencoded"));
-        }
-
-        @Test
-        public void matchMethodメソッドのテスト() {
+        public void trueになるかテスト() {
             assertThat(ProgramBoardHandler.matchMethod("GET"), is(true));
 
             assertThat(ProgramBoardHandler.matchMethod("POST"), is(true));
+        }
 
+        @Test
+        public void falseになるかテスト() {
             assertThat(ProgramBoardHandler.matchMethod("PUT"), is(false));
 
             assertThat(ProgramBoardHandler.matchMethod("DELETE"), is(false));

@@ -13,12 +13,12 @@ public class StaticHandler extends Handler {
     /**
      * HTTPリクエストのプロトコルバージョン
      */
-    static final String PROTOCOL_VERSION = "HTTP/1.1";
+    private static final String PROTOCOL_VERSION = "HTTP/1.1";
 
     /**
      * HTTPリクエストのメソッド
      */
-    static final String METHOD = "GET";
+    private static final String METHOD = "GET";
 
     private RequestMessage requestMessage;
 
@@ -52,7 +52,7 @@ public class StaticHandler extends Handler {
             responseMessage.addHeaderWithContentType(contentType.getContentType());
             responseMessage.addHeader("Content-Length", String.valueOf(new File(path).length()));
         } else {
-            responseMessage.addHeaderWithContentType(ContentType.errorResponseContentType);
+            responseMessage.addHeaderWithContentType(ContentType.ERROR_RESPONSE);
         }
 
         responseMessage.writeToOutputStream(outputStream, statusLine, path);

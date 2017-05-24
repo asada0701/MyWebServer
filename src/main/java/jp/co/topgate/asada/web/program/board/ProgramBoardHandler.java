@@ -28,12 +28,12 @@ public class ProgramBoardHandler extends Handler {
     /**
      * HTTPリクエストのプロトコルバージョン
      */
-    static final String PROTOCOL_VERSION = "HTTP/1.1";
+    private static final String PROTOCOL_VERSION = "HTTP/1.1";
 
     /**
      * HTTPリクエストのコンテンツタイプ
      */
-    static final String CONTENT_TYPE = "application/x-www-form-urlencoded";
+    private static final String CONTENT_TYPE = "application/x-www-form-urlencoded";
 
     /**
      * HTTPリクエストのメソッド
@@ -91,7 +91,7 @@ public class ProgramBoardHandler extends Handler {
         ResponseMessage responseMessage = new ResponseMessage();
 
         if (!statusLine.equals(StatusLine.OK)) {
-            responseMessage.addHeaderWithContentType(ContentType.errorResponseContentType);
+            responseMessage.addHeaderWithContentType(ContentType.ERROR_RESPONSE);
             responseMessage.writeToOutputStream(outputStream, statusLine, "");
         }
 
@@ -127,7 +127,7 @@ public class ProgramBoardHandler extends Handler {
             responseMessage.addHeader("Content-Length", String.valueOf(new File(path).length()));
 
         } else {
-            responseMessage.addHeaderWithContentType(ContentType.errorResponseContentType);
+            responseMessage.addHeaderWithContentType(ContentType.ERROR_RESPONSE);
         }
 
         responseMessage.writeToOutputStream(outputStream, statusLine, path);

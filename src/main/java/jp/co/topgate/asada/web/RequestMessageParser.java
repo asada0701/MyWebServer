@@ -62,6 +62,8 @@ public class RequestMessageParser {
      */
     private static final int REQUEST_MESSAGE_LINE_FEED = 10;
 
+    private static final String REQUEST_URI_WELCOME_PAGE = "/";
+
     /**
      * リクエストメッセージのパースを行うメソッド
      *
@@ -191,7 +193,7 @@ public class RequestMessageParser {
             str[0] = uri.getPath();
             str[1] = uri.getQuery();
 
-            if (str[0].endsWith("/")) {
+            if (str[0].endsWith(REQUEST_URI_WELCOME_PAGE)) {
                 str[0] = str[0] + Main.WELCOME_PAGE_NAME;
             }
             return str;

@@ -37,7 +37,7 @@ public class ContentType {
     /**
      * ステータスコード:200以外の場合のレスポンスのコンテンツタイプ
      */
-    public static final String errorResponseContentType = "text/html; charset=UTF-8";
+    public static final String ERROR_RESPONSE = "text/html; charset=UTF-8";
 
     /**
      * ファイルの拡張子
