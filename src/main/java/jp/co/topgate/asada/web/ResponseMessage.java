@@ -39,22 +39,6 @@ public class ResponseMessage {
 
     private byte[] target = null;
 
-    private HtmlEditor htmlEditor = null;
-
-    /**
-     * リソースファイルを使用し、使用したリソースファイルの初期化を行いたい場合に使用するコンストラクタ
-     * writeメソッド内でレスポンスメッセージを出力ストリームに書き込んだ後に、初期化が実行される。
-     *
-     * @param statusLine レスポンスメッセージのステータスライン（状態行）
-     * @param filePath   リソースファイルのパスを渡す
-     *                   （例）./src/main/resources/index.html
-     * @param htmlEditor HtmlEditorのオブジェクトを渡す
-     */
-    public ResponseMessage(StatusLine statusLine, String filePath, HtmlEditor htmlEditor) {
-        this(statusLine, filePath);
-        this.htmlEditor = htmlEditor;
-    }
-
     /**
      * JSONなど、リソースファイルを使わない場合に使用するコンストラクタ
      *
@@ -62,7 +46,7 @@ public class ResponseMessage {
      * @param target     byteの配列でレスポンスメッセージのメッセージボディを渡す
      */
     public ResponseMessage(StatusLine statusLine, byte[] target) {
-        this(statusLine);
+        this.statusLine = statusLine;
         this.target = target;
     }
 
@@ -74,7 +58,7 @@ public class ResponseMessage {
      *                   （例）./src/main/resources/index.html
      */
     public ResponseMessage(StatusLine statusLine, String filePath) {
-        this(statusLine);
+        this.statusLine = statusLine;
         this.filePath = filePath;
     }
 
@@ -111,14 +95,10 @@ public class ResponseMessage {
             } else {
                 outputStream.write(getErrorMessageBody(statusLine).getBytes());
             }
-
             outputStream.flush();
+
         } catch (IOException e) {
 
-        } finally {
-            if (htmlEditor != null) {
-                htmlEditor.resetAllFiles();
-            }
         }
     }
 
@@ -250,9 +230,5 @@ public class ResponseMessage {
 
     public byte[] getTarget() {
         return this.target;
-    }
-
-    public HtmlEditor getHtmlEditor() {
-        return this.htmlEditor;
     }
 }

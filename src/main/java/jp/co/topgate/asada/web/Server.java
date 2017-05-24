@@ -70,7 +70,7 @@ class Server extends Thread {
             while (true) {
                 clientSocket = serverSocket.accept();
 
-                ResponseMessage responseMessage;
+                ResponseMessage responseMessage = null;
 
                 try {
                     RequestMessage requestMessage = RequestMessageParser.parse(clientSocket.getInputStream());
@@ -86,13 +86,14 @@ class Server extends Thread {
                 } catch (HtmlInitializeException e) {               //HTMLファイルに問題が発生した場合の例外処理
                     responseMessage = new ResponseMessage(StatusLine.INTERNAL_SERVER_ERROR);
                     responseMessage.addHeaderWithContentType(ContentType.ERROR_RESPONSE);
-                    responseMessage.write(clientSocket.getOutputStream());
 
                     throw new SocketRuntimeException(e.getMessage(), e.getCause());
+
+                } finally {
+                    if (responseMessage != null) {
+                        responseMessage.write(clientSocket.getOutputStream());
+                    }
                 }
-
-                responseMessage.write(clientSocket.getOutputStream());
-
                 clientSocket.close();
                 clientSocket = null;
             }
@@ -101,7 +102,6 @@ class Server extends Thread {
             throw new SocketRuntimeException(e.getMessage(), e.getCause());
 
         } catch (SocketException e) {
-
 
         } catch (IOException e) {
             throw new SocketRuntimeException(e.getMessage(), e.getCause());
