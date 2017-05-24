@@ -94,7 +94,6 @@ public class ResponseMessage {
             }
 
             outputStream.flush();
-
         } catch (IOException e) {
 
         }

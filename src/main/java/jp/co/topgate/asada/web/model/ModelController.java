@@ -148,17 +148,17 @@ public final class ModelController {
                 " " + ldt.getHour() + ":" + ldt.getMinute();
     }
 
-    /**
-     * テスト用、メッセージIDのゲッター
-     */
+    //テスト用
+
+    static void resetNextMessageID() {
+        nextMessageID = 1;
+    }
+
     @Contract(pure = true)
-    static int getMessageID() {
+    static int getNextMessageID() {
         return nextMessageID;
     }
 
-    /**
-     * テスト用、現在格納しているメッセージの総数を返す
-     */
     static int size() {
         return messageList.size();
     }

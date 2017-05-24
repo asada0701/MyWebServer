@@ -14,7 +14,7 @@ import java.util.Map;
  *
  * @author asada
  */
-public class RequestMessageParser {
+public final class RequestMessageParser {
     /**
      * リクエストラインを分割する
      */
@@ -63,6 +63,14 @@ public class RequestMessageParser {
     private static final int REQUEST_MESSAGE_LINE_FEED = 10;
 
     private static final String REQUEST_URI_WELCOME_PAGE = "/";
+
+    /**
+     * コンストラクタ
+     * インスタンス化禁止
+     */
+    private RequestMessageParser() {
+
+    }
 
     /**
      * リクエストメッセージのパースを行うメソッド

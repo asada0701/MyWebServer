@@ -3,6 +3,7 @@ package jp.co.topgate.asada.web;
 import jp.co.topgate.asada.web.exception.HtmlInitializeException;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 import jp.co.topgate.asada.web.exception.SocketRuntimeException;
+import jp.co.topgate.asada.web.program.board.HtmlEditor;
 
 import java.io.*;
 import java.net.*;
@@ -70,6 +71,9 @@ class Server extends Thread {
                 clientSocket = serverSocket.accept();
 
                 ResponseMessage responseMessage;
+
+                HtmlEditor htmlEditor = new HtmlEditor();
+
                 try {
                     RequestMessage requestMessage = RequestMessageParser.parse(clientSocket.getInputStream());
 
@@ -90,6 +94,8 @@ class Server extends Thread {
                 }
 
                 responseMessage.write(clientSocket.getOutputStream());
+
+                htmlEditor.resetAllFiles();
 
                 clientSocket.close();
                 clientSocket = null;
