@@ -1,5 +1,6 @@
 package jp.co.topgate.asada.web.program.board;
 
+import com.google.common.base.Strings;
 import jp.co.topgate.asada.web.*;
 import jp.co.topgate.asada.web.Handler;
 import jp.co.topgate.asada.web.UrlPattern;
@@ -11,8 +12,11 @@ import jp.co.topgate.asada.web.model.Message;
 import jp.co.topgate.asada.web.model.ModelController;
 import org.apache.commons.lang3.math.NumberUtils;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
+import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -121,9 +125,28 @@ public class ProgramBoardHandler extends Handler {
 
         if (statusLine.equals(StatusLine.OK)) {
             String path = Handler.getFilePath(UrlPattern.PROGRAM_BOARD, requestMessage.getUri());
-            responseMessage = new ResponseMessage(statusLine, path, htmlEditor);
 
             ContentType contentType = new ContentType(path);
+
+            if (contentType.isChar()) {
+                //文字の場合
+                StringBuilder builder = new StringBuilder();
+                try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
+                    String str;
+                    while ((str = br.readLine()) != null) {
+                        builder.append(str).append("\n");
+                    }
+
+                    responseMessage = new ResponseMessage(statusLine, builder.toString().getBytes());
+
+                } catch (IOException e) {
+                    statusLine = StatusLine.INTERNAL_SERVER_ERROR;
+                    responseMessage = new ResponseMessage(statusLine);
+                }
+            } else {
+                responseMessage = new ResponseMessage(statusLine, path);
+            }
+
             responseMessage.addHeaderWithContentType(contentType.getContentType());
             responseMessage.addHeader("Content-Length", String.valueOf(new File(path).length()));
 
@@ -132,6 +155,7 @@ public class ProgramBoardHandler extends Handler {
             responseMessage.addHeaderWithContentType(ContentType.ERROR_RESPONSE);
         }
 
+        htmlEditor.resetAllFiles();
         return responseMessage;
     }
 
