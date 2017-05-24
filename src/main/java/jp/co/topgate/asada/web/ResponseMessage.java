@@ -42,7 +42,8 @@ public class ResponseMessage {
     private HtmlEditor htmlEditor = null;
 
     /**
-     * リソースファイルを使用する場合に、リソースファイルを初期化を行いたい場合に呼び出すコンストラクタ
+     * リソースファイルを使用し、使用したリソースファイルの初期化を行いたい場合に使用するコンストラクタ
+     * writeメソッド内でレスポンスメッセージを出力ストリームに書き込んだ後に、初期化が実行される。
      *
      * @param statusLine レスポンスメッセージのステータスライン（状態行）
      * @param filePath   リソースファイルのパスを渡す
@@ -78,6 +79,8 @@ public class ResponseMessage {
     }
 
     /**
+     * エラーメッセージを送りたい場合など、メッセージボディの内容が必要ない場合に使用するコンストラクタ
+     *
      * @param statusLine レスポンスメッセージのステータスライン（状態行）
      */
     public ResponseMessage(StatusLine statusLine) {
