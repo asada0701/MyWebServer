@@ -61,6 +61,10 @@ public class RequestMessage {
         return uri;
     }
 
+    public String getProtocolVersion() {
+        return protocolVersion;
+    }
+
     void setUriQuery(Map<String, String> uriQuery) {
         this.uriQuery = uriQuery;
     }
@@ -73,10 +77,6 @@ public class RequestMessage {
      */
     String findUriQuery(String name) {
         return uriQuery.getOrDefault(name, null);
-    }
-
-    public String getProtocolVersion() {
-        return protocolVersion;
     }
 
     void setHeaderField(Map<String, String> headerField) {

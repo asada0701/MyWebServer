@@ -41,9 +41,7 @@ public abstract class Handler {
      * URIを元に、実際のファイルパスを返すメソッド
      */
     public static String getFilePath(UrlPattern urlPattern, String uri) {
-        return FILE_PATH + uri.replace(
-                urlPattern.getUrlPattern(),
-                urlPattern.getFilePath());
+        return FILE_PATH + uri.replace(urlPattern.getUrlPattern(), urlPattern.getFilePath());
     }
 
     /**

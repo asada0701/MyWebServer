@@ -1,7 +1,6 @@
 package jp.co.topgate.asada.web;
 
 import java.io.File;
-import java.io.OutputStream;
 
 /**
  * 静的なコンテンツの配信を行うハンドラー
@@ -54,7 +53,7 @@ public class StaticHandler extends Handler {
             ContentType contentType = new ContentType(path);
             responseMessage.addHeaderWithContentType(contentType.getContentType());
             responseMessage.addHeader("Content-Length", String.valueOf(new File(path).length()));
-            
+
         } else {
             responseMessage = new ResponseMessage(statusLine);
             responseMessage.addHeaderWithContentType(ContentType.ERROR_RESPONSE);
