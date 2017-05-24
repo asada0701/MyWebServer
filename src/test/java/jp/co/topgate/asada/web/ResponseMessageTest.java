@@ -51,14 +51,6 @@ public class ResponseMessageTest {
             assertThat(sut.getFilePath(), is(nullValue()));
             assertThat(sut.getTarget(), is("hoge".getBytes()));
         }
-
-        @Test
-        public void htmlファイルを編集した場合htmlEditorのオブジェクトを渡すことで初期化してもらう() {
-            HtmlEditor htmlEditor = new HtmlEditor();
-            ResponseMessage sut = new ResponseMessage(null, null, htmlEditor);
-
-            assertThat(sut.getHtmlEditor(), is(htmlEditor));
-        }
     }
 
     public static class createResponseLineメソッドのテスト {

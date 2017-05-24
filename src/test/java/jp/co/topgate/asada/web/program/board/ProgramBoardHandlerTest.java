@@ -117,8 +117,16 @@ public class ProgramBoardHandlerTest {
                 assertThat(headerField.get(0), is("Content-Type: text/html; charset=UTF-8"));
                 assertThat(headerField.get(1), is("Content-Length: 714"));
                 assertThat(headerField.get(2), is("Content-Type: Test"));
-                assertThat(responseMessage.getFilePath(), is("./src/main/resources/index.html"));
-                assertThat(responseMessage.getTarget(), is(nullValue()));
+                assertThat(responseMessage.getFilePath(), is(nullValue()));
+
+                StringBuilder builder = new StringBuilder();
+                try (BufferedReader br = new BufferedReader(new FileReader(new File("./src/test/resources/html/index.html")))) {
+                    String str;
+                    while ((str = br.readLine()) != null) {
+                        builder.append(str).append("\n");
+                    }
+                }
+                assertThat(responseMessage.getTarget(), is(builder.toString().getBytes()));
             }
         }
 
