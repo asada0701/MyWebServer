@@ -69,22 +69,22 @@ class Server extends Thread {
             while (true) {
                 clientSocket = serverSocket.accept();
                 try {
-                    RequestMessage requestMessage = RequestMessageParser.parseRequestMessage(clientSocket.getInputStream());
+                    RequestMessage requestMessage = RequestMessageParser.parse(clientSocket.getInputStream());
 
                     Handler handler = Handler.getHandler(requestMessage);
 
-                    handler.doRequestProcess();
-
-                    handler.doResponseProcess(clientSocket.getOutputStream());
+                    handler.handleRequest(clientSocket.getOutputStream());
 
                 } catch (RequestParseException e) {                 //リクエストメッセージに問題があった場合の例外処理
                     ResponseMessage responseMessage = new ResponseMessage();
-                    responseMessage.returnResponse(clientSocket.getOutputStream(), StatusLine.BAD_REQUEST, "");
+                    responseMessage.addHeaderWithContentType(ContentType.errorResponseContentType);
+                    responseMessage.writeResponse(clientSocket.getOutputStream(), StatusLine.BAD_REQUEST, "");
 
                 } catch (HtmlInitializeException e) {               //HTMLファイルに問題が発生した場合の例外処理
                     ResponseMessage responseMessage = new ResponseMessage();
-                    responseMessage.returnResponse(clientSocket.getOutputStream(), StatusLine.INTERNAL_SERVER_ERROR, "");
-                    throw new SocketRuntimeException(e.getMessage());
+                    responseMessage.addHeaderWithContentType(ContentType.errorResponseContentType);
+                    responseMessage.writeResponse(clientSocket.getOutputStream(), StatusLine.INTERNAL_SERVER_ERROR, "");
+                    throw new SocketRuntimeException(e.getMessage(), e.getCause());
                 }
 
                 clientSocket.close();
@@ -92,13 +92,13 @@ class Server extends Thread {
             }
 
         } catch (BindException e) {
-            throw new SocketRuntimeException(e.getMessage());
+            throw new SocketRuntimeException(e.getMessage(), e.getCause());
 
         } catch (SocketException e) {
 
 
         } catch (IOException e) {
-            throw new SocketRuntimeException(e.getMessage());
+            throw new SocketRuntimeException(e.getMessage(), e.getCause());
         }
     }
 }

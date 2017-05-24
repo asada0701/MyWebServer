@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" type="text/css" href="./css/style.css">
+</head>
+
+<body>
+<center>
+    <div id="header">
+        <h1>掲示板-LightBoard</h1>
+        <a href="./caution.html" target="_blank">注意事項を読む</a>
+    </div>
+    <div id="form">
+        <form action="/program/board/" method="post">
+            <p>
+                名前<input type="text" name="name" size="40" required>
+            </p>
+            <p>
+                タイトル<input type="text" name="title" size="40" required>
+            </p>
+            <p>
+                メッセージ<br>
+                <textarea name="text" rows="4" cols="40" required></textarea>
+            </p>
+            <p>
+                パスワード<input type="password" name="password" size="10" required>(投稿した文を削除するときに使います。)
+            </p>
+            <input type="hidden" name="param" value="write">
+            <input type="submit" value="投稿">
+        </form>
+    </div>
+    <div id="log">
+        <table border="1">
+            <tr>
+                <th>ナンバー</th>
+                <th>タイトル</th>
+                <th>本文</th>
+                <th>ユーザー名</th>
+                <th>日付</th>
+                <th></th>
+            </tr>
+            <tr id="No.4">
+                <td>No.4</td>
+                <td>t</td>
+                <td>そうですね</td>
+                <td>管理者</td>
+                <td>2017/5/11 11:57</td>
+                <td>
+                    <form action="/program/board/" method="post">
+                        <input type="hidden" name="param" value="delete_step_1">
+                        <input type="hidden" name="number" value="4">
+                        <input type="submit" value="このコメントを削除する">
+                    </form>
+                </td>
+            </tr>
+            <tr id="No.3">
+                <td>No.3</td>
+                <td>t</td>
+                <td>今日は天気がいいですね</td>
+                <td>asada</td>
+                <td>2017/5/11 11:57</td>
+                <td>
+                    <form action="/program/board/" method="post">
+                        <input type="hidden" name="param" value="delete_step_1">
+                        <input type="hidden" name="number" value="3">
+                        <input type="submit" value="このコメントを削除する">
+                    </form>
+                </td>
+            </tr>
+            <tr id="No.2">
+                <td>No.2</td>
+                <td>t</td>
+                <td>こんにちは</td>
+                <td>asada</td>
+                <td>2017/5/11 11:57</td>
+                <td>
+                    <form action="/program/board/" method="post">
+                        <input type="hidden" name="param" value="delete_step_1">
+                        <input type="hidden" name="number" value="2">
+                        <input type="submit" value="このコメントを削除する">
+                    </form>
+                </td>
+            </tr>
+            <tr id="No.1">
+                <td>No.1</td>
+                <td>test</td>
+                <td>こんにちは</td>
+                <td>管理者</td>
+                <td>2017/5/11 11:56</td>
+                <td>
+                    <form action="/program/board/" method="post">
+                        <input type="hidden" name="param" value="delete_step_1">
+                        <input type="hidden" name="number" value="1">
+                        <input type="submit" value="このコメントを削除する">
+                    </form>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="back">
+        <form action="/program/board/" method="post">
+            <input type="hidden" name="param" value="back">
+            <input type="submit" value="topへ戻る">
+        </form>
+    </div>
+</center>
+</body>
+
+</html>

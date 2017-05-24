@@ -6,7 +6,7 @@ package jp.co.topgate.asada.web.exception;
  * @author asada
  */
 public class HtmlInitializeException extends RuntimeException {
-    public HtmlInitializeException(String message) {
-        super(message);
+    public HtmlInitializeException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

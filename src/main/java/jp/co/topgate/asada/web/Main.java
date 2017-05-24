@@ -7,7 +7,6 @@ import jp.co.topgate.asada.web.exception.HtmlInitializeException;
 import jp.co.topgate.asada.web.exception.ServerStateException;
 import jp.co.topgate.asada.web.exception.SocketRuntimeException;
 import jp.co.topgate.asada.web.model.ModelController;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -19,18 +18,30 @@ import java.util.Scanner;
  *
  * @author asada
  */
-public class App {
+public class Main {
 
-    private static int portNumber;
+    /**
+     * サーバーのポート番号
+     */
+    static final int PORT_NUMBER = 8080;
+
+    /**
+     * サーバーが扱う文字符号化スキーム
+     */
+    public static final String CHARACTER_ENCODING_SCHEME = "UTF-8";
+
+    /**
+     * サーバーのウェルカムページのファイル名
+     */
+    public static final String WELCOME_PAGE_NAME = "index.html";
 
     /**
      * メインメソッド
      */
     public static void main(String[] args) {
-        Server server = setPortNumber();
-
         try {
             String choice;
+            Server server = new Server(PORT_NUMBER);
             Scanner scanner = new Scanner(System.in);
 
             ModelController.setMessageList(CsvHelper.readMessage());                            //CSVファイル読み込み
@@ -47,8 +58,8 @@ public class App {
                     choice = scanner.next();
                 } while (!ServerCommand.contains(choice));
 
-                String message = controlServer(server, ServerCommand.getServerCommand(choice));
-                System.out.println(message);
+                ServerMessage serverMessage = controlServer(server, ServerCommand.getServerCommand(choice));
+                System.out.println(serverMessage.getMessage());
 
             } while (!choice.equals(ServerCommand.END.getId()));
 
@@ -58,23 +69,6 @@ public class App {
         } catch (ServerStateException | CsvRuntimeException | SocketRuntimeException | HtmlInitializeException | IOException e) {
             System.out.println(e.getMessage());
             System.exit(1);
-        }
-    }
-
-    private static Server setPortNumber() {
-        Scanner scanner = new Scanner(System.in);
-        while (true) {
-            System.out.print("choose this server's port number : ");
-            String userInput = scanner.next();
-            try {
-                if (NumberUtils.isNumber(userInput)) {
-                    Server server = new Server(Integer.parseInt(userInput));
-                    portNumber = Integer.parseInt(userInput);
-                    return server;
-                }
-            } catch (IOException e) {
-                System.out.println(e.getMessage());
-            }
         }
     }
 
@@ -88,22 +82,21 @@ public class App {
      * @throws ServerStateException   サーバークラスの状態が予期しないものになった場合に発生する
      */
     @NotNull
-    static String controlServer(Server server, ServerCommand serverCommand) throws IOException, SocketRuntimeException, ServerStateException {
-
+    static ServerMessage controlServer(Server server, ServerCommand serverCommand) throws IOException, SocketRuntimeException, ServerStateException {
         switch (serverCommand) {
             case START:
                 switch (server.getState()) {
                     case NEW:
                         server.startServer();
-                        return "start up http server..";
+                        return ServerMessage.START;
 
                     case TERMINATED:
-                        server = new Server(portNumber);
+                        server = new Server(PORT_NUMBER);
                         server.startServer();
-                        return "start up http server..";
+                        return ServerMessage.START;
 
                     case RUNNABLE:
-                        return "http server is already running..";
+                        return ServerMessage.ALREADY_RUNNING;
 
                     default:
                         server.endServer();
@@ -113,16 +106,16 @@ public class App {
             case STOP:
                 switch (server.getState()) {
                     case NEW:
-                        return "http server is not running..";
+                        return ServerMessage.ALREADY_STOP;
 
                     case TERMINATED:
-                        return "http server is not running..";
+                        return ServerMessage.ALREADY_STOP;
 
                     case RUNNABLE:
                         if (server.stopServer()) {
-                            return "http server stops..";
+                            return ServerMessage.STOP;
                         } else {
-                            return "wait a second, http server is returning a response..";
+                            return ServerMessage.CAN_NOT_STOP;
                         }
 
                     default:
@@ -132,7 +125,7 @@ public class App {
 
             case END:
                 server.endServer();
-                return "bye..";
+                return ServerMessage.END;
 
             default:
                 return null;
@@ -179,11 +172,11 @@ enum ServerCommand {
      * @return Enum（例）Param.START
      */
     public static ServerCommand getServerCommand(String str) {
-        ServerCommand[] enumArray = ServerCommand.values();
+        ServerCommand[] array = ServerCommand.values();
 
-        for (ServerCommand enumStr : enumArray) {
-            if (str.equals(enumStr.id)) {
-                return enumStr;
+        for (ServerCommand serverCommand : array) {
+            if (str.equals(serverCommand.id)) {
+                return serverCommand;
             }
         }
         return ServerCommand.END;
@@ -196,8 +189,59 @@ enum ServerCommand {
      * @return trueの場合はServerCommandに登録されている。falseの場合は登録されていない。
      */
     static boolean contains(String str) {
-        return str.equals(START.getId()) ||
-                str.equals(STOP.getId()) ||
-                str.equals(END.getId());
+        ServerCommand[] array = ServerCommand.values();
+
+        for (ServerCommand serverCommand : array) {
+            if (str.equals(serverCommand.id)) {
+                return true;
+            }
+        }
+        return false;
+    }
+}
+
+/**
+ * サーバーの状態をユーザーに伝える時に使うメッセージのEnum
+ */
+enum ServerMessage {
+
+    /**
+     * サーバーを立ち上げた
+     */
+    START("start up http server.."),
+
+    /**
+     * サーバーがすでに立ち上がっていたので、立ち上げれなかった
+     */
+    ALREADY_RUNNING("http server is already running.."),
+
+    /**
+     * サーバーを停止した
+     */
+    STOP("http server stops.."),
+
+    /**
+     * サーバーがすでに停止していたので、停止できなかった
+     */
+    ALREADY_STOP("http server is not running.."),
+
+    /**
+     * サーバーがクライアントにレスポンスをしている途中であるため、停止できなかった
+     */
+    CAN_NOT_STOP("wait a second, http server is returning a response.."),
+
+    /**
+     * サーバーを終了した
+     */
+    END("bye..");
+
+    private final String message;
+
+    ServerMessage(String message) {
+        this.message = message;
+    }
+
+    public String getMessage() {
+        return message;
     }
 }

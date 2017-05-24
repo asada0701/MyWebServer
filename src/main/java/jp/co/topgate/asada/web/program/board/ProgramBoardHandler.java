@@ -1,9 +1,11 @@
 package jp.co.topgate.asada.web.program.board;
 
 import jp.co.topgate.asada.web.*;
+import jp.co.topgate.asada.web.Handler;
+import jp.co.topgate.asada.web.UrlPattern;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 import jp.co.topgate.asada.web.util.*;
-import jp.co.topgate.asada.web.exception.DoPostException;
+import jp.co.topgate.asada.web.exception.IllegalRequestException;
 import jp.co.topgate.asada.web.exception.HtmlInitializeException;
 import jp.co.topgate.asada.web.model.Message;
 import jp.co.topgate.asada.web.model.ModelController;
@@ -12,6 +14,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +24,41 @@ import java.util.Map;
  * @author asada
  */
 public class ProgramBoardHandler extends Handler {
+
+    /**
+     * HTTPリクエストのプロトコルバージョン
+     */
+    static final String PROTOCOL_VERSION = "HTTP/1.1";
+
+    /**
+     * HTTPリクエストのコンテンツタイプ
+     */
+    static final String CONTENT_TYPE = "application/x-www-form-urlencoded";
+
+    /**
+     * HTTPリクエストのメソッド
+     */
+    private static List<String> method = new ArrayList<>();
+
+    static {
+        method.add("GET");
+        method.add("POST");
+    }
+
+    /**
+     * 引数targetがmethodのリストに含まれているか判定する
+     *
+     * @param target ターゲット文字列
+     * @return trueの場合は含まれている、falseの場合は含まれない
+     */
+    static boolean matchMethod(String target) {
+        for (String s : method) {
+            if (s.equals(target)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     private RequestMessage requestMessage;
 
@@ -38,47 +76,63 @@ public class ProgramBoardHandler extends Handler {
     }
 
     /**
-     * リクエストの処理を行うメソッド
+     * {@link Handler#handleRequest(OutputStream)}を参照
+     *
+     * @param outputStream SocketのoutputStream
+     * @throws HtmlInitializeException {@link HtmlEditor#resetAllFiles()}を参照
      */
     @Override
-    public void doRequestProcess() {
+    public void handleRequest(OutputStream outputStream) throws HtmlInitializeException {
         String method = requestMessage.getMethod();
         String uri = requestMessage.getUri();
         String protocolVersion = requestMessage.getProtocolVersion();
 
         StatusLine statusLine = ProgramBoardHandler.decideStatusLine(method, uri, protocolVersion);
+        ResponseMessage responseMessage = new ResponseMessage();
 
-        if (!StatusLine.OK.equals(statusLine)) {                                                        //OKでない場合はこのままリターン
-            this.statusLine = statusLine;
-            return;
+        if (!statusLine.equals(StatusLine.OK)) {
+            responseMessage.addHeaderWithContentType(ContentType.errorResponseContentType);
+            responseMessage.writeResponse(outputStream, statusLine, "");
         }
+
         try {
-            if ("GET".equals(requestMessage.getMethod()) && uri.endsWith("/index.html")) {              //GETでなおかつindex.htmlを要求された場合
+            if ("GET".equals(requestMessage.getMethod()) && uri.endsWith(Main.WELCOME_PAGE_NAME)) {              //GETでなおかつindex.htmlを要求された場合
                 doGet(htmlEditor);
-                this.statusLine = statusLine;
 
             } else if ("POST".equals(requestMessage.getMethod())) {                                            //POSTの場合
 
-                if ("application/x-www-form-urlencoded".equals(requestMessage.findHeaderByName("Content-Type"))) {
-                    Map<String, String> messageBody = requestMessage.parseMessageBodyToMapString();
+                if (ProgramBoardHandler.CONTENT_TYPE.equals(requestMessage.findHeaderByName("Content-Type"))) {
+                    Map<String, String> messageBody = requestMessage.getMessageBodyToMapString();
                     String param = messageBody.get("param");
-                    String newUri = doPost(htmlEditor, Param.getParam(param), messageBody);
+                    ProgramBoardHtmlList programBoardHtmlList = doPost(htmlEditor, Param.getParam(param), messageBody);
+                    String newUri = programBoardHtmlList.getUri();
                     requestMessage.setUri(newUri);
-                    this.statusLine = statusLine;
                 } else {
-                    this.statusLine = StatusLine.BAD_REQUEST;
+                    statusLine = StatusLine.BAD_REQUEST;
                 }
-
-            } else {
-                this.statusLine = statusLine;
             }
 
-        } catch (RequestParseException | DoPostException e) {
-            this.statusLine = StatusLine.BAD_REQUEST;
+        } catch (RequestParseException | IllegalRequestException e) {
+            statusLine = StatusLine.BAD_REQUEST;
 
         } catch (IOException e) {
-            this.statusLine = StatusLine.INTERNAL_SERVER_ERROR;
+            statusLine = StatusLine.INTERNAL_SERVER_ERROR;
         }
+
+        String path = Handler.getFilePath(UrlPattern.PROGRAM_BOARD, requestMessage.getUri());
+
+        if (statusLine.equals(StatusLine.OK)) {
+            ContentType contentType = new ContentType(path);
+            responseMessage.addHeaderWithContentType(contentType.getContentType());
+            responseMessage.addHeader("Content-Length", String.valueOf(new File(path).length()));
+
+        } else {
+            responseMessage.addHeaderWithContentType(ContentType.errorResponseContentType);
+        }
+
+        responseMessage.writeResponse(outputStream, statusLine, path);
+
+        htmlEditor.resetAllFiles();
     }
 
     /**
@@ -94,26 +148,27 @@ public class ProgramBoardHandler extends Handler {
      * @return レスポンスラインの状態行(StatusLine)を返す
      */
     static StatusLine decideStatusLine(String method, String uri, String protocolVersion) {
-        if (!"HTTP/1.1".equals(protocolVersion)) {
+        if (!ProgramBoardHandler.PROTOCOL_VERSION.equals(protocolVersion)) {
             return StatusLine.HTTP_VERSION_NOT_SUPPORTED;
+        }
 
-        } else if (!"GET".equals(method) && !"POST".equals(method)) {
+        if (!ProgramBoardHandler.matchMethod(method)) {
             return StatusLine.NOT_IMPLEMENTED;
+        }
 
-        } else {
-            if ("GET".equals(method)) {
-                String path = Handler.getFilePath(UrlPattern.PROGRAM_BOARD, uri);
-                File file = new File(path);
-                if (!file.exists() || !file.isFile()) {
-                    return StatusLine.NOT_FOUND;
-                }
+        if ("GET".equals(method)) {
+            String path = Handler.getFilePath(UrlPattern.PROGRAM_BOARD, uri);
+            File file = new File(path);
+            if (!file.exists() || !file.isFile()) {
+                return StatusLine.NOT_FOUND;
+            }
 
-            } else if ("POST".equals(method)) {
-                if (!EditHtmlList.INDEX_HTML.getUri().equals(uri)) {
-                    return StatusLine.BAD_REQUEST;
-                }
+        } else if ("POST".equals(method)) {
+            if (!ProgramBoardHtmlList.INDEX_HTML.getUri().equals(uri)) {
+                return StatusLine.BAD_REQUEST;
             }
         }
+
         return StatusLine.OK;
     }
 
@@ -125,8 +180,8 @@ public class ProgramBoardHandler extends Handler {
      * @throws IOException HTMLファイルに書き込み中に例外発生
      */
     static void doGet(HtmlEditor htmlEditor) throws IOException {
-        String html = htmlEditor.editIndexOrSearchHtml(EditHtmlList.INDEX_HTML, ModelController.getAllMessage());
-        htmlEditor.writeHtml(EditHtmlList.INDEX_HTML, html);
+        String html = htmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.INDEX_HTML, ModelController.getAllMessage());
+        htmlEditor.writeHtml(ProgramBoardHtmlList.INDEX_HTML, html);
     }
 
     /**
@@ -136,15 +191,18 @@ public class ProgramBoardHandler extends Handler {
      * @param param       メッセージボディで送られてくるparamのEnum
      * @param messageBody リクエストのメッセージボディを渡す
      * @return レスポンスメッセージのボディの参照を変更
-     * @throws IOException     HTMLファイルに書き込み中に例外発生
-     * @throws DoPostException POST処理中に例外発生
+     * @throws IOException             HTMLファイルに書き込み中に例外発生
+     * @throws IllegalRequestException リクエストメッセージに問題があった
      */
-    static String doPost(HtmlEditor htmlEditor, Param param, Map<String, String> messageBody) throws IOException, DoPostException {
+    static ProgramBoardHtmlList doPost(HtmlEditor htmlEditor, Param param, Map<String, String> messageBody) throws IOException, IllegalRequestException {
+        if (htmlEditor == null) {
+            throw new IllegalRequestException("doPostメソッドの引数HtmlEditorがnullでした。");
+        }
         if (param == null) {
-            throw new DoPostException("POSTのリクエストメッセージのヘッダーフィールドにparamが含まれていませんでした。");
+            throw new IllegalRequestException("POSTのリクエストメッセージのヘッダーフィールドにparamが含まれていませんでした。");
         }
 
-        EditHtmlList editHtmlList;
+        ProgramBoardHtmlList programBoardHtmlList;
         switch (param) {
             case WRITE: {
                 String name = messageBody.get("name");
@@ -153,7 +211,7 @@ public class ProgramBoardHandler extends Handler {
                 String password = messageBody.get("password");
 
                 if (name == null || title == null || text == null || password == null) {
-                    throw new DoPostException("param:" + param + " name:" + name + " title:" + title + " text:" + text + " password:" + password + "のいずれかの項目に問題があります。");
+                    throw new IllegalRequestException("param:" + param + " name:" + name + " title:" + title + " text:" + text + " password:" + password + "のいずれかの項目に問題があります。");
                 }
 
                 name = InvalidChar.replace(name);
@@ -171,35 +229,35 @@ public class ProgramBoardHandler extends Handler {
             case SEARCH: {
                 String number = messageBody.get("number");
                 if (number == null || !NumberUtils.isNumber(number)) {
-                    throw new DoPostException("param:" + param + " number:" + number + " numberに問題があります。");
+                    throw new IllegalRequestException("param:" + param + " number:" + number + " numberに問題があります。");
                 }
                 String name = ModelController.getName(Integer.parseInt(number));
                 List<Message> messageList = ModelController.findMessageByName(name);
 
                 if (messageList.size() > 0) {
-                    editHtmlList = EditHtmlList.SEARCH_HTML;
-                    htmlEditor.writeHtml(editHtmlList, htmlEditor.editIndexOrSearchHtml(editHtmlList, messageList));
-                    return EditHtmlList.SEARCH_HTML.getUri();
+                    programBoardHtmlList = ProgramBoardHtmlList.SEARCH_HTML;
+                    htmlEditor.writeHtml(programBoardHtmlList, htmlEditor.editIndexOrSearchHtml(programBoardHtmlList, messageList));
+                    return ProgramBoardHtmlList.SEARCH_HTML;
 
                 } else {
-                    throw new DoPostException(param + "で 検索結果が 0 でした。");
+                    throw new IllegalRequestException(param + "で 検索結果が 0 でした。");
                 }
             }
 
             case DELETE_STEP_1: {
                 String number = messageBody.get("number");
                 if (number == null || !NumberUtils.isNumber(number)) {
-                    throw new DoPostException("param:" + param + " number:" + number + " numberに問題があります。");
+                    throw new IllegalRequestException("param:" + param + " number:" + number + " numberに問題があります。");
                 }
 
                 Message message = ModelController.findMessageByID(Integer.parseInt(number));
                 if (message != null) {
-                    editHtmlList = EditHtmlList.DELETE_HTML;
-                    htmlEditor.writeHtml(editHtmlList, htmlEditor.editDeleteHtml(message));
-                    return EditHtmlList.DELETE_HTML.getUri();
+                    programBoardHtmlList = ProgramBoardHtmlList.DELETE_HTML;
+                    htmlEditor.writeHtml(programBoardHtmlList, htmlEditor.editDeleteHtml(message));
+                    return ProgramBoardHtmlList.DELETE_HTML;
 
                 } else {
-                    throw new DoPostException(param + "で message が null でした。");
+                    throw new IllegalRequestException(param + "で message が null でした。");
                 }
             }
 
@@ -207,22 +265,22 @@ public class ProgramBoardHandler extends Handler {
                 String number = messageBody.get("number");
                 String password = messageBody.get("password");
                 if (number == null || !NumberUtils.isNumber(number) || password == null) {
-                    throw new DoPostException("param:" + param + " number:" + number + " password:" + password + " のどちらかに問題があります。");
+                    throw new IllegalRequestException("param:" + param + " number:" + number + " password:" + password + " のどちらかに問題があります。");
                 }
 
                 if (ModelController.deleteMessage(Integer.parseInt(number), password)) {
-                    return "/program/board/result.html";
+                    return ProgramBoardHtmlList.RESULT_HTML;
 
                 } else {
                     Message message = ModelController.findMessageByID(Integer.parseInt(messageBody.get("number")));
 
                     if (message != null) {
-                        editHtmlList = EditHtmlList.DELETE_HTML;
-                        htmlEditor.writeHtml(editHtmlList, htmlEditor.editDeleteHtml(message));
-                        return EditHtmlList.DELETE_HTML.getUri();
+                        programBoardHtmlList = ProgramBoardHtmlList.DELETE_HTML;
+                        htmlEditor.writeHtml(programBoardHtmlList, htmlEditor.editDeleteHtml(message));
+                        return ProgramBoardHtmlList.DELETE_HTML;
 
                     } else {
-                        throw new DoPostException(param + "で message が null でした。");
+                        throw new IllegalRequestException(param + "で message が null でした。");
                     }
                 }
             }
@@ -231,7 +289,7 @@ public class ProgramBoardHandler extends Handler {
                 return writeIndex(htmlEditor);
 
             default:
-                throw new DoPostException("param:" + param + " paramが想定されているもの以外が送られました。");
+                throw new IllegalRequestException("param:" + param + " paramが想定されているもの以外が送られました。");
         }
     }
 
@@ -242,35 +300,10 @@ public class ProgramBoardHandler extends Handler {
      * @return レスポンスメッセージのボディの参照を変更
      * @throws IOException HTMLファイルに書き込み中に例外発生
      */
-    static String writeIndex(HtmlEditor htmlEditor) throws IOException {
-        String html = htmlEditor.editIndexOrSearchHtml(EditHtmlList.INDEX_HTML, ModelController.getAllMessage());
-        htmlEditor.writeHtml(EditHtmlList.INDEX_HTML, html);
-        return EditHtmlList.INDEX_HTML.getUri();
-    }
-
-    /**
-     * レスポンスの処理を行うメソッド
-     *
-     * @param outputStream SocketのOutputStreamを渡す
-     * @throws HtmlInitializeException {@link HtmlEditor#resetAllFiles()}を参照
-     */
-    @Override
-    public void doResponseProcess(OutputStream outputStream) throws HtmlInitializeException {
-        ResponseMessage responseMessage = new ResponseMessage();
-        String path = Handler.getFilePath(UrlPattern.PROGRAM_BOARD, requestMessage.getUri());
-
-        if (statusLine.equals(StatusLine.OK)) {
-            ContentType contentType = new ContentType(path);
-            responseMessage.addHeader("Content-Type", contentType.getContentType());
-            responseMessage.addHeader("Content-Length", String.valueOf(new File(path).length()));
-
-        } else {
-            responseMessage.addHeader("Content-Type", "text/html; charset=UTF-8");
-        }
-
-        responseMessage.returnResponse(outputStream, statusLine, path);
-
-        htmlEditor.resetAllFiles();
+    static ProgramBoardHtmlList writeIndex(HtmlEditor htmlEditor) throws IOException {
+        String html = htmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.INDEX_HTML, ModelController.getAllMessage());
+        htmlEditor.writeHtml(ProgramBoardHtmlList.INDEX_HTML, html);
+        return ProgramBoardHtmlList.INDEX_HTML;
     }
 
     //テスト用
@@ -337,13 +370,14 @@ enum Param {
             return null;
         }
 
-        Param[] enumArray = Param.values();
+        Param[] array = Param.values();
 
-        for (Param enumStr : enumArray) {
-            if (str.equals(enumStr.name)) {
-                return enumStr;
+        for (Param param : array) {
+            if (str.equals(param.name)) {
+                return param;
             }
         }
         return null;
     }
 }
+

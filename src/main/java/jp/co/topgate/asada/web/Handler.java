@@ -12,15 +12,11 @@ import java.io.OutputStream;
  * @author asada
  */
 public abstract class Handler {
+
     /**
      * リソースファイルのパス
      */
     static final String FILE_PATH = "./src/main/resources";
-
-    /**
-     * レスポンスラインの状態行(StatusLine)
-     */
-    protected StatusLine statusLine;
 
     /**
      * ハンドラーのファクトリーメソッド
@@ -53,20 +49,9 @@ public abstract class Handler {
     }
 
     /**
-     * リクエストの処理を行うメソッド
-     */
-    public abstract void doRequestProcess();
-
-    /**
-     * レスポンスの処理を行うメソッド
-     * レスポンスに追加したいヘッダがある場合は、このメソッド内で追加する
+     * リクエストを適切に処理し、ResponseMessageのオブジェクトを生成し、OutputStreamにレスポンスを書き込む
      *
      * @param outputStream SocketのOutputStream
      */
-    public abstract void doResponseProcess(OutputStream outputStream);
-
-    //テスト用
-    public StatusLine getStatusLine() {
-        return this.statusLine;
-    }
+    public abstract void handleRequest(OutputStream outputStream);
 }

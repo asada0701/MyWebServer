@@ -41,7 +41,7 @@ public class ResponseMessage {
      * @param filePath     リソースファイルのパスを渡す
      *                     （例）./src/main/resources/index.html
      */
-    public void returnResponse(OutputStream outputStream, StatusLine statusLine, String filePath) {
+    public void writeResponse(OutputStream outputStream, StatusLine statusLine, String filePath) {
         try {
             outputStream.write(createResponseLine(protocolVersion, statusLine).getBytes());
             outputStream.write(createHeader(headerField).getBytes());
@@ -70,7 +70,7 @@ public class ResponseMessage {
      * @param statusLine   ステータスライン
      * @param target       byteの配列でレスポンスのメッセージボディを渡す
      */
-    void returnResponse(OutputStream outputStream, StatusLine statusLine, byte[] target) {
+    void writeResponse(OutputStream outputStream, StatusLine statusLine, byte[] target) {
         try {
             outputStream.write(createResponseLine(protocolVersion, statusLine).getBytes());
             outputStream.write(createHeader(headerField).getBytes());
@@ -180,6 +180,17 @@ public class ResponseMessage {
     public void addHeader(String name, String value) {
         if (name != null && value != null) {
             headerField.add(name + HEADER_FIELD_NAME_VALUE_SEPARATOR + value);
+        }
+    }
+
+    /**
+     * ヘッダーフィールドにコンテンツタイプを追加するメソッド
+     *
+     * @param value コンテンツタイプの値
+     */
+    public void addHeaderWithContentType(String value) {
+        if (value != null) {
+            headerField.add("Content-Type" + HEADER_FIELD_NAME_VALUE_SEPARATOR + value);
         }
     }
 

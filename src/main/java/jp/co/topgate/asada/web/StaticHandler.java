@@ -10,6 +10,16 @@ import java.io.OutputStream;
  */
 public class StaticHandler extends Handler {
 
+    /**
+     * HTTPリクエストのプロトコルバージョン
+     */
+    static final String PROTOCOL_VERSION = "HTTP/1.1";
+
+    /**
+     * HTTPリクエストのメソッド
+     */
+    static final String METHOD = "GET";
+
     private RequestMessage requestMessage;
 
     /**
@@ -17,20 +27,35 @@ public class StaticHandler extends Handler {
      *
      * @param requestMessage リクエストメッセージのオブジェクト
      */
-    public StaticHandler(RequestMessage requestMessage) {
+    StaticHandler(RequestMessage requestMessage) {
         this.requestMessage = requestMessage;
     }
 
     /**
-     * リクエストの処理を行うメソッド
+     * {@link Handler#handleRequest(OutputStream)}を参照
+     *
+     * @param outputStream SocketのoutputStream
      */
     @Override
-    public final void doRequestProcess() {
+    public void handleRequest(OutputStream outputStream) {
         String method = requestMessage.getMethod();
         String uri = requestMessage.getUri();
         String protocolVersion = requestMessage.getProtocolVersion();
 
-        this.statusLine = StaticHandler.decideStatusLine(method, uri, protocolVersion);
+        StatusLine statusLine = StaticHandler.decideStatusLine(method, uri, protocolVersion);
+
+        ResponseMessage responseMessage = new ResponseMessage();
+        String path = Handler.FILE_PATH + requestMessage.getUri();
+
+        if (statusLine.equals(StatusLine.OK)) {
+            ContentType contentType = new ContentType(path);
+            responseMessage.addHeaderWithContentType(contentType.getContentType());
+            responseMessage.addHeader("Content-Length", String.valueOf(new File(path).length()));
+        } else {
+            responseMessage.addHeaderWithContentType(ContentType.errorResponseContentType);
+        }
+
+        responseMessage.writeResponse(outputStream, statusLine, path);
     }
 
     /**
@@ -46,40 +71,17 @@ public class StaticHandler extends Handler {
      * @return レスポンスメッセージの状態行(StatusLine)を返す
      */
     static StatusLine decideStatusLine(String method, String uri, String protocolVersion) {
-        if (!"HTTP/1.1".equals(protocolVersion)) {
+        if (!StaticHandler.PROTOCOL_VERSION.equals(protocolVersion)) {
             return StatusLine.HTTP_VERSION_NOT_SUPPORTED;
-
-        } else if (!"GET".equals(method) && !"POST".equals(method)) {
+        }
+        if (!StaticHandler.METHOD.equals(method)) {
             return StatusLine.NOT_IMPLEMENTED;
-
-        } else {
-            File file = new File(Handler.FILE_PATH + uri);
-            if (!file.exists() || !file.isFile()) {
-                return StatusLine.NOT_FOUND;
-            }
+        }
+        File file = new File(Handler.FILE_PATH + uri);
+        if (!file.exists() || !file.isFile()) {
+            return StatusLine.NOT_FOUND;
         }
         return StatusLine.OK;
-    }
-
-    /**
-     * レスポンスの処理を行うメソッド
-     *
-     * @param outputStream SocketのOutputStreamを渡す
-     */
-    @Override
-    public void doResponseProcess(OutputStream outputStream) {
-        ResponseMessage responseMessage = new ResponseMessage();
-        String path = Handler.FILE_PATH + requestMessage.getUri();
-
-        if (statusLine.equals(StatusLine.OK)) {
-            ContentType ct = new ContentType(path);
-            responseMessage.addHeader("Content-Type", ct.getContentType());
-            responseMessage.addHeader("Content-Length", String.valueOf(new File(path).length()));
-        } else {
-            responseMessage.addHeader("Content-Type", "text/html; charset=UTF-8");
-        }
-
-        responseMessage.returnResponse(outputStream, statusLine, path);
     }
 
     //テスト用

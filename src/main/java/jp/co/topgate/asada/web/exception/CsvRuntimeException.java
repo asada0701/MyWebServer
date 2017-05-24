@@ -9,4 +9,8 @@ public class CsvRuntimeException extends RuntimeException {
     public CsvRuntimeException(String message) {
         super(message);
     }
+
+    public CsvRuntimeException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

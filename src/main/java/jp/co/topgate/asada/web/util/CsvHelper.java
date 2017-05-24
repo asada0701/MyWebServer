@@ -59,7 +59,7 @@ public class CsvHelper {
                 }
             }
         } catch (IOException e) {
-            throw new CsvRuntimeException(e.getMessage());
+            throw new CsvRuntimeException(e.getMessage(), e.getCause());
         }
         return messageList;
     }
@@ -71,7 +71,7 @@ public class CsvHelper {
      * @throws CsvRuntimeException CSVファイルの書き込み中に失敗したもしくは書き込みに失敗した
      */
     public static void writeMessage(List<Message> messageList) throws CsvRuntimeException {
-        try (OutputStream os = new FileOutputStream(new File(CSV_FILE_PATH))) {
+        try (OutputStream outputStream = new FileOutputStream(new File(CSV_FILE_PATH))) {
             for (Message m : messageList) {
                 String messageID = String.valueOf(m.getMessageID());
                 String password = m.getPassword();
@@ -84,12 +84,12 @@ public class CsvHelper {
 
                 String line = String.join(CSV_SEPARATOR, strings) + "\n";
 
-                os.write(line.getBytes());
+                outputStream.write(line.getBytes());
             }
-            os.flush();
+            outputStream.flush();
 
         } catch (IOException e) {
-            throw new CsvRuntimeException(e.getMessage());
+            throw new CsvRuntimeException(e.getMessage(), e.getCause());
         }
     }
 }

@@ -14,7 +14,6 @@ import java.util.*;
  * @author asada
  */
 public class RequestMessage {
-
     /**
      * メッセージボディのクエリーをクエリー毎に分割する
      */
@@ -32,9 +31,9 @@ public class RequestMessage {
 
     private String method;
     private String uri;
-    private Map<String, String> uriQuery = new HashMap<>();
+    private Map<String, String> uriQuery;
     private String protocolVersion;
-    private Map<String, String> headerField = new HashMap<>();
+    private Map<String, String> headerField;
     private byte[] messageBody;
 
     /**
@@ -97,18 +96,27 @@ public class RequestMessage {
     }
 
     /**
+     * メッセージボディのゲッター
+     *
+     * @return バイトの配列でメッセージボディを返す
+     */
+    public byte[] getMessageBody() {
+        return messageBody;
+    }
+
+    /**
      * メッセージボディをパースするメソッド
      *
      * @return パースした結果をMapで返す
      * @throws RequestParseException パースした結果不正なリクエストだった
      */
-    public Map<String, String> parseMessageBodyToMapString() throws RequestParseException {
+    public Map<String, String> getMessageBodyToMapString() throws RequestParseException {
         String messageBody = new String(this.messageBody);
         try {
-            messageBody = URLDecoder.decode(messageBody, "UTF-8");
+            messageBody = URLDecoder.decode(messageBody, Main.CHARACTER_ENCODING_SCHEME);
 
         } catch (UnsupportedEncodingException e) {
-            throw new RequestParseException("UTF-8でのデコードに失敗");
+            throw new RequestParseException(Main.CHARACTER_ENCODING_SCHEME + "でのデコードに失敗");
         }
 
         Map<String, String> result = new HashMap<>();

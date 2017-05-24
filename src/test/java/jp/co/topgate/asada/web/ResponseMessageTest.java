@@ -20,7 +20,6 @@ import static org.junit.Assert.assertThat;
  */
 @RunWith(Enclosed.class)
 public class ResponseMessageTest {
-
     public static class createResponseLineメソッドのテスト {
         @Test(expected = NullPointerException.class)
         public void 引数StatusLineのnullチェック() {
@@ -29,7 +28,8 @@ public class ResponseMessageTest {
 
         @Test
         public void 引数protocolVersionのnullチェック() {
-            ResponseMessage.createResponseLine(null, StatusLine.OK);
+            String sut = ResponseMessage.createResponseLine(null, StatusLine.OK);
+            assertThat(sut, is("null 200 OK\n"));
         }
 
         @Test(expected = NullPointerException.class)
@@ -197,6 +197,18 @@ public class ResponseMessageTest {
             assertThat(sut.getHeaderField().get(0), is("Date: Thu,13 Api 2017 18:33:23 GMT"));
             assertThat(sut.getHeaderField().get(1), is("Server: mywebserver/1.0"));
         }
+
+        @Test
+        public void addHeaderWithContentTypeを使ってみる() {
+            sut.addHeaderWithContentType(null);
+            assertThat(sut.getHeaderField().size(), is(0));
+
+            sut.addHeaderWithContentType("HTML");
+            assertThat(sut.getHeaderField().get(0), is("Content-Type: HTML"));
+
+            sut.addHeaderWithContentType("");
+            assertThat(sut.getHeaderField().get(1), is("Content-Type: "));
+        }
     }
 
     public static class returnResponseメソッドのテスト {
@@ -207,7 +219,7 @@ public class ResponseMessageTest {
                  BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(path))))) {
                 ResponseMessage rm = new ResponseMessage();
                 rm.addHeader("Content-Type", "text/html; charset=UTF-8");
-                rm.returnResponse(fos, StatusLine.OK, "./src/main/resources/index.html");
+                rm.writeResponse(fos, StatusLine.OK, "./src/main/resources/index.html");
 
                 assertThat(br.readLine(), is("HTTP/1.1 200 OK"));
                 assertThat(br.readLine(), is("Content-Type: text/html; charset=UTF-8"));
@@ -250,7 +262,7 @@ public class ResponseMessageTest {
                  BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(path))))) {
                 ResponseMessage rm = new ResponseMessage();
                 rm.addHeader("Content-Type", "text/html; charset=UTF-8");
-                rm.returnResponse(fos, StatusLine.BAD_REQUEST, "");
+                rm.writeResponse(fos, StatusLine.BAD_REQUEST, "");
 
                 assertThat(br.readLine(), is("HTTP/1.1 400 Bad Request"));
                 assertThat(br.readLine(), is("Content-Type: text/html; charset=UTF-8"));
@@ -269,7 +281,7 @@ public class ResponseMessageTest {
                 ResponseMessage rm = new ResponseMessage();
                 rm.addHeader("Content-Type", "application/json; charset=utf-8");
                 rm.addHeader("Content-Length", "43");
-                rm.returnResponse(fos, StatusLine.OK, "{\"status\":\"OK\",\"message\":\"Hello Guillaume\"}".getBytes());
+                rm.writeResponse(fos, StatusLine.OK, "{\"status\":\"OK\",\"message\":\"Hello Guillaume\"}".getBytes());
 
                 assertThat(br.readLine(), is("HTTP/1.1 200 OK"));
                 assertThat(br.readLine(), is("Content-Type: application/json; charset=utf-8"));
