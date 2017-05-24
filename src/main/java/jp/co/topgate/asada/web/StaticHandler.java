@@ -52,7 +52,7 @@ public class StaticHandler extends Handler {
             responseMessage.addHeaderWithContentType(contentType.getContentType());
             responseMessage.addHeader("Content-Length", String.valueOf(new File(path).length()));
         } else {
-            responseMessage.addHeaderWithContentType(ContentType.errorResponseContentType);
+            responseMessage.addHeaderWithContentType(ContentType.ERROR_RESPONSE);
         }
 
         responseMessage.writeToOutputStream(outputStream, statusLine, path);
