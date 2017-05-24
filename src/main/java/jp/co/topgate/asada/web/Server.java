@@ -78,12 +78,12 @@ class Server extends Thread {
                 } catch (RequestParseException e) {                 //リクエストメッセージに問題があった場合の例外処理
                     ResponseMessage responseMessage = new ResponseMessage();
                     responseMessage.addHeaderWithContentType(ContentType.errorResponseContentType);
-                    responseMessage.writeResponse(clientSocket.getOutputStream(), StatusLine.BAD_REQUEST, "");
+                    responseMessage.writeToOutputStream(clientSocket.getOutputStream(), StatusLine.BAD_REQUEST, "");
 
                 } catch (HtmlInitializeException e) {               //HTMLファイルに問題が発生した場合の例外処理
                     ResponseMessage responseMessage = new ResponseMessage();
                     responseMessage.addHeaderWithContentType(ContentType.errorResponseContentType);
-                    responseMessage.writeResponse(clientSocket.getOutputStream(), StatusLine.INTERNAL_SERVER_ERROR, "");
+                    responseMessage.writeToOutputStream(clientSocket.getOutputStream(), StatusLine.INTERNAL_SERVER_ERROR, "");
                     throw new SocketRuntimeException(e.getMessage(), e.getCause());
                 }
 

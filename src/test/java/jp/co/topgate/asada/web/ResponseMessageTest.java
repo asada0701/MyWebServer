@@ -211,7 +211,7 @@ public class ResponseMessageTest {
         }
     }
 
-    public static class returnResponseメソッドのテスト {
+    public static class writeToOutputStreamメソッドのテスト {
         @Test
         public void レスポンスメッセージの生成テスト() throws Exception {
             String path = "./src/test/resources/responseMessage.txt";
@@ -219,7 +219,7 @@ public class ResponseMessageTest {
                  BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(path))))) {
                 ResponseMessage rm = new ResponseMessage();
                 rm.addHeader("Content-Type", "text/html; charset=UTF-8");
-                rm.writeResponse(fos, StatusLine.OK, "./src/main/resources/index.html");
+                rm.writeToOutputStream(fos, StatusLine.OK, "./src/main/resources/index.html");
 
                 assertThat(br.readLine(), is("HTTP/1.1 200 OK"));
                 assertThat(br.readLine(), is("Content-Type: text/html; charset=UTF-8"));
@@ -262,7 +262,7 @@ public class ResponseMessageTest {
                  BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(path))))) {
                 ResponseMessage rm = new ResponseMessage();
                 rm.addHeader("Content-Type", "text/html; charset=UTF-8");
-                rm.writeResponse(fos, StatusLine.BAD_REQUEST, "");
+                rm.writeToOutputStream(fos, StatusLine.BAD_REQUEST, "");
 
                 assertThat(br.readLine(), is("HTTP/1.1 400 Bad Request"));
                 assertThat(br.readLine(), is("Content-Type: text/html; charset=UTF-8"));
@@ -281,7 +281,7 @@ public class ResponseMessageTest {
                 ResponseMessage rm = new ResponseMessage();
                 rm.addHeader("Content-Type", "application/json; charset=utf-8");
                 rm.addHeader("Content-Length", "43");
-                rm.writeResponse(fos, StatusLine.OK, "{\"status\":\"OK\",\"message\":\"Hello Guillaume\"}".getBytes());
+                rm.writeToOutputStream(fos, StatusLine.OK, "{\"status\":\"OK\",\"message\":\"Hello Guillaume\"}".getBytes());
 
                 assertThat(br.readLine(), is("HTTP/1.1 200 OK"));
                 assertThat(br.readLine(), is("Content-Type: application/json; charset=utf-8"));

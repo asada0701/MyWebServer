@@ -92,7 +92,7 @@ public class ProgramBoardHandler extends Handler {
 
         if (!statusLine.equals(StatusLine.OK)) {
             responseMessage.addHeaderWithContentType(ContentType.errorResponseContentType);
-            responseMessage.writeResponse(outputStream, statusLine, "");
+            responseMessage.writeToOutputStream(outputStream, statusLine, "");
         }
 
         try {
@@ -130,7 +130,7 @@ public class ProgramBoardHandler extends Handler {
             responseMessage.addHeaderWithContentType(ContentType.errorResponseContentType);
         }
 
-        responseMessage.writeResponse(outputStream, statusLine, path);
+        responseMessage.writeToOutputStream(outputStream, statusLine, path);
 
         htmlEditor.resetAllFiles();
     }

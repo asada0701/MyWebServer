@@ -41,7 +41,7 @@ public class ResponseMessage {
      * @param filePath     リソースファイルのパスを渡す
      *                     （例）./src/main/resources/index.html
      */
-    public void writeResponse(OutputStream outputStream, StatusLine statusLine, String filePath) {
+    public void writeToOutputStream(OutputStream outputStream, StatusLine statusLine, String filePath) {
         try {
             outputStream.write(createResponseLine(protocolVersion, statusLine).getBytes());
             outputStream.write(createHeader(headerField).getBytes());
@@ -70,7 +70,7 @@ public class ResponseMessage {
      * @param statusLine   ステータスライン
      * @param target       byteの配列でレスポンスのメッセージボディを渡す
      */
-    void writeResponse(OutputStream outputStream, StatusLine statusLine, byte[] target) {
+    void writeToOutputStream(OutputStream outputStream, StatusLine statusLine, byte[] target) {
         try {
             outputStream.write(createResponseLine(protocolVersion, statusLine).getBytes());
             outputStream.write(createHeader(headerField).getBytes());

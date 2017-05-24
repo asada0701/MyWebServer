@@ -55,7 +55,7 @@ public class StaticHandler extends Handler {
             responseMessage.addHeaderWithContentType(ContentType.errorResponseContentType);
         }
 
-        responseMessage.writeResponse(outputStream, statusLine, path);
+        responseMessage.writeToOutputStream(outputStream, statusLine, path);
     }
 
     /**
