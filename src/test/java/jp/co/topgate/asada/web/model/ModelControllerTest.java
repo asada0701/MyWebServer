@@ -51,6 +51,7 @@ public class ModelControllerTest {
         //findMessageメソッドのテスト
         m = ModelController.findMessageByID(2);
 
+        assert m != null;
         assertThat(m.getDate(), is(now));
 
         //findSameNameMessageメソッドのテスト

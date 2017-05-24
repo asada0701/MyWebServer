@@ -12,6 +12,7 @@ import java.io.OutputStream;
  * @author asada
  */
 public abstract class Handler {
+
     /**
      * リソースファイルのパス
      */

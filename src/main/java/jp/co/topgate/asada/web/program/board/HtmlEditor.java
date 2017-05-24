@@ -30,7 +30,7 @@ public class HtmlEditor {
     /**
      * 編集するHTMLの初期状態を保存するマップ
      */
-    private static Map<EditHtmlList, String> rawHtml = new HashMap<>();
+    private static Map<ProgramBoardHtmlList, String> rawHtml = new HashMap<>();
 
     /**
      * ブラウザから送られてきた文字列に含まれている改行コードを
@@ -55,14 +55,14 @@ public class HtmlEditor {
      * @throws HtmlInitializeException HTMLファイルの読み込み中にエラー発生
      */
     public HtmlEditor() throws HtmlInitializeException {
-        for (EditHtmlList editHtmlList : EditHtmlList.values()) {
-            try (BufferedReader br = new BufferedReader(new FileReader(new File(editHtmlList.getPath())))) {
+        for (ProgramBoardHtmlList programBoardHtmlList : ProgramBoardHtmlList.values()) {
+            try (BufferedReader br = new BufferedReader(new FileReader(new File(programBoardHtmlList.getPath())))) {
                 String line;
                 StringBuilder builder = new StringBuilder();
                 while ((line = br.readLine()) != null) {
                     builder.append(line).append("\n");
                 }
-                rawHtml.put(editHtmlList, builder.toString());
+                rawHtml.put(programBoardHtmlList, builder.toString());
 
             } catch (IOException e) {
                 throw new HtmlInitializeException(e.getMessage(), e.getCause());
@@ -76,9 +76,9 @@ public class HtmlEditor {
      * @throws HtmlInitializeException HTMLファイルに書き込み中にエラー発生
      */
     public void resetAllFiles() throws HtmlInitializeException {
-        for (EditHtmlList editHtmlList : EditHtmlList.values()) {
-            try (OutputStream outputStream = new FileOutputStream(new File(editHtmlList.getPath()))) {
-                outputStream.write(rawHtml.get(editHtmlList).getBytes());
+        for (ProgramBoardHtmlList programBoardHtmlList : ProgramBoardHtmlList.values()) {
+            try (OutputStream outputStream = new FileOutputStream(new File(programBoardHtmlList.getPath()))) {
+                outputStream.write(rawHtml.get(programBoardHtmlList).getBytes());
                 outputStream.flush();
             } catch (IOException e) {
                 throw new HtmlInitializeException(e.getMessage(), e.getCause());
@@ -89,12 +89,12 @@ public class HtmlEditor {
     /**
      * indexまたはsearchのHTML文章を編集する
      *
-     * @param editHtmlList 編集したいHTMLのEnum
+     * @param programBoardHtmlList 編集したいHTMLのEnum
      * @param messageList  HTML文章に書き込みたいMessageのリスト
      * @return 編集後のHTML文章
      */
-    String editIndexOrSearchHtml(EditHtmlList editHtmlList, List<Message> messageList) {
-        String[] lineArray = rawHtml.get(editHtmlList).split("\n");     //改行で分割
+    String editIndexOrSearchHtml(ProgramBoardHtmlList programBoardHtmlList, List<Message> messageList) {
+        String[] lineArray = rawHtml.get(programBoardHtmlList).split("\n");     //改行で分割
         StringBuilder builder = new StringBuilder();
 
         for (int i = 0; i < lineArray.length; i++) {
@@ -107,7 +107,7 @@ public class HtmlEditor {
                 builder.append(lineArray[i]).append("\n");  //</tr>をappend
 
                 for (int k = messageList.size() - 1; k > -1; k--) {                //ここからが掲示板のメッセージの部分
-                    builder.append(changeMessageToHtml(editHtmlList, messageList.get(k)));
+                    builder.append(changeMessageToHtml(programBoardHtmlList, messageList.get(k)));
                     builder.append(line).append("\n");
                 }
                 line = lineArray[++i];
@@ -124,7 +124,7 @@ public class HtmlEditor {
      * @return 編集後のHTML文章
      */
     String editDeleteHtml(Message message) {
-        String[] lineArray = rawHtml.get(EditHtmlList.DELETE_HTML).split("\n");     //改行で分割
+        String[] lineArray = rawHtml.get(ProgramBoardHtmlList.DELETE_HTML).split("\n");     //改行で分割
         StringBuilder builder = new StringBuilder();
 
         for (int i = 0; i < lineArray.length; i++) {
@@ -137,12 +137,13 @@ public class HtmlEditor {
                 line = lineArray[i];
                 builder.append(line).append("\n");
 
-                builder.append(changeMessageToHtml(EditHtmlList.DELETE_HTML, message));
+                builder.append(changeMessageToHtml(ProgramBoardHtmlList.DELETE_HTML, message));
                 line = lineArray[i];
             }
             if (line.startsWith("            <input type=\"hidden\" name=\"number\" value=\"")) {
                 builder.append("            <input type=\"hidden\" name=\"number\" value=\"");
                 builder.append(message.getMessageID()).append("\">").append("\n");
+                continue;
             }
 
             builder.append(line).append("\n");
@@ -153,12 +154,12 @@ public class HtmlEditor {
     /**
      * messageをHTML文章にする
      *
-     * @param editHtmlList 編集したいHTMLのEnum
+     * @param programBoardHtmlList 編集したいHTMLのEnum
      * @param message      書き込みたいMessageのオブジェクト
      * @return HTML文章
      */
-    static String changeMessageToHtml(EditHtmlList editHtmlList, Message message) {
-        switch (editHtmlList) {
+    static String changeMessageToHtml(ProgramBoardHtmlList programBoardHtmlList, Message message) {
+        switch (programBoardHtmlList) {
             case INDEX_HTML:
                 return "            <tr id=\"No." + message.getMessageID() + "\">" + "\n" +
                         "                <td>No." + message.getMessageID() + "</td>" + "\n" +
@@ -219,9 +220,7 @@ public class HtmlEditor {
      */
     static String changeLineFeedToBrTag(String str) {
         for (String lineFeed : lineFeedPattern) {
-            if (lineFeed.equals(str)) {
-                return str.replaceAll(lineFeed, LINE_FEED_HTML);
-            }
+            str = str.replaceAll(lineFeed, LINE_FEED_HTML);
         }
         return str;
     }
@@ -229,12 +228,12 @@ public class HtmlEditor {
     /**
      * HTMLファイルに文章を書き込むメソッド
      *
-     * @param editHtmlList 書き込みたいHTMLのEnum
-     * @param html         書き込みたい文字列
+     * @param programBoardHtmlList 書き込みたいHTMLのEnum
+     * @param html                 書き込みたい文字列
      * @throws IOException 書き込み中の例外
      */
-    void writeHtml(EditHtmlList editHtmlList, String html) throws IOException {
-        try (OutputStream outputStream = new FileOutputStream(new File(editHtmlList.getPath()))) {
+    void writeHtml(ProgramBoardHtmlList programBoardHtmlList, String html) throws IOException {
+        try (OutputStream outputStream = new FileOutputStream(new File(programBoardHtmlList.getPath()))) {
             outputStream.write(html.getBytes());
             outputStream.flush();
         }
@@ -246,7 +245,7 @@ public class HtmlEditor {
  *
  * @author asada
  */
-enum EditHtmlList {
+enum ProgramBoardHtmlList {
     /**
      * index.html
      * URI、ファイルのパス
@@ -261,13 +260,18 @@ enum EditHtmlList {
     /**
      * delete.html
      */
-    DELETE_HTML("/program/board/delete.html", "./src/main/resources/2/delete.html");
+    DELETE_HTML("/program/board/delete.html", "./src/main/resources/2/delete.html"),
+
+    /**
+     * result.html
+     */
+    RESULT_HTML("/program/board/result.html", "./src/main/resources/2/result.html");
 
     private final String uri;
 
     private final String path;
 
-    EditHtmlList(String uri, String path) {
+    ProgramBoardHtmlList(String uri, String path) {
         this.uri = uri;
         this.path = path;
     }

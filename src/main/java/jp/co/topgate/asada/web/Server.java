@@ -72,17 +72,17 @@ class Server extends Thread {
                     RequestMessage requestMessage = RequestMessageParser.parse(clientSocket.getInputStream());
 
                     Handler handler = Handler.getHandler(requestMessage);
-                    
+
                     handler.handleRequest(clientSocket.getOutputStream());
 
                 } catch (RequestParseException e) {                 //リクエストメッセージに問題があった場合の例外処理
                     ResponseMessage responseMessage = new ResponseMessage();
-                    responseMessage.addHeader("Content-Type", "text/html; charset=UTF-8");
+                    responseMessage.addHeaderWithContentType(ContentType.errorResponseContentType);
                     responseMessage.writeResponse(clientSocket.getOutputStream(), StatusLine.BAD_REQUEST, "");
 
                 } catch (HtmlInitializeException e) {               //HTMLファイルに問題が発生した場合の例外処理
                     ResponseMessage responseMessage = new ResponseMessage();
-                    responseMessage.addHeader("Content-Type", "text/html; charset=UTF-8");
+                    responseMessage.addHeaderWithContentType(ContentType.errorResponseContentType);
                     responseMessage.writeResponse(clientSocket.getOutputStream(), StatusLine.INTERNAL_SERVER_ERROR, "");
                     throw new SocketRuntimeException(e.getMessage(), e.getCause());
                 }

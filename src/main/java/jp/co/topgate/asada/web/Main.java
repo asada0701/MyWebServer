@@ -23,7 +23,7 @@ public class Main {
     /**
      * サーバーのポート番号
      */
-    private static final int portNumber = 8080;
+    static final int PORT_NUMBER = 8080;
 
     /**
      * サーバーが扱う文字符号化スキーム
@@ -31,12 +31,17 @@ public class Main {
     public static final String CHARACTER_ENCODING_SCHEME = "UTF-8";
 
     /**
+     * サーバーのウェルカムページのファイル名
+     */
+    public static final String WELCOME_PAGE_NAME = "index.html";
+
+    /**
      * メインメソッド
      */
     public static void main(String[] args) {
         try {
             String choice;
-            Server server = new Server(portNumber);
+            Server server = new Server(PORT_NUMBER);
             Scanner scanner = new Scanner(System.in);
 
             ModelController.setMessageList(CsvHelper.readMessage());                            //CSVファイル読み込み
@@ -86,7 +91,7 @@ public class Main {
                         return ServerMessage.START;
 
                     case TERMINATED:
-                        server = new Server(portNumber);
+                        server = new Server(PORT_NUMBER);
                         server.startServer();
                         return ServerMessage.START;
 
@@ -196,7 +201,7 @@ enum ServerCommand {
 }
 
 /**
- * サーバーの状態をユーザーに伝える時に使うメッセージの列挙型
+ * サーバーの状態をユーザーに伝える時に使うメッセージのEnum
  */
 enum ServerMessage {
 

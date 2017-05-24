@@ -192,7 +192,7 @@ public class RequestMessageParser {
             str[1] = uri.getQuery();
 
             if (str[0].endsWith("/")) {
-                str[0] = str[0] + "index.html";
+                str[0] = str[0] + Main.WELCOME_PAGE_NAME;
             }
             return str;
 

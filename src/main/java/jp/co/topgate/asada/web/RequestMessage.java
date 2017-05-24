@@ -31,9 +31,9 @@ public class RequestMessage {
 
     private String method;
     private String uri;
-    private Map<String, String> uriQuery = new HashMap<>();
+    private Map<String, String> uriQuery;
     private String protocolVersion;
-    private Map<String, String> headerField = new HashMap<>();
+    private Map<String, String> headerField;
     private byte[] messageBody;
 
     /**

@@ -183,6 +183,17 @@ public class ResponseMessage {
         }
     }
 
+    /**
+     * ヘッダーフィールドにコンテンツタイプを追加するメソッド
+     *
+     * @param value コンテンツタイプの値
+     */
+    public void addHeaderWithContentType(String value) {
+        if (value != null) {
+            headerField.add("Content-Type" + HEADER_FIELD_NAME_VALUE_SEPARATOR + value);
+        }
+    }
+
     //テスト用
     String getProtocolVersion() {
         return this.protocolVersion;

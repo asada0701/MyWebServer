@@ -20,7 +20,6 @@ import static org.junit.Assert.assertThat;
  */
 @RunWith(Enclosed.class)
 public class ResponseMessageTest {
-
     public static class createResponseLineメソッドのテスト {
         @Test(expected = NullPointerException.class)
         public void 引数StatusLineのnullチェック() {
@@ -29,7 +28,8 @@ public class ResponseMessageTest {
 
         @Test
         public void 引数protocolVersionのnullチェック() {
-            ResponseMessage.createResponseLine(null, StatusLine.OK);
+            String sut = ResponseMessage.createResponseLine(null, StatusLine.OK);
+            assertThat(sut, is("null 200 OK\n"));
         }
 
         @Test(expected = NullPointerException.class)
@@ -196,6 +196,18 @@ public class ResponseMessageTest {
             sut.addHeader("Server", "mywebserver/1.0");
             assertThat(sut.getHeaderField().get(0), is("Date: Thu,13 Api 2017 18:33:23 GMT"));
             assertThat(sut.getHeaderField().get(1), is("Server: mywebserver/1.0"));
+        }
+
+        @Test
+        public void addHeaderWithContentTypeを使ってみる() {
+            sut.addHeaderWithContentType(null);
+            assertThat(sut.getHeaderField().size(), is(0));
+
+            sut.addHeaderWithContentType("HTML");
+            assertThat(sut.getHeaderField().get(0), is("Content-Type: HTML"));
+
+            sut.addHeaderWithContentType("");
+            assertThat(sut.getHeaderField().get(1), is("Content-Type: "));
         }
     }
 
