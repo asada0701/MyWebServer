@@ -6,12 +6,12 @@ package jp.co.topgate.asada.web.model;
  * @author asada
  */
 public class Message {
-    int messageID;
-    String password;
-    String name;
-    String title;
-    String text;
-    String date;
+    private int messageID;
+    private String password;
+    private String name;
+    private String title;
+    private String text;
+    private String date;
 
     public int getMessageID() {
         return messageID;

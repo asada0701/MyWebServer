@@ -11,11 +11,6 @@ import static org.junit.Assert.assertThat;
  * @author asada
  */
 public class ContentTypeTest {
-    @Test
-    public void エラーレスポンンスコンテンツタイプのテスト() {
-        assertThat(ContentType.ERROR_RESPONSE, is("text/html; charset=UTF-8"));
-    }
-
     @Test(expected = NullPointerException.class)
     public void nullチェック() {
         new ContentType(null);

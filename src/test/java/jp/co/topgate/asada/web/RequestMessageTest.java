@@ -92,7 +92,7 @@ public class RequestMessageTest {
     }
 
     @Test
-    public void messageBodyをセットする前にゲッターを呼び出す(){
+    public void messageBodyをセットする前にゲッターを呼び出す() {
         RequestMessage sut = new RequestMessage(null, null, null, null);
         assertThat(sut.getMessageBody(), is(nullValue()));
     }
@@ -104,13 +104,13 @@ public class RequestMessageTest {
     }
 
     @Test(expected = NullPointerException.class)
-    public void uriQueryをセットする前にゲッターを呼び出す(){
+    public void uriQueryをセットする前にゲッターを呼び出す() {
         RequestMessage sut = new RequestMessage(null, null, null, null);
         sut.findUriQuery("hoge");
     }
 
     @Test(expected = NullPointerException.class)
-    public void messageBodyをセットする前にgetMessageBodyToMapStringメソッドを呼ぶ(){
+    public void messageBodyをセットする前にgetMessageBodyToMapStringメソッドを呼ぶ() {
         RequestMessage sut = new RequestMessage(null, null, null, null);
         sut.getMessageBodyToMapString();
     }

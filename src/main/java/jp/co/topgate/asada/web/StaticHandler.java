@@ -13,12 +13,12 @@ public class StaticHandler extends Handler {
     /**
      * HTTPリクエストのプロトコルバージョン
      */
-    static final String PROTOCOL_VERSION = "HTTP/1.1";
+    private static final String PROTOCOL_VERSION = "HTTP/1.1";
 
     /**
      * HTTPリクエストのメソッド
      */
-    static final String METHOD = "GET";
+    private static final String METHOD = "GET";
 
     private RequestMessage requestMessage;
 

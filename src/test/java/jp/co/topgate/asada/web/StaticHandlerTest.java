@@ -17,18 +17,6 @@ import static org.junit.Assert.assertThat;
  */
 @RunWith(Enclosed.class)
 public class StaticHandlerTest {
-    public static class 定数のテスト {
-        @Test
-        public void プロトコルバージョンのテスト() {
-            assertThat(StaticHandler.PROTOCOL_VERSION, is("HTTP/1.1"));
-        }
-
-        @Test
-        public void メソッドのテスト() {
-            assertThat(StaticHandler.METHOD, is("GET"));
-        }
-    }
-
     public static class コンストラクタのテスト {
         @Test
         public void nullチェック() throws Exception {

@@ -28,12 +28,12 @@ public class ProgramBoardHandler extends Handler {
     /**
      * HTTPリクエストのプロトコルバージョン
      */
-    static final String PROTOCOL_VERSION = "HTTP/1.1";
+    private static final String PROTOCOL_VERSION = "HTTP/1.1";
 
     /**
      * HTTPリクエストのコンテンツタイプ
      */
-    static final String CONTENT_TYPE = "application/x-www-form-urlencoded";
+    private static final String CONTENT_TYPE = "application/x-www-form-urlencoded";
 
     /**
      * HTTPリクエストのメソッド

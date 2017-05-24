@@ -140,7 +140,7 @@ public class RequestMessageParserTest {
             String path = "./src/test/resources/PostRequestMessage.txt";
             try (FileInputStream fis = new FileInputStream(new File(path))) {
                 RequestMessage sut = RequestMessageParser.parse(fis);
-                
+
                 Map<String, String> messageBody = sut.getMessageBodyToMapString();
                 assertThat(messageBody.get("name"), is("asada"));
                 assertThat(messageBody.get("title"), is("test"));
