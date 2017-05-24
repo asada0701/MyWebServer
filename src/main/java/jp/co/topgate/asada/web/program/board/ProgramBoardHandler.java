@@ -13,7 +13,6 @@ import org.apache.commons.lang3.math.NumberUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -76,23 +75,24 @@ public class ProgramBoardHandler extends Handler {
     }
 
     /**
-     * {@link Handler#handleRequest(OutputStream)}を参照
+     * {@link Handler#handleRequest()}を参照
      *
-     * @param outputStream SocketのoutputStream
+     * @return ResponseMessageのオブジェクトを生成して返す。
      * @throws HtmlInitializeException {@link HtmlEditor#resetAllFiles()}を参照
      */
     @Override
-    public void handleRequest(OutputStream outputStream) throws HtmlInitializeException {
+    public ResponseMessage handleRequest() throws HtmlInitializeException {
         String method = requestMessage.getMethod();
         String uri = requestMessage.getUri();
         String protocolVersion = requestMessage.getProtocolVersion();
 
         StatusLine statusLine = ProgramBoardHandler.decideStatusLine(method, uri, protocolVersion);
-        ResponseMessage responseMessage = new ResponseMessage();
+        ResponseMessage responseMessage;
 
         if (!statusLine.equals(StatusLine.OK)) {
+            responseMessage = new ResponseMessage(statusLine);
             responseMessage.addHeaderWithContentType(ContentType.ERROR_RESPONSE);
-            responseMessage.writeToOutputStream(outputStream, statusLine, "");
+            return responseMessage;
         }
 
         try {
@@ -119,20 +119,21 @@ public class ProgramBoardHandler extends Handler {
             statusLine = StatusLine.INTERNAL_SERVER_ERROR;
         }
 
-        String path = Handler.getFilePath(UrlPattern.PROGRAM_BOARD, requestMessage.getUri());
-
         if (statusLine.equals(StatusLine.OK)) {
+            String path = Handler.getFilePath(UrlPattern.PROGRAM_BOARD, requestMessage.getUri());
+            responseMessage = new ResponseMessage(statusLine, path);
+
+
             ContentType contentType = new ContentType(path);
             responseMessage.addHeaderWithContentType(contentType.getContentType());
             responseMessage.addHeader("Content-Length", String.valueOf(new File(path).length()));
 
         } else {
+            responseMessage = new ResponseMessage(statusLine);
             responseMessage.addHeaderWithContentType(ContentType.ERROR_RESPONSE);
         }
 
-        responseMessage.writeToOutputStream(outputStream, statusLine, path);
-
-        htmlEditor.resetAllFiles();
+        return responseMessage;
     }
 
     /**

@@ -32,55 +32,69 @@ public class ResponseMessage {
      */
     private List<String> headerField = new ArrayList<>();
 
+    private StatusLine statusLine;
+
+    private String filePath = null;
+
+    private byte[] target = null;
+
     /**
-     * リソースファイルを使用したい場合に使用するメソッド
-     * レスポンスメッセージを返したいタイミングで呼び出す
+     * JSONなど、リソースファイルを使わない場合に使用するコンストラクタ
+     *
+     * @param statusLine レスポンスメッセージのステータスライン（状態行）
+     * @param target     byteの配列でレスポンスメッセージのメッセージボディを渡す
+     */
+    public ResponseMessage(StatusLine statusLine, byte[] target) {
+        this(statusLine);
+        this.target = target;
+    }
+
+    /**
+     * リソースファイルを使用したい場合に使用するコンストラクタ
+     *
+     * @param statusLine レスポンスメッセージのステータスライン（状態行）
+     * @param filePath   リソースファイルのパスを渡す
+     *                   （例）./src/main/resources/index.html
+     */
+    public ResponseMessage(StatusLine statusLine, String filePath) {
+        this(statusLine);
+        this.filePath = filePath;
+    }
+
+    /**
+     * @param statusLine レスポンスメッセージのステータスライン（状態行）
+     */
+    public ResponseMessage(StatusLine statusLine) {
+        this.statusLine = statusLine;
+    }
+
+    /**
+     * 引数で渡された出力ストリームにレスポンスメッセージを書き出す
      *
      * @param outputStream ソケットの出力ストリーム
-     * @param statusLine   ステータスライン
-     * @param filePath     リソースファイルのパスを渡す
-     *                     （例）./src/main/resources/index.html
      */
-    public void writeToOutputStream(OutputStream outputStream, StatusLine statusLine, String filePath) {
+    public void write(OutputStream outputStream) {
         try {
             outputStream.write(createResponseLine(protocolVersion, statusLine).getBytes());
             outputStream.write(createHeader(headerField).getBytes());
 
-            if (statusLine.equals(StatusLine.OK)) {
+            if (statusLine.equals(StatusLine.OK) && filePath != null) {
                 try (InputStream in = new FileInputStream(filePath)) {
                     int num;
                     while ((num = in.read()) != -1) {
                         outputStream.write(num);
                     }
                 }
-            } else {
-                outputStream.write(getErrorMessageBody(statusLine).getBytes());
-            }
-            outputStream.flush();
-        } catch (IOException e) {
 
-        }
-    }
-
-    /**
-     * JSONなど、リソースファイルを使わない場合に使用するメソッド
-     * レスポンスメッセージを返したいタイミングで呼び出す
-     *
-     * @param outputStream ソケットの出力ストリーム
-     * @param statusLine   ステータスライン
-     * @param target       byteの配列でレスポンスのメッセージボディを渡す
-     */
-    void writeToOutputStream(OutputStream outputStream, StatusLine statusLine, byte[] target) {
-        try {
-            outputStream.write(createResponseLine(protocolVersion, statusLine).getBytes());
-            outputStream.write(createHeader(headerField).getBytes());
-
-            if (statusLine.equals(StatusLine.OK)) {
+            } else if (statusLine.equals(StatusLine.OK) && target != null) {
                 outputStream.write(target);
+
             } else {
                 outputStream.write(getErrorMessageBody(statusLine).getBytes());
             }
+
             outputStream.flush();
+
         } catch (IOException e) {
 
         }
@@ -195,11 +209,24 @@ public class ResponseMessage {
     }
 
     //テスト用
-    String getProtocolVersion() {
+
+    public String getProtocolVersion() {
         return this.protocolVersion;
     }
 
-    List<String> getHeaderField() {
+    public List<String> getHeaderField() {
         return this.headerField;
+    }
+
+    public StatusLine getStatusLine() {
+        return this.statusLine;
+    }
+
+    public String getFilePath() {
+        return this.filePath;
+    }
+
+    public byte[] getTarget() {
+        return this.target;
     }
 }

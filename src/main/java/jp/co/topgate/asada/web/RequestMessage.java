@@ -42,13 +42,11 @@ public class RequestMessage {
      * @param method          リクエストメッセージのメソッドを渡す
      * @param uri             URIを渡す
      * @param protocolVersion プロトコルバージョンを渡す
-     * @param headerField     ヘッダーフィールドを渡す
      */
-    RequestMessage(String method, String uri, String protocolVersion, Map<String, String> headerField) {
+    RequestMessage(String method, String uri, String protocolVersion) {
         this.method = method;
         this.uri = uri;
         this.protocolVersion = protocolVersion;
-        this.headerField = headerField;
     }
 
     public String getMethod() {
@@ -79,6 +77,10 @@ public class RequestMessage {
 
     public String getProtocolVersion() {
         return protocolVersion;
+    }
+
+    void setHeaderField(Map<String, String> headerField) {
+        this.headerField = headerField;
     }
 
     /**

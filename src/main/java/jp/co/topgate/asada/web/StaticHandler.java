@@ -32,30 +32,35 @@ public class StaticHandler extends Handler {
     }
 
     /**
-     * {@link Handler#handleRequest(OutputStream)}を参照
+     * {@link Handler#handleRequest()}を参照
      *
-     * @param outputStream SocketのoutputStream
+     * @return ResponseMessageのオブジェクトを生成して返す。
      */
     @Override
-    public void handleRequest(OutputStream outputStream) {
+    public ResponseMessage handleRequest() {
         String method = requestMessage.getMethod();
         String uri = requestMessage.getUri();
         String protocolVersion = requestMessage.getProtocolVersion();
 
         StatusLine statusLine = StaticHandler.decideStatusLine(method, uri, protocolVersion);
 
-        ResponseMessage responseMessage = new ResponseMessage();
-        String path = Handler.FILE_PATH + requestMessage.getUri();
+        ResponseMessage responseMessage;
 
         if (statusLine.equals(StatusLine.OK)) {
+            String path = Handler.FILE_PATH + requestMessage.getUri();
+
+            responseMessage = new ResponseMessage(statusLine, path);
+
             ContentType contentType = new ContentType(path);
             responseMessage.addHeaderWithContentType(contentType.getContentType());
             responseMessage.addHeader("Content-Length", String.valueOf(new File(path).length()));
+            
         } else {
+            responseMessage = new ResponseMessage(statusLine);
             responseMessage.addHeaderWithContentType(ContentType.ERROR_RESPONSE);
         }
 
-        responseMessage.writeToOutputStream(outputStream, statusLine, path);
+        return responseMessage;
     }
 
     /**
