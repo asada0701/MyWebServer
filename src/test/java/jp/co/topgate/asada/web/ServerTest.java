@@ -19,7 +19,7 @@ public class ServerTest {
         sut.startServer();
         assertThat(sut.getState(), is(Thread.State.RUNNABLE));
         assertThat(sut.stopServer(), is(true));
-        assertThat(sut.getState(), is(Thread.State.TERMINATED));
+        assertThat(sut.getState(), is(Thread.State.RUNNABLE));
         sut.endServer();
     }
 }
