@@ -1,10 +1,11 @@
 package jp.co.topgate.asada.web;
 
+import java.io.InputStream;
 import java.util.*;
 
 /**
  * リクエストメッセージクラスHTTP/1.1に対応しています。
- * インスタンス化するのはRequestMessageParserのみが行う。
+ * インスタンス化するのはRequestMessageParserのみが行う。{@link RequestMessageParser#parse(InputStream)}
  *
  * @author asada
  */
@@ -76,7 +77,7 @@ public class RequestMessage {
     void setMessageBody(byte[] messageBody) {
         this.messageBody = messageBody;
     }
-    
+
     public byte[] getMessageBody() {
         return messageBody;
     }
