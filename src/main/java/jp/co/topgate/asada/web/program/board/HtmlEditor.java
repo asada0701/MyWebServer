@@ -4,10 +4,8 @@ import jp.co.topgate.asada.web.exception.HtmlInitializeException;
 import jp.co.topgate.asada.web.model.Message;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.*;
 
 /**
  * HTMLを編集するクラス
@@ -93,12 +91,19 @@ public class HtmlEditor {
      * @param messageList          HTML文章に書き込みたいMessageのリスト
      * @return 編集後のHTML文章
      */
-    String editIndexOrSearchHtml(ProgramBoardHtmlList programBoardHtmlList, List<Message> messageList) {
+    String editIndexOrSearchHtml(ProgramBoardHtmlList programBoardHtmlList, List<Message> messageList, String timeID) {
         String[] lineArray = rawHtml.get(programBoardHtmlList).split("\n");     //改行で分割
         StringBuilder builder = new StringBuilder();
 
         for (int i = 0; i < lineArray.length; i++) {
             String line = lineArray[i];
+
+            if (line.startsWith("            <input type=\"hidden\" name=\"timeID\" value=\"")) {
+                builder.append("            <input type=\"hidden\" name=\"timeID\" value=\"");
+                builder.append(timeID).append("\">").append("\n");
+                continue;
+            }
+
             if (line.endsWith(DIV_ID_LOG)) {         //<div id="log">の箇所を探す
                 while (!line.endsWith(INSERT_MESSAGE_FROM)) {            //</tr>の次の行から編集する
                     builder.append(line).append("\n");
@@ -255,6 +260,18 @@ public class HtmlEditor {
 
             return builder.toString();
         }
+    }
+
+    /**
+     * HTMLページに書き込むID（二重リクエスト防ぐためのもの）を発行するメソッド
+     *
+     * @return エンコードされて発行する
+     */
+    String issueTimeIdInHtml() {
+        LocalDateTime ldt = LocalDateTime.now();
+        String timeID = "" + ldt.getYear() + ldt.getMonthValue() + ldt.getDayOfMonth() + ldt.getHour() +
+                ldt.getMinute() + ldt.getSecond() + ldt.getNano();
+        return Base64.getEncoder().encodeToString(timeID.getBytes());
     }
 }
 

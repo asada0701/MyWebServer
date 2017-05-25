@@ -67,8 +67,8 @@ public class HtmlEditorTest {
         ProgramBoardHtmlList indexEnum = ProgramBoardHtmlList.INDEX_HTML;
         ProgramBoardHtmlList searchEnum = ProgramBoardHtmlList.SEARCH_HTML;
 
-        String resultIndex = sut.editIndexOrSearchHtml(indexEnum, messageList);
-        String resultSearch = sut.editIndexOrSearchHtml(searchEnum, messageList);
+        String resultIndex = sut.editIndexOrSearchHtml(indexEnum, messageList, "index4message");
+        String resultSearch = sut.editIndexOrSearchHtml(searchEnum, messageList, "search4message");
 
         String[] index = resultIndex.split("\n");
         String[] search = resultSearch.split("\n");

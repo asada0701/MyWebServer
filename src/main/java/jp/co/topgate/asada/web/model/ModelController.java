@@ -7,6 +7,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 
 /**
@@ -49,7 +50,7 @@ public final class ModelController {
     /**
      * messageListにメッセージクラスを追加する
      */
-    public static void addMessage(String name, String title, String text, String password) {
+    public static void addMessage(String name, String title, String text, String password, String timeID) {
         Message message = new Message();
         message.setMessageID(nextMessageID);
         message.setName(name);
@@ -57,6 +58,7 @@ public final class ModelController {
         message.setText(text);
         message.setPassword(new BCryptPasswordEncoder().encode(password));  //パスワードハッシュ化
         message.setDate(getNowDate());
+        message.setTimeID(timeID);
         messageList.add(message);
 
         nextMessageID++;
@@ -134,6 +136,24 @@ public final class ModelController {
             }
         }
         return null;
+    }
+
+    /**
+     * 引数で渡された文字がmessageListに格納されているmessageのtimeIDと同じ場合はtrue
+     * そうでない場合はfalse
+     * 注意点として、CSVファイルにはtimeIDを保存しないので、getTimeIDメソッドがnullを返す点。
+     * これはミリ秒までをtimeIDとしているので問題ないと判断したため。
+     *
+     * @param timeID 比較したい文字列
+     * @return trueの場合は存在する。falseの場合は存在しない。
+     */
+    public static boolean isExist(String timeID) {
+        for (Message message : messageList) {
+            if (message.getTimeID().equals(timeID)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
