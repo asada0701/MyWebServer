@@ -15,6 +15,7 @@ import java.util.Scanner;
 
 /**
  * クライアントクラス
+ * git テスト
  *
  * @author asada
  */
