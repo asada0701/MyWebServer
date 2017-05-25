@@ -40,30 +40,6 @@ public class RequestMessageTest {
     }
 
     @Test
-    public void getMessageBodyToMapStringメソッドのテスト() {
-        //SetUp
-        String method = "GET";
-        String uri = "/";
-        String protocolVersion = "HTTP/1.1";
-        Map<String, String> headerField = new HashMap<>();
-        headerField.put("Content-Type", "application/x-www-form-urlencoded");
-
-        //Exercise
-        RequestMessage sut = new RequestMessage(method, uri, protocolVersion);
-        sut.setHeaderField(headerField);
-        sut.setMessageBody("name%3dasada%26title%3dtest%26text%3d%e3%81%93%e3%82%93%e3%81%ab%e3%81%a1%e3%81%af%26password%3dtest%26param%3dcontribution".getBytes());
-        Map<String, String> messageBody = sut.getMessageBodyToMapString();
-
-        //Verify
-        assertThat(sut.findHeaderByName("Content-Type"), is("application/x-www-form-urlencoded"));
-        assertThat(messageBody.get("name"), is("asada"));
-        assertThat(messageBody.get("title"), is("test"));
-        assertThat(messageBody.get("text"), is("こんにちは"));
-        assertThat(messageBody.get("password"), is("test"));
-        assertThat(messageBody.get("param"), is("contribution"));
-    }
-
-    @Test
     public void uriQueryのテスト() {
         Map<String, String> uriQuery = new HashMap<>();
         uriQuery.put("name", "asada");
@@ -95,7 +71,7 @@ public class RequestMessageTest {
     }
 
     @Test(expected = NullPointerException.class)
-    public void headerFieldをセットする前にfindHeaderByNameを呼び出す(){
+    public void headerFieldをセットする前にfindHeaderByNameを呼び出す() {
         RequestMessage sut = new RequestMessage(null, null, null);
         assertThat(sut.findHeaderByName("name"), is(nullValue()));
     }
@@ -112,9 +88,9 @@ public class RequestMessageTest {
         sut.findUriQuery("hoge");
     }
 
-    @Test(expected = NullPointerException.class)
-    public void messageBodyをセットする前にgetMessageBodyToMapStringメソッドを呼ぶ() {
+    @Test
+    public void messageBodyをセットする前にゲッターを呼ぶ() {
         RequestMessage sut = new RequestMessage(null, null, null);
-        sut.getMessageBodyToMapString();
+        assertThat(sut.getMessageBody(), is(nullValue()));
     }
 }

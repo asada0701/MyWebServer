@@ -19,7 +19,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -134,7 +133,32 @@ public class ProgramBoardHandlerTest {
         }
     }
 
+    public static class createErrorResponseMessageメソッドのテスト {
+
+        @Test
+        public void nullチェック() throws Exception {
+            ResponseMessage sut = ProgramBoardHandler.createErrorResponseMessage(null);
+            assertThat(sut.getStatusLine(), is(nullValue()));
+        }
+
+        @Test
+        public void 正しく動作するか() throws Exception {
+            ResponseMessage sut = ProgramBoardHandler.createErrorResponseMessage(StatusLine.OK);
+            assertThat(sut.getStatusLine(), is(StatusLine.OK));
+            assertThat(sut.getHeaderField().size(), is(1));
+            assertThat(sut.getHeaderField().get(0), is("Content-Type: text/html; charset=UTF-8"));
+
+            sut = ProgramBoardHandler.createErrorResponseMessage(StatusLine.BAD_REQUEST);
+            sut.addHeader("hoge", "hogehoge");
+            assertThat(sut.getStatusLine(), is(StatusLine.BAD_REQUEST));
+            assertThat(sut.getHeaderField().size(), is(2));
+            assertThat(sut.getHeaderField().get(0), is("Content-Type: text/html; charset=UTF-8"));
+            assertThat(sut.getHeaderField().get(1), is("hoge: hogehoge"));
+        }
+    }
+
     public static class decideStatusLineメソッドのテスト {
+
         @Test
         public void nullチェック() throws Exception {
             StatusLine sut = ProgramBoardHandler.decideStatusLine(null, null, null);

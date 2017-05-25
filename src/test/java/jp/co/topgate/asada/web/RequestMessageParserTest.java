@@ -90,7 +90,7 @@ public class RequestMessageParserTest {
                 assertThat(sut.findHeaderByName("Content-Type"), is("application/x-www-form-urlencoded"));
                 assertThat(sut.findHeaderByName("Content-Length"), is("123"));
 
-                Map<String, String> messageBody = sut.getMessageBodyToMapString();
+                Map<String, String> messageBody = RequestMessageBodyParser.parseToMapString(sut.getMessageBody());
                 assertThat(messageBody.get("name"), is("asada"));
                 assertThat(messageBody.get("title"), is("test"));
                 assertThat(messageBody.get("text"), is("こんにちは"));
@@ -141,7 +141,7 @@ public class RequestMessageParserTest {
             try (FileInputStream fis = new FileInputStream(new File(path))) {
                 RequestMessage sut = RequestMessageParser.parse(fis);
 
-                Map<String, String> messageBody = sut.getMessageBodyToMapString();
+                Map<String, String> messageBody = RequestMessageBodyParser.parseToMapString(sut.getMessageBody());
                 assertThat(messageBody.get("name"), is("asada"));
                 assertThat(messageBody.get("title"), is("test"));
                 assertThat(messageBody.get("text"), is("こんにちは"));

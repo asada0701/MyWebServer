@@ -1,5 +1,6 @@
 package jp.co.topgate.asada.web;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
@@ -80,7 +81,7 @@ public class ResponseMessage {
             outputStream.write(createResponseLine(protocolVersion, statusLine).getBytes());
             outputStream.write(createHeader(headerField).getBytes());
 
-            if (statusLine.equals(StatusLine.OK) && filePath != null) {
+            if (statusLine.equals(StatusLine.OK) && filePath != null) {         //リソースファイルを読んで書き込む
                 try (InputStream in = new FileInputStream(filePath)) {
                     int num;
                     while ((num = in.read()) != -1) {
@@ -88,11 +89,11 @@ public class ResponseMessage {
                     }
                 }
 
-            } else if (statusLine.equals(StatusLine.OK) && target != null) {
+            } else if (statusLine.equals(StatusLine.OK) && target != null) {    //リソースファイルは読まず、targetに入っているbyte配列を書き込む
                 outputStream.write(target);
 
             } else {
-                outputStream.write(getErrorMessageBody(statusLine).getBytes());
+                outputStream.write(getErrorMessageBody(statusLine).getBytes()); //filePathとtargetがnull、ステータスラインは200以外である場合
             }
             outputStream.flush();
 
@@ -134,8 +135,8 @@ public class ResponseMessage {
      * エラーメッセージを保持しているメソッド
      * 引数がnullの場合もHTTPステータスコード:500の文字列を返します
      *
-     * @param statusLine ステータスライン
-     * @return エラーの場合のレスポンスメッセージの内容
+     * @param statusLine ステータスライン{@code Nullable}
+     * @return エラーの場合のレスポンスメッセージの内容{@code NotNull}
      */
     static String getErrorMessageBody(StatusLine statusLine) {
         if (statusLine == null) {
@@ -187,7 +188,7 @@ public class ResponseMessage {
     }
 
     /**
-     * ヘッダーフィールドのListに追加するメソッド
+     * ヘッダーフィールドに追加するメソッド
      *
      * @param name  ヘッダ名
      * @param value ヘッダ値

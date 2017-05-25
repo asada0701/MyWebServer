@@ -63,6 +63,7 @@ public class ProgramBoardHandler extends Handler {
 
     /**
      * {@link Handler#handleRequest()}を参照
+     * returnしていても、finallyは必ず通るので、finallyの中でhtmlの初期化を行う。
      *
      * @return ResponseMessageのオブジェクトを生成して返す。
      * @throws HtmlInitializeException {@link HtmlEditor#resetAllFiles()}を参照
@@ -80,8 +81,9 @@ public class ProgramBoardHandler extends Handler {
             return createErrorResponseMessage(statusLine);
         }
 
+        HtmlEditor htmlEditor = new HtmlEditor();
+
         try {
-            HtmlEditor htmlEditor = new HtmlEditor();
 
             if ("GET".equals(requestMessage.getMethod()) && uri.endsWith(Main.WELCOME_PAGE_NAME)) {
                 doGet(htmlEditor);
@@ -89,7 +91,7 @@ public class ProgramBoardHandler extends Handler {
             } else if ("POST".equals(requestMessage.getMethod()) && uri.endsWith(Main.WELCOME_PAGE_NAME)) {
                 if (ProgramBoardHandler.CONTENT_TYPE_WITH_EDITING_POST.equals(requestMessage.findHeaderByName("Content-Type"))) {
 
-                    Map<String, String> messageBody = requestMessage.getMessageBodyToMapString();
+                    Map<String, String> messageBody = RequestMessageBodyParser.parseToMapString(requestMessage.getMessageBody());
                     String param = messageBody.get("param");
                     ProgramBoardHtmlList programBoardHtmlList = doPost(htmlEditor, Param.getParam(param), messageBody);
                     String newUri = programBoardHtmlList.getUri();
@@ -118,7 +120,6 @@ public class ProgramBoardHandler extends Handler {
             responseMessage.addHeaderWithContentType(contentType.getContentType());
             responseMessage.addHeader("Content-Length", String.valueOf(new File(path).length()));
 
-            htmlEditor.resetAllFiles();
             return responseMessage;
 
         } catch (RequestParseException | IllegalRequestException e) {
@@ -126,6 +127,9 @@ public class ProgramBoardHandler extends Handler {
 
         } catch (IOException e) {
             return createErrorResponseMessage(StatusLine.INTERNAL_SERVER_ERROR);
+
+        } finally {
+            htmlEditor.resetAllFiles();
         }
     }
 
@@ -295,7 +299,7 @@ public class ProgramBoardHandler extends Handler {
                 return writeIndex(htmlEditor);
 
             default:
-                throw new IllegalRequestException("param:" + param + " paramが想定されているもの以外が送られました。");
+                throw new IllegalRequestException("param:" + param + " paramに想定されているもの以外が送られました。");
         }
     }
 

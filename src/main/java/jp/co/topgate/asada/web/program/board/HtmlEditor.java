@@ -238,6 +238,13 @@ public class HtmlEditor {
         }
     }
 
+    /**
+     * 渡されたファイルパス先にあるファイルを読み込み、Stringで返す。画像ファイルなど読み込みたい場合には使用しないこと。
+     *
+     * @param path 読み込みたいファイルパス
+     * @return ファイルの内容をStringで返す
+     * @throws IOException ファイルが存在しないか、読み込めなかった。
+     */
     String readHtml(String path) throws IOException {
         try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
             StringBuilder builder = new StringBuilder();
