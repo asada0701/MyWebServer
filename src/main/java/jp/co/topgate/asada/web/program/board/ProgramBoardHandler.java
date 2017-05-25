@@ -89,7 +89,7 @@ public class ProgramBoardHandler extends Handler {
             } else if ("POST".equals(requestMessage.getMethod()) && uri.endsWith(Main.WELCOME_PAGE_NAME)) {
                 if (ProgramBoardHandler.CONTENT_TYPE_WITH_EDITING_POST.equals(requestMessage.findHeaderByName("Content-Type"))) {
 
-                    Map<String, String> messageBody = requestMessage.getMessageBodyToMapString();
+                    Map<String, String> messageBody = RequestMessageBodyParser.parseToMapString(requestMessage.getMessageBody());
                     String param = messageBody.get("param");
                     ProgramBoardHtmlList programBoardHtmlList = doPost(htmlEditor, Param.getParam(param), messageBody);
                     String newUri = programBoardHtmlList.getUri();
@@ -106,6 +106,8 @@ public class ProgramBoardHandler extends Handler {
                 try {
                     String resultHtml = htmlEditor.readHtml(path);
                     responseMessage = new ResponseMessage(statusLine, resultHtml.getBytes());
+
+                    htmlEditor.resetAllFiles();
 
                 } catch (IOException e) {
                     return createErrorResponseMessage(StatusLine.INTERNAL_SERVER_ERROR);
@@ -295,7 +297,7 @@ public class ProgramBoardHandler extends Handler {
                 return writeIndex(htmlEditor);
 
             default:
-                throw new IllegalRequestException("param:" + param + " paramが想定されているもの以外が送られました。");
+                throw new IllegalRequestException("param:" + param + " paramに想定されているもの以外が送られました。");
         }
     }
 

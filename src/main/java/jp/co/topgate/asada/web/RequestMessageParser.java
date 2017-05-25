@@ -10,7 +10,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * リクエストメッセージのパースを行うクラス
+ * HTTPリクエストのパースを行うクラス。
+ * parseメソッドを呼び出すとリクエストメッセージのオブジェクトが返ってくる。
+ * ただし、HTTPリクエストのメッセージボディに関しては、RequestMessageクラスの内部でパースを行うこと。
  *
  * @author asada
  */
@@ -73,10 +75,11 @@ public final class RequestMessageParser {
     }
 
     /**
-     * リクエストメッセージのパースを行うメソッド
+     * HTTPリクエストのパースを行うメソッド
      *
-     * @param inputStream socketのinputStreamを渡す
+     * @param inputStream inputStreamを渡す
      * @return リクエストメッセージのオブジェクトを返す
+     * @throws RequestParseException HTTPリクエストがRFCに準拠した形でないものである場合、発生する。詳細な情報は例外のメッセージをみる。
      */
     public static RequestMessage parse(InputStream inputStream) throws RequestParseException {
         RequestMessage requestMessage;
