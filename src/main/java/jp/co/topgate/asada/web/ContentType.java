@@ -36,16 +36,6 @@ public class ContentType {
         fileType.put("gif", "image/gif");
     }
 
-    private static List<String> charTypeList = new ArrayList<>();
-
-    static {
-        charTypeList.add("htm");
-        charTypeList.add("html");
-        charTypeList.add("css");
-        charTypeList.add("js");
-        charTypeList.add("txt");
-    }
-
     /**
      * ステータスコード:200以外の場合のレスポンスのコンテンツタイプ
      */
@@ -68,20 +58,6 @@ public class ContentType {
                 extension = key;
             }
         }
-    }
-
-    /**
-     * 文字ストリームを使うか、バイトストリームを決定するメソッド
-     *
-     * @return trueの場合は文字ファイル
-     */
-    public boolean isChar() {
-        for (String key : charTypeList) {
-            if (extension.equals(key)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
