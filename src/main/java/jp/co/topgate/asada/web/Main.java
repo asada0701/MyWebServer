@@ -45,8 +45,8 @@ public class Main {
             Server server = new Server(PORT_NUMBER);
             Scanner scanner = new Scanner(System.in);
 
-            ModelController.setMessageList(CsvHelper.readMessage());                            //CSVファイル読み込み
-            HtmlEditor htmlEditor = new HtmlEditor();                                                   //HTMLファイル読み込み
+            ModelController.setMessageList(CsvHelper.readMessage());
+            HtmlEditor htmlEditor = new HtmlEditor();
 
             do {
                 System.out.println("--------------------");
@@ -64,8 +64,8 @@ public class Main {
 
             } while (!choice.equals(ServerCommand.END.getId()));
 
-            CsvHelper.writeMessage(ModelController.getAllMessage());                                //CSVファイルに書き込み
-            htmlEditor.resetAllFiles();                                                                 //HTMLファイルの初期化
+            CsvHelper.writeMessage(ModelController.getAllMessage());
+            htmlEditor.resetAllFiles();
 
         } catch (ServerStateException | CsvRuntimeException | SocketRuntimeException | HtmlInitializeException | IOException e) {
             System.out.println(e.getMessage());

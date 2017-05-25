@@ -90,7 +90,7 @@ public class HtmlEditor {
      * indexまたはsearchのHTML文章を編集する
      *
      * @param programBoardHtmlList 編集したいHTMLのEnum
-     * @param messageList  HTML文章に書き込みたいMessageのリスト
+     * @param messageList          HTML文章に書き込みたいMessageのリスト
      * @return 編集後のHTML文章
      */
     String editIndexOrSearchHtml(ProgramBoardHtmlList programBoardHtmlList, List<Message> messageList) {
@@ -155,7 +155,7 @@ public class HtmlEditor {
      * messageをHTML文章にする
      *
      * @param programBoardHtmlList 編集したいHTMLのEnum
-     * @param message      書き込みたいMessageのオブジェクト
+     * @param message              書き込みたいMessageのオブジェクト
      * @return HTML文章
      */
     static String changeMessageToHtml(ProgramBoardHtmlList programBoardHtmlList, Message message) {
@@ -211,7 +211,6 @@ public class HtmlEditor {
         }
     }
 
-
     /**
      * 改行コードをHTMLのbrタグに変更するメソッド
      *
@@ -236,6 +235,18 @@ public class HtmlEditor {
         try (OutputStream outputStream = new FileOutputStream(new File(programBoardHtmlList.getPath()))) {
             outputStream.write(html.getBytes());
             outputStream.flush();
+        }
+    }
+
+    String readHtml(String path) throws IOException {
+        try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
+            StringBuilder builder = new StringBuilder();
+            String str;
+            while ((str = br.readLine()) != null) {
+                builder.append(str).append("\n");
+            }
+
+            return builder.toString();
         }
     }
 }

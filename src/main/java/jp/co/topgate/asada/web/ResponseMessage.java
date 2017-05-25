@@ -1,6 +1,5 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.program.board.HtmlEditor;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
