@@ -52,4 +52,4 @@ run {
 }
 
 // Define the main class for the application
-mainClassName = 'jp.co.topgate.asada.web.App'
+mainClassName = 'jp.co.topgate.asada.web.Main'
