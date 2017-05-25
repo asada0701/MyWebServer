@@ -14,7 +14,7 @@ import java.net.*;
  */
 class Server extends Thread {
     private ServerSocket serverSocket = null;
-    private Socket clientSocket = new Socket();
+    private Socket clientSocket = null;
 
     /**
      * コンストラクタ

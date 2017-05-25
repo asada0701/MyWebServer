@@ -18,7 +18,7 @@ public class ServerTest {
         Server sut = new Server(8080);
         sut.startServer();
         assertThat(sut.getState(), is(Thread.State.RUNNABLE));
-        assertThat(sut.stopServer(), is(false));
+        assertThat(sut.stopServer(), is(true));
         assertThat(sut.getState(), is(Thread.State.RUNNABLE));
         sut.endServer();
     }
