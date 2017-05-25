@@ -3,7 +3,6 @@ package jp.co.topgate.asada.web;
 import jp.co.topgate.asada.web.exception.HtmlInitializeException;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 import jp.co.topgate.asada.web.exception.SocketRuntimeException;
-import jp.co.topgate.asada.web.program.board.HtmlEditor;
 
 import java.io.*;
 import java.net.*;
@@ -86,8 +85,6 @@ class Server extends Thread {
                 } catch (HtmlInitializeException e) {               //HTMLファイルに問題が発生した場合の例外処理
                     responseMessage = new ResponseMessage(StatusLine.INTERNAL_SERVER_ERROR);
                     responseMessage.addHeaderWithContentType(ContentType.ERROR_RESPONSE);
-
-                    throw new SocketRuntimeException(e.getMessage(), e.getCause());
 
                 } finally {
                     if (responseMessage != null) {

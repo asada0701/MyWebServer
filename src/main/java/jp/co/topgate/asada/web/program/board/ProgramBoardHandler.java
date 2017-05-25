@@ -1,6 +1,5 @@
 package jp.co.topgate.asada.web.program.board;
 
-import com.google.common.base.Strings;
 import jp.co.topgate.asada.web.*;
 import jp.co.topgate.asada.web.Handler;
 import jp.co.topgate.asada.web.UrlPattern;
@@ -12,11 +11,8 @@ import jp.co.topgate.asada.web.model.Message;
 import jp.co.topgate.asada.web.model.ModelController;
 import org.apache.commons.lang3.math.NumberUtils;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.nio.Buffer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -46,21 +42,6 @@ public class ProgramBoardHandler extends Handler {
     static {
         method.add("GET");
         method.add("POST");
-    }
-
-    /**
-     * 引数targetがmethodのリストに含まれているか判定する
-     *
-     * @param target ターゲット文字列
-     * @return trueの場合は含まれている、falseの場合は含まれない
-     */
-    static boolean matchMethod(String target) {
-        for (String s : method) {
-            if (s.equals(target)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private RequestMessage requestMessage;
@@ -94,17 +75,15 @@ public class ProgramBoardHandler extends Handler {
         ResponseMessage responseMessage;
 
         if (!statusLine.equals(StatusLine.OK)) {
-            responseMessage = new ResponseMessage(statusLine);
-            responseMessage.addHeaderWithContentType(ContentType.ERROR_RESPONSE);
-            return responseMessage;
+            return createErrorResponseMessage(statusLine);
         }
 
         try {
-            if ("GET".equals(requestMessage.getMethod()) && uri.endsWith(Main.WELCOME_PAGE_NAME)) {              //GETでなおかつindex.htmlを要求された場合
+            if ("GET".equals(requestMessage.getMethod()) && uri.endsWith(Main.WELCOME_PAGE_NAME)) {
                 doGet(htmlEditor);
 
-            } else if ("POST".equals(requestMessage.getMethod())) {                                            //POSTの場合
-
+            } else if ("POST".equals(requestMessage.getMethod())) {
+                //メソッドがPOSTでコンテンツタイプが想定されているものであるかチェック
                 if (ProgramBoardHandler.CONTENT_TYPE.equals(requestMessage.findHeaderByName("Content-Type"))) {
                     Map<String, String> messageBody = requestMessage.getMessageBodyToMapString();
                     String param = messageBody.get("param");
@@ -112,37 +91,20 @@ public class ProgramBoardHandler extends Handler {
                     String newUri = programBoardHtmlList.getUri();
                     requestMessage.setUri(newUri);
                 } else {
-                    statusLine = StatusLine.BAD_REQUEST;
+                    return createErrorResponseMessage(StatusLine.BAD_REQUEST);
                 }
             }
-
-        } catch (RequestParseException | IllegalRequestException e) {
-            statusLine = StatusLine.BAD_REQUEST;
-
-        } catch (IOException e) {
-            statusLine = StatusLine.INTERNAL_SERVER_ERROR;
-        }
-
-        if (statusLine.equals(StatusLine.OK)) {
             String path = Handler.getFilePath(UrlPattern.PROGRAM_BOARD, requestMessage.getUri());
-
             ContentType contentType = new ContentType(path);
-
-            if (contentType.isChar()) {
-                //文字の場合
-                StringBuilder builder = new StringBuilder();
-                try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
-                    String str;
-                    while ((str = br.readLine()) != null) {
-                        builder.append(str).append("\n");
-                    }
-
-                    responseMessage = new ResponseMessage(statusLine, builder.toString().getBytes());
+            if (contentType.isChar()) {     //リソースファイルが文字の場合
+                try {
+                    String resultHtml = htmlEditor.readHtml(path);
+                    responseMessage = new ResponseMessage(statusLine, resultHtml.getBytes());
 
                 } catch (IOException e) {
-                    statusLine = StatusLine.INTERNAL_SERVER_ERROR;
-                    responseMessage = new ResponseMessage(statusLine);
+                    return createErrorResponseMessage(StatusLine.INTERNAL_SERVER_ERROR);
                 }
+
             } else {
                 responseMessage = new ResponseMessage(statusLine, path);
             }
@@ -150,12 +112,26 @@ public class ProgramBoardHandler extends Handler {
             responseMessage.addHeaderWithContentType(contentType.getContentType());
             responseMessage.addHeader("Content-Length", String.valueOf(new File(path).length()));
 
-        } else {
-            responseMessage = new ResponseMessage(statusLine);
-            responseMessage.addHeaderWithContentType(ContentType.ERROR_RESPONSE);
-        }
+            htmlEditor.resetAllFiles();
+            return responseMessage;
 
-        htmlEditor.resetAllFiles();
+        } catch (RequestParseException | IllegalRequestException e) {
+            return createErrorResponseMessage(StatusLine.BAD_REQUEST);
+
+        } catch (IOException e) {
+            return createErrorResponseMessage(StatusLine.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * ステータスコード:200 OK 以外のステータスコードの場合のResponseMessageのオブジェクトの生成、ヘッダーフィールドの追加をまとめたメソッド
+     *
+     * @param statusLine ステータスラインを渡す
+     * @return ResponseMessageのオブジェクトを返す
+     */
+    static ResponseMessage createErrorResponseMessage(StatusLine statusLine) {
+        ResponseMessage responseMessage = new ResponseMessage(statusLine);
+        responseMessage.addHeaderWithContentType(ContentType.ERROR_RESPONSE);
         return responseMessage;
     }
 
@@ -328,6 +304,21 @@ public class ProgramBoardHandler extends Handler {
         String html = htmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.INDEX_HTML, ModelController.getAllMessage());
         htmlEditor.writeHtml(ProgramBoardHtmlList.INDEX_HTML, html);
         return ProgramBoardHtmlList.INDEX_HTML;
+    }
+
+    /**
+     * 引数targetがmethodのリストに含まれているか判定する
+     *
+     * @param target ターゲット文字列
+     * @return trueの場合は含まれている、falseの場合は含まれない
+     */
+    static boolean matchMethod(String target) {
+        for (String s : method) {
+            if (s.equals(target)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     //テスト用

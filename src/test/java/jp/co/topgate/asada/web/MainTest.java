@@ -1,9 +1,6 @@
 package jp.co.topgate.asada.web;
 
 import org.junit.Test;
-import org.junit.runner.notification.RunListener;
-
-import java.util.Map;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
