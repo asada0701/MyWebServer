@@ -52,7 +52,6 @@ public class ProgramBoardHandlerTest {
         public void nullチェック() throws Exception {
             ProgramBoardHandler sut = new ProgramBoardHandler(null);
             assertThat(sut.getRequestMessage(), is(nullValue()));
-            assertThat(sut.getHtmlEditor(), is(instanceOf(HtmlEditor.class)));
         }
 
         @Test
@@ -65,7 +64,6 @@ public class ProgramBoardHandlerTest {
             ProgramBoardHandler sut = new ProgramBoardHandler(requestMessage);
 
             assertThat(sut.getRequestMessage(), is(requestMessage));
-            assertThat(sut.getHtmlEditor(), is(instanceOf(HtmlEditor.class)));
         }
     }
 

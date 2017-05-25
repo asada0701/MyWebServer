@@ -30,9 +30,14 @@ public class ProgramBoardHandler extends Handler {
     private static final String PROTOCOL_VERSION = "HTTP/1.1";
 
     /**
-     * HTTPリクエストのコンテンツタイプ
+     * このハンドラーが担当するPOSTリクエストのコンテンツタイプ
      */
-    private static final String CONTENT_TYPE = "application/x-www-form-urlencoded";
+    private static final String CONTENT_TYPE_WITH_EDITING_POST = "application/x-www-form-urlencoded";
+
+    /**
+     * このハンドラーが修正を行うファイルの拡張子
+     */
+    private static final String FILENAME_EXTENSION_WITH_EDITING_POST = "html";
 
     /**
      * HTTPリクエストのメソッド
@@ -46,8 +51,6 @@ public class ProgramBoardHandler extends Handler {
 
     private RequestMessage requestMessage;
 
-    private HtmlEditor htmlEditor;
-
     /**
      * コンストラクタ
      *
@@ -56,7 +59,6 @@ public class ProgramBoardHandler extends Handler {
      */
     public ProgramBoardHandler(RequestMessage requestMessage) throws HtmlInitializeException {
         this.requestMessage = requestMessage;
-        this.htmlEditor = new HtmlEditor();
     }
 
     /**
@@ -79,24 +81,28 @@ public class ProgramBoardHandler extends Handler {
         }
 
         try {
+            HtmlEditor htmlEditor = new HtmlEditor();
+
             if ("GET".equals(requestMessage.getMethod()) && uri.endsWith(Main.WELCOME_PAGE_NAME)) {
                 doGet(htmlEditor);
 
-            } else if ("POST".equals(requestMessage.getMethod())) {
-                //メソッドがPOSTでコンテンツタイプが想定されているものであるかチェック
-                if (ProgramBoardHandler.CONTENT_TYPE.equals(requestMessage.findHeaderByName("Content-Type"))) {
+            } else if ("POST".equals(requestMessage.getMethod()) && uri.endsWith(Main.WELCOME_PAGE_NAME)) {
+                if (ProgramBoardHandler.CONTENT_TYPE_WITH_EDITING_POST.equals(requestMessage.findHeaderByName("Content-Type"))) {
+
                     Map<String, String> messageBody = requestMessage.getMessageBodyToMapString();
                     String param = messageBody.get("param");
                     ProgramBoardHtmlList programBoardHtmlList = doPost(htmlEditor, Param.getParam(param), messageBody);
                     String newUri = programBoardHtmlList.getUri();
                     requestMessage.setUri(newUri);
+
                 } else {
                     return createErrorResponseMessage(StatusLine.BAD_REQUEST);
                 }
             }
+
             String path = Handler.getFilePath(UrlPattern.PROGRAM_BOARD, requestMessage.getUri());
             ContentType contentType = new ContentType(path);
-            if (contentType.isChar()) {     //リソースファイルが文字の場合
+            if (path.endsWith(FILENAME_EXTENSION_WITH_EDITING_POST)) {
                 try {
                     String resultHtml = htmlEditor.readHtml(path);
                     responseMessage = new ResponseMessage(statusLine, resultHtml.getBytes());
@@ -325,10 +331,6 @@ public class ProgramBoardHandler extends Handler {
 
     RequestMessage getRequestMessage() {
         return requestMessage;
-    }
-
-    HtmlEditor getHtmlEditor() {
-        return htmlEditor;
     }
 }
 
