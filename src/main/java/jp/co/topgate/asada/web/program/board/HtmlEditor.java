@@ -167,49 +167,48 @@ public class HtmlEditor {
         switch (programBoardHtmlList) {
             case INDEX_HTML:
                 return "            <tr id=\"No." + message.getMessageID() + "\">" + "\n" +
-                        "                <td>No." + message.getMessageID() + "</td>" + "\n" +
-                        "                <td>" + message.getTitle() + "</td>" + "\n" +
-                        "                <td>" + message.getText() + "</td>" + "\n" +
-                        "                <td>" + message.getName() + "</td>" + "\n" +
-                        "                <td>" + message.getDate() + "</td>" + "\n" +
-                        "                <td>\n" +
+                        "                <td align=\"center\" style=\"word-wrap:break-word;\">No." + message.getMessageID() + "</td>" + "\n" +
+                        "                <td align=\"center\" style=\"word-wrap:break-word;\">" + message.getTitle() + "</td>" + "\n" +
+                        "                <td align=\"center\" style=\"word-wrap:break-word;\">" + message.getText() + "</td>" + "\n" +
+                        "                <td align=\"center\" style=\"word-wrap:break-word;\">" + message.getName() + "</td>" + "\n" +
+                        "                <td align=\"center\" style=\"word-wrap:break-word;\">" + message.getDate() + "</td>" + "\n" +
+                        "                <td align=\"center\">\n" +
                         "                    <form action=\"/program/board/\" method=\"post\">\n" +
                         "                        <input type=\"hidden\" name=\"param\" value=\"search\">\n" +
                         "                        <input type=\"hidden\" name=\"number\" value=\"" + message.getMessageID() + "\">\n" +
-                        "                        <input type=\"submit\" value=\"このコメントを投稿した人の他のコメントを見てみる\">\n" +
+                        "                        <input type=\"submit\" value=\"この人の他のコメントも見てみる\">\n" +
                         "                    </form>\n" +
                         "                </td>\n" +
-
-                        "                <td>" + "\n" +
+                        "                <td align=\"center\">" + "\n" +
                         "                    <form action=\"/program/board/\" method=\"post\">" + "\n" +
                         "                        <input type=\"hidden\" name=\"param\" value=\"delete_step_1\">" + "\n" +
                         "                        <input type=\"hidden\" name=\"number\" value=\"" + message.getMessageID() + "\">" + "\n" +
-                        "                        <input type=\"submit\" value=\"このコメントを削除する\">" + "\n" +
+                        "                        <input type=\"submit\" value=\"削除する\">" + "\n" +
                         "                    </form>" + "\n" +
                         "                </td>" + "\n";
 
             case SEARCH_HTML:
                 return "            <tr id=\"No." + message.getMessageID() + "\">" + "\n" +
-                        "                <td>No." + message.getMessageID() + "</td>" + "\n" +
-                        "                <td>" + message.getTitle() + "</td>" + "\n" +
-                        "                <td>" + message.getText() + "</td>" + "\n" +
-                        "                <td>" + message.getName() + "</td>" + "\n" +
-                        "                <td>" + message.getDate() + "</td>" + "\n" +
-                        "                <td>" + "\n" +
+                        "                <td align=\"center\" style=\"word-wrap:break-word;\">No." + message.getMessageID() + "</td>" + "\n" +
+                        "                <td align=\"center\" style=\"word-wrap:break-word;\">" + message.getTitle() + "</td>" + "\n" +
+                        "                <td align=\"center\" style=\"word-wrap:break-word;\">" + message.getText() + "</td>" + "\n" +
+                        "                <td align=\"center\" style=\"word-wrap:break-word;\">" + message.getName() + "</td>" + "\n" +
+                        "                <td align=\"center\" style=\"word-wrap:break-word;\">" + message.getDate() + "</td>" + "\n" +
+                        "                <td align=\"center\">" + "\n" +
                         "                    <form action=\"/program/board/\" method=\"post\">" + "\n" +
                         "                        <input type=\"hidden\" name=\"param\" value=\"delete_step_1\">" + "\n" +
                         "                        <input type=\"hidden\" name=\"number\" value=\"" + message.getMessageID() + "\">" + "\n" +
-                        "                        <input type=\"submit\" value=\"このコメントを削除する\">" + "\n" +
+                        "                        <input type=\"submit\" value=\"削除する\">" + "\n" +
                         "                    </form>" + "\n" +
                         "                </td>" + "\n";
 
             case DELETE_HTML:
                 return "            <tr id=\"No." + message.getMessageID() + "\">" + "\n" +
-                        "                <td>No." + message.getMessageID() + "</td>" + "\n" +
-                        "                <td>" + message.getTitle() + "</td>" + "\n" +
-                        "                <td>" + message.getText() + "</td>" + "\n" +
-                        "                <td>" + message.getName() + "</td>" + "\n" +
-                        "                <td>" + message.getDate() + "</td>" + "\n";
+                        "                <td align=\"center\" style=\"word-wrap:break-word;\">No." + message.getMessageID() + "</td>" + "\n" +
+                        "                <td align=\"center\" style=\"word-wrap:break-word;\">" + message.getTitle() + "</td>" + "\n" +
+                        "                <td align=\"center\" style=\"word-wrap:break-word;\">" + message.getText() + "</td>" + "\n" +
+                        "                <td align=\"center\" style=\"word-wrap:break-word;\">" + message.getName() + "</td>" + "\n" +
+                        "                <td align=\"center\" style=\"word-wrap:break-word;\">" + message.getDate() + "</td>" + "\n";
 
             default:
                 return null;
