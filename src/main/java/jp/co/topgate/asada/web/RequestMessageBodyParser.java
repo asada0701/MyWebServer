@@ -46,7 +46,7 @@ public class RequestMessageBodyParser {
         Map<String, String> result = new HashMap<>();
         String[] s1 = messageBody.split(MESSAGE_BODY_EACH_QUERY_SEPARATOR);
         for (String s : s1) {
-            String[] s2 = s.split(MESSAGE_BODY_NAME_VALUE_SEPARATOR);
+            String[] s2 = s.split(MESSAGE_BODY_NAME_VALUE_SEPARATOR, 2);
             if (s2.length == MESSAGE_BODY_NUM_ITEMS) {
                 result.put(s2[0], s2[1]);
             } else {

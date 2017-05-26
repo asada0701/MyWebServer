@@ -239,7 +239,7 @@ public class ProgramBoardHandler extends Handler {
                     return writeIndex(htmlEditor, timeID);
                 }
 
-                ModelController.addMessage(name, title, text, password, timeID);
+                ModelController.addMessage(name, title, text, password, timeIdOfRequest);
 
                 return writeIndex(htmlEditor, timeID);
             }
