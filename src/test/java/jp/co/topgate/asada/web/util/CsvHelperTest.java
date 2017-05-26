@@ -1,5 +1,6 @@
 package jp.co.topgate.asada.web.util;
 
+import jp.co.topgate.asada.web.exception.CsvRuntimeException;
 import jp.co.topgate.asada.web.model.Message;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -30,6 +31,24 @@ public class CsvHelperTest {
         }
     }
 
+    @Test(expected = CsvRuntimeException.class)
+    public void 項目数が少ない不正なCSVをreadする() throws Exception {
+        try (FileWriter fileWriter = new FileWriter(new File("./src/main/resources/data/message.csv"))) {
+            fileWriter.write("不正なCSVのテスト,項目数が少ない");
+            fileWriter.flush();
+        }
+        CsvHelper.readMessage();
+    }
+
+    @Test(expected = CsvRuntimeException.class)
+    public void 項目数が多い場合() throws Exception {
+        try (FileWriter fileWriter = new FileWriter(new File("./src/main/resources/data/message.csv"))) {
+            fileWriter.write("不,正,な,C,S,V,の,テ,ス,ト,項,目,数,が,多,い");
+            fileWriter.flush();
+        }
+        CsvHelper.readMessage();
+    }
+
     @Test
     public void readMessageメソッドのテスト() throws Exception {
         List<Message> sut = CsvHelper.readMessage();
@@ -50,6 +69,11 @@ public class CsvHelperTest {
         assertThat(m.getTitle(), is("t"));
         assertThat(m.getText(), is("今日は天気がいいですね"));
         assertThat(m.getDate(), is("2017/5/11 11:57"));
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void writeMessageメソッドにnullを渡す() throws Exception {
+        CsvHelper.writeMessage(null);
     }
 
     @Test
@@ -120,7 +144,7 @@ public class CsvHelperTest {
     }
 
     @AfterClass
-    public static void tearDown() throws Exception{
+    public static void tearDown() throws Exception {
         CsvHelper.writeMessage(list);
     }
 }

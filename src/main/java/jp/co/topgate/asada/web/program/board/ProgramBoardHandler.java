@@ -10,7 +10,6 @@ import jp.co.topgate.asada.web.exception.HtmlInitializeException;
 import jp.co.topgate.asada.web.model.Message;
 import jp.co.topgate.asada.web.model.ModelController;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.omg.CORBA.TIMEOUT;
 
 import java.io.File;
 import java.io.IOException;
@@ -412,4 +411,60 @@ enum Param {
         return null;
     }
 }
+
+/**
+ * 編集するHTMLのリスト
+ *
+ * @author asada
+ */
+enum ProgramBoardHtmlList {
+    /**
+     * index.html
+     * URI、ファイルのパス
+     */
+    INDEX_HTML("/program/board/index.html", "./src/main/resources/2/index.html"),
+
+    /**
+     * search.html
+     */
+    SEARCH_HTML("/program/board/search.html", "./src/main/resources/2/search.html"),
+
+    /**
+     * delete.html
+     */
+    DELETE_HTML("/program/board/delete.html", "./src/main/resources/2/delete.html"),
+
+    /**
+     * result.html
+     */
+    RESULT_HTML("/program/board/result.html", "./src/main/resources/2/result.html");
+
+    private final String uri;
+
+    private final String path;
+
+    ProgramBoardHtmlList(String uri, String path) {
+        this.uri = uri;
+        this.path = path;
+    }
+
+    /**
+     * URIを取得するメソッド
+     *
+     * @return URIを返す
+     */
+    public String getUri() {
+        return uri;
+    }
+
+    /**
+     * ファイルのパスを取得するメソッド
+     *
+     * @return ファイルのパスを返す
+     */
+    public String getPath() {
+        return path;
+    }
+}
+
 

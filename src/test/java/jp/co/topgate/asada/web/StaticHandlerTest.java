@@ -89,7 +89,16 @@ public class StaticHandlerTest {
     public static class decideStatusLineのテスト {
         @Test
         public void nullチェック() throws Exception {
-            StatusLine sut = StaticHandler.decideStatusLine(null, null, null);
+            StatusLine sut = StaticHandler.decideStatusLine("GET", "/index.html", null);
+            assertThat(sut.getStatusCode(), is(505));
+
+            sut = StaticHandler.decideStatusLine(null, null, "HTTP/1.1");
+            assertThat(sut.getStatusCode(), is(501));
+
+            sut = StaticHandler.decideStatusLine("GET", null, "HTTP/1.1");
+            assertThat(sut.getStatusCode(), is(404));
+
+            sut = StaticHandler.decideStatusLine(null, null, null);
             assertThat(sut.getStatusCode(), is(505));
         }
 

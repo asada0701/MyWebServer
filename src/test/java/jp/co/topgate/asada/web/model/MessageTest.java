@@ -21,6 +21,7 @@ public class MessageTest {
         sut.setTitle("title");
         sut.setText("text");
         sut.setDate("2017/5/9 15:17");
+        sut.setTimeID("hogehoge");
 
         assertThat(sut.getMessageID(), is(1));
         assertThat(sut.getPassword(), is("password"));
@@ -28,6 +29,7 @@ public class MessageTest {
         assertThat(sut.getTitle(), is("title"));
         assertThat(sut.getText(), is("text"));
         assertThat(sut.getDate(), is("2017/5/9 15:17"));
+        assertThat(sut.getTimeID(), is("hogehoge"));
     }
 
     @Test

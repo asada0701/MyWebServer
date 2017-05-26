@@ -7,7 +7,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 
 /**
@@ -139,10 +138,8 @@ public final class ModelController {
     }
 
     /**
-     * 引数で渡された文字がmessageListに格納されているmessageのtimeIDと同じ場合はtrue
-     * そうでない場合はfalse
-     * 注意点として、CSVファイルにはtimeIDを保存しないので、getTimeIDメソッドがnullを返す点。
-     * これはミリ秒までをtimeIDとしているので問題ないと判断したため。
+     * 二重リクエスト対策のメソッド
+     * messageListに登録してあるメッセージがもつtimeIDと同じ場合は追加しない
      *
      * @param timeID 比較したい文字列
      * @return trueの場合は存在する。falseの場合は存在しない。
@@ -169,7 +166,6 @@ public final class ModelController {
     }
 
     //テスト用
-
     static void resetNextMessageID() {
         nextMessageID = 1;
     }
