@@ -86,14 +86,14 @@ public class ProgramBoardHandler extends Handler {
         try {
 
             if ("GET".equals(requestMessage.getMethod()) && uri.endsWith(Main.WELCOME_PAGE_NAME)) {
-                doGet(htmlEditor);
+                doGet(htmlEditor, htmlEditor.issueTimeIdInHtml());
 
             } else if ("POST".equals(requestMessage.getMethod()) && uri.endsWith(Main.WELCOME_PAGE_NAME)) {
                 if (ProgramBoardHandler.CONTENT_TYPE_WITH_EDITING_POST.equals(requestMessage.findHeaderByName("Content-Type"))) {
 
                     Map<String, String> messageBody = RequestMessageBodyParser.parseToMapString(requestMessage.getMessageBody());
                     String param = messageBody.get("param");
-                    ProgramBoardHtmlList programBoardHtmlList = doPost(htmlEditor, Param.getParam(param), messageBody);
+                    ProgramBoardHtmlList programBoardHtmlList = doPost(htmlEditor, Param.getParam(param), messageBody, htmlEditor.issueTimeIdInHtml());
                     String newUri = programBoardHtmlList.getUri();
                     requestMessage.setUri(newUri);
 
@@ -187,10 +187,11 @@ public class ProgramBoardHandler extends Handler {
      * POSTでindex.htmlファイルに書き込む場合も呼ばれる
      *
      * @param htmlEditor HtmlEditorのオブジェクト
+     * @param timeID     HTMLページに埋め込むユニークな値
      * @throws IOException HTMLファイルに書き込み中に例外発生
      */
-    static void doGet(HtmlEditor htmlEditor) throws IOException {
-        String html = htmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.INDEX_HTML, ModelController.getAllMessage());
+    static void doGet(HtmlEditor htmlEditor, String timeID) throws IOException {
+        String html = htmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.INDEX_HTML, ModelController.getAllMessage(), timeID);
         htmlEditor.writeHtml(ProgramBoardHtmlList.INDEX_HTML, html);
     }
 
@@ -200,11 +201,12 @@ public class ProgramBoardHandler extends Handler {
      * @param htmlEditor  HtmlEditorのオブジェクトを渡す
      * @param param       メッセージボディで送られてくるparamのEnum
      * @param messageBody リクエストのメッセージボディを渡す
+     * @param timeID      HTMLページに埋め込むユニークな値
      * @return レスポンスメッセージのボディの参照を変更
      * @throws IOException             HTMLファイルに書き込み中に例外発生
      * @throws IllegalRequestException リクエストメッセージに問題があった
      */
-    static ProgramBoardHtmlList doPost(HtmlEditor htmlEditor, Param param, Map<String, String> messageBody) throws IOException, IllegalRequestException {
+    static ProgramBoardHtmlList doPost(HtmlEditor htmlEditor, Param param, Map<String, String> messageBody, String timeID) throws IOException, IllegalRequestException {
         if (htmlEditor == null) {
             throw new IllegalRequestException("doPostメソッドの引数HtmlEditorがnullでした。");
         }
@@ -219,9 +221,11 @@ public class ProgramBoardHandler extends Handler {
                 String title = messageBody.get("title");
                 String text = messageBody.get("text");
                 String password = messageBody.get("password");
+                String timeIdOfRequest = messageBody.get("timeID");
 
-                if (name == null || title == null || text == null || password == null) {
-                    throw new IllegalRequestException("param:" + param + " name:" + name + " title:" + title + " text:" + text + " password:" + password + "のいずれかの項目に問題があります。");
+                if (name == null || title == null || text == null || password == null || timeIdOfRequest == null) {
+                    throw new IllegalRequestException("param:" + param + " name:" + name + " title:" + title + " text:"
+                            + text + " password:" + password + " timeID:" + timeIdOfRequest + "のいずれかの項目に問題があります。");
                 }
 
                 name = InvalidChar.replace(name);
@@ -231,9 +235,13 @@ public class ProgramBoardHandler extends Handler {
 
                 text = HtmlEditor.changeLineFeedToBrTag(text);
 
-                ModelController.addMessage(name, title, text, password);
+                if (ModelController.isExist(timeIdOfRequest)) {
+                    return writeIndex(htmlEditor, timeID);
+                }
 
-                return writeIndex(htmlEditor);
+                ModelController.addMessage(name, title, text, password, timeID);
+
+                return writeIndex(htmlEditor, timeID);
             }
 
             case SEARCH: {
@@ -246,7 +254,7 @@ public class ProgramBoardHandler extends Handler {
 
                 if (messageList.size() > 0) {
                     programBoardHtmlList = ProgramBoardHtmlList.SEARCH_HTML;
-                    htmlEditor.writeHtml(programBoardHtmlList, htmlEditor.editIndexOrSearchHtml(programBoardHtmlList, messageList));
+                    htmlEditor.writeHtml(programBoardHtmlList, htmlEditor.editIndexOrSearchHtml(programBoardHtmlList, messageList, timeID));
                     return ProgramBoardHtmlList.SEARCH_HTML;
 
                 } else {
@@ -274,6 +282,7 @@ public class ProgramBoardHandler extends Handler {
             case DELETE_STEP_2: {
                 String number = messageBody.get("number");
                 String password = messageBody.get("password");
+
                 if (number == null || !NumberUtils.isNumber(number) || password == null) {
                     throw new IllegalRequestException("param:" + param + " number:" + number + " password:" + password + " のどちらかに問題があります。");
                 }
@@ -296,7 +305,7 @@ public class ProgramBoardHandler extends Handler {
             }
 
             case BACK:
-                return writeIndex(htmlEditor);
+                return writeIndex(htmlEditor, timeID);
 
             default:
                 throw new IllegalRequestException("param:" + param + " paramに想定されているもの以外が送られました。");
@@ -307,11 +316,12 @@ public class ProgramBoardHandler extends Handler {
      * index.htmlを編集するメソッド
      *
      * @param htmlEditor HtmlEditorのオブジェクト
+     * @param timeID     timeIdOfRequest
      * @return レスポンスメッセージのボディの参照を変更
      * @throws IOException HTMLファイルに書き込み中に例外発生
      */
-    static ProgramBoardHtmlList writeIndex(HtmlEditor htmlEditor) throws IOException {
-        String html = htmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.INDEX_HTML, ModelController.getAllMessage());
+    static ProgramBoardHtmlList writeIndex(HtmlEditor htmlEditor, String timeID) throws IOException {
+        String html = htmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.INDEX_HTML, ModelController.getAllMessage(), timeID);
         htmlEditor.writeHtml(ProgramBoardHtmlList.INDEX_HTML, html);
         return ProgramBoardHtmlList.INDEX_HTML;
     }
@@ -401,4 +411,60 @@ enum Param {
         return null;
     }
 }
+
+/**
+ * 編集するHTMLのリスト
+ *
+ * @author asada
+ */
+enum ProgramBoardHtmlList {
+    /**
+     * index.html
+     * URI、ファイルのパス
+     */
+    INDEX_HTML("/program/board/index.html", "./src/main/resources/2/index.html"),
+
+    /**
+     * search.html
+     */
+    SEARCH_HTML("/program/board/search.html", "./src/main/resources/2/search.html"),
+
+    /**
+     * delete.html
+     */
+    DELETE_HTML("/program/board/delete.html", "./src/main/resources/2/delete.html"),
+
+    /**
+     * result.html
+     */
+    RESULT_HTML("/program/board/result.html", "./src/main/resources/2/result.html");
+
+    private final String uri;
+
+    private final String path;
+
+    ProgramBoardHtmlList(String uri, String path) {
+        this.uri = uri;
+        this.path = path;
+    }
+
+    /**
+     * URIを取得するメソッド
+     *
+     * @return URIを返す
+     */
+    public String getUri() {
+        return uri;
+    }
+
+    /**
+     * ファイルのパスを取得するメソッド
+     *
+     * @return ファイルのパスを返す
+     */
+    public String getPath() {
+        return path;
+    }
+}
+
 

@@ -21,10 +21,10 @@ public class ModelControllerTest {
     public void setUp() {
         ModelController.setMessageList(new ArrayList<>());
         ModelController.resetNextMessageID();
-        ModelController.addMessage("name1", "title1", "text1", "password1");
-        ModelController.addMessage("name2", "title2", "text2", "password2");
-        ModelController.addMessage("name2", "title3", "text3", "password3");
-        ModelController.addMessage("name4", "title4", "text4", "password4");
+        ModelController.addMessage("name1", "title1", "text1", "password1", "timeID1");
+        ModelController.addMessage("name2", "title2", "text2", "password2", "timeID2");
+        ModelController.addMessage("name2", "title3", "text3", "password3", "timeID3");
+        ModelController.addMessage("name4", "title4", "text4", "password4", "timeID4");
     }
 
     @Test
@@ -45,7 +45,7 @@ public class ModelControllerTest {
 
     @Test
     public void addMessageメソッドのテスト() {
-        ModelController.addMessage("name5", "title5", "text5", "password5");
+        ModelController.addMessage("name5", "title5", "text5", "password5", "timeID5");
 
         assertThat(ModelController.size(), is(5));
     }

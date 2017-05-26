@@ -6,7 +6,7 @@ h1 {
 
 #form {
   width: 550px;
-  height: 280px;
+  height: 300px;
   border: solid#808000;
 }
 
@@ -22,7 +22,7 @@ h1 {
 }
 
 #log {
-  margin-top: 20px;
+  margin-top: 25px;
 }
 
 #log table {

@@ -4,10 +4,8 @@ import jp.co.topgate.asada.web.exception.HtmlInitializeException;
 import jp.co.topgate.asada.web.model.Message;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.*;
 
 /**
  * HTMLを編集するクラス
@@ -93,12 +91,19 @@ public class HtmlEditor {
      * @param messageList          HTML文章に書き込みたいMessageのリスト
      * @return 編集後のHTML文章
      */
-    String editIndexOrSearchHtml(ProgramBoardHtmlList programBoardHtmlList, List<Message> messageList) {
+    String editIndexOrSearchHtml(ProgramBoardHtmlList programBoardHtmlList, List<Message> messageList, String timeID) {
         String[] lineArray = rawHtml.get(programBoardHtmlList).split("\n");     //改行で分割
         StringBuilder builder = new StringBuilder();
 
         for (int i = 0; i < lineArray.length; i++) {
             String line = lineArray[i];
+
+            if (line.startsWith("            <input type=\"hidden\" name=\"timeID\" value=\"")) {
+                builder.append("            <input type=\"hidden\" name=\"timeID\" value=\"");
+                builder.append(timeID).append("\">").append("\n");
+                continue;
+            }
+
             if (line.endsWith(DIV_ID_LOG)) {         //<div id="log">の箇所を探す
                 while (!line.endsWith(INSERT_MESSAGE_FROM)) {            //</tr>の次の行から編集する
                     builder.append(line).append("\n");
@@ -256,59 +261,16 @@ public class HtmlEditor {
             return builder.toString();
         }
     }
-}
-
-/**
- * 編集するHTMLのリスト
- *
- * @author asada
- */
-enum ProgramBoardHtmlList {
-    /**
-     * index.html
-     * URI、ファイルのパス
-     */
-    INDEX_HTML("/program/board/index.html", "./src/main/resources/2/index.html"),
 
     /**
-     * search.html
-     */
-    SEARCH_HTML("/program/board/search.html", "./src/main/resources/2/search.html"),
-
-    /**
-     * delete.html
-     */
-    DELETE_HTML("/program/board/delete.html", "./src/main/resources/2/delete.html"),
-
-    /**
-     * result.html
-     */
-    RESULT_HTML("/program/board/result.html", "./src/main/resources/2/result.html");
-
-    private final String uri;
-
-    private final String path;
-
-    ProgramBoardHtmlList(String uri, String path) {
-        this.uri = uri;
-        this.path = path;
-    }
-
-    /**
-     * URIを取得するメソッド
+     * HTMLページに書き込むID（二重リクエスト防ぐためのもの）を発行するメソッド
      *
-     * @return URIを返す
+     * @return エンコードされて発行する
      */
-    public String getUri() {
-        return uri;
-    }
-
-    /**
-     * ファイルのパスを取得するメソッド
-     *
-     * @return ファイルのパスを返す
-     */
-    public String getPath() {
-        return path;
+    String issueTimeIdInHtml() {
+        LocalDateTime ldt = LocalDateTime.now();
+        String timeID = "" + ldt.getYear() + ldt.getMonthValue() + ldt.getDayOfMonth() + ldt.getHour() +
+                ldt.getMinute() + ldt.getSecond() + ldt.getNano();
+        return Base64.getEncoder().encodeToString(timeID.getBytes());
     }
 }

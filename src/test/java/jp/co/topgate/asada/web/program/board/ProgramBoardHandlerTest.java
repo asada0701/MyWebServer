@@ -241,7 +241,7 @@ public class ProgramBoardHandlerTest {
         @Test
         public void 正しく動作するか() throws Exception {
             HtmlEditor htmlEditor = new HtmlEditor();
-            ProgramBoardHandler.doGet(htmlEditor);
+            ProgramBoardHandler.doGet(htmlEditor, "timeIdOfValue");
 
             //Verify
             String path = "./src/main/resources/2/index.html";
@@ -274,6 +274,7 @@ public class ProgramBoardHandlerTest {
             m.setTitle("test");
             m.setText("こんにちは");
             m.setDate("2017/5/11 11:56");
+            m.setTimeID("null回避");
             messageList.add(m);
 
             m = new Message();
@@ -283,6 +284,7 @@ public class ProgramBoardHandlerTest {
             m.setTitle("t");
             m.setText("こんにちは");
             m.setDate("2017/5/11 11:57");
+            m.setTimeID("null回避");
             messageList.add(m);
 
             m = new Message();
@@ -292,6 +294,7 @@ public class ProgramBoardHandlerTest {
             m.setTitle("t");
             m.setText("今日は天気がいいですね");
             m.setDate("2017/5/11 11:57");
+            m.setTimeID("null回避");
             messageList.add(m);
 
             m = new Message();
@@ -301,6 +304,7 @@ public class ProgramBoardHandlerTest {
             m.setTitle("t");
             m.setText("そうですね");
             m.setDate("2017/5/11 11:57");
+            m.setTimeID("null回避");
             messageList.add(m);
 
             ModelController.setMessageList(messageList);
@@ -310,7 +314,7 @@ public class ProgramBoardHandlerTest {
         public void messageBodyがnullの場合() throws Exception {
             HtmlEditor htmlEditor = new HtmlEditor();
 
-            ProgramBoardHandler.doPost(htmlEditor, Param.WRITE, null);
+            ProgramBoardHandler.doPost(htmlEditor, Param.WRITE, null, null);
 
             htmlEditor.resetAllFiles();
         }
@@ -320,7 +324,7 @@ public class ProgramBoardHandlerTest {
             HtmlEditor htmlEditor = new HtmlEditor();
             Map<String, String> messageBody = new HashMap<>();
 
-            ProgramBoardHandler.doPost(htmlEditor, null, messageBody);
+            ProgramBoardHandler.doPost(htmlEditor, null, messageBody, null);
 
             htmlEditor.resetAllFiles();
         }
@@ -330,7 +334,7 @@ public class ProgramBoardHandlerTest {
             HtmlEditor htmlEditor = new HtmlEditor();
             Map<String, String> messageBody = new HashMap<>();
 
-            ProgramBoardHandler.doPost(null, Param.WRITE, messageBody);
+            ProgramBoardHandler.doPost(null, Param.WRITE, messageBody, null);
 
             htmlEditor.resetAllFiles();
         }
@@ -342,8 +346,9 @@ public class ProgramBoardHandlerTest {
             map.put("title", "test");
             map.put("text", "メッセージ");
             map.put("password", "test");
+            map.put("timeID", "hoge");
 
-            String sut = ProgramBoardHandler.doPost(htmlEditor, Param.WRITE, map).getUri();
+            String sut = ProgramBoardHandler.doPost(htmlEditor, Param.WRITE, map, "hoge").getUri();
             assertThat(sut, is(ProgramBoardHtmlList.INDEX_HTML.getUri()));
 
             htmlEditor.resetAllFiles();
@@ -354,7 +359,7 @@ public class ProgramBoardHandlerTest {
             Map<String, String> map = new HashMap<>();
             map.put("number", "2");
 
-            String sut = ProgramBoardHandler.doPost(htmlEditor, Param.SEARCH, map).getUri();
+            String sut = ProgramBoardHandler.doPost(htmlEditor, Param.SEARCH, map, null).getUri();
             assertThat(sut, Matchers.is(ProgramBoardHtmlList.SEARCH_HTML.getUri()));
 
             htmlEditor.resetAllFiles();
@@ -365,7 +370,7 @@ public class ProgramBoardHandlerTest {
             Map<String, String> map = new HashMap<>();
             map.put("number", "2");
 
-            String sut = ProgramBoardHandler.doPost(htmlEditor, Param.DELETE_STEP_1, map).getUri();
+            String sut = ProgramBoardHandler.doPost(htmlEditor, Param.DELETE_STEP_1, map, null).getUri();
             assertThat(sut, is(ProgramBoardHtmlList.DELETE_HTML.getUri()));
 
             htmlEditor.resetAllFiles();
@@ -377,7 +382,7 @@ public class ProgramBoardHandlerTest {
             map.put("number", "2");
             map.put("password", "t");
 
-            String sut = ProgramBoardHandler.doPost(htmlEditor, Param.DELETE_STEP_2, map).getUri();
+            String sut = ProgramBoardHandler.doPost(htmlEditor, Param.DELETE_STEP_2, map, null).getUri();
             assertThat(sut, is(ProgramBoardHtmlList.RESULT_HTML.getUri()));
 
             htmlEditor.resetAllFiles();
@@ -385,7 +390,7 @@ public class ProgramBoardHandlerTest {
 
         @Test
         public void switchのbackをテスト() throws Exception {
-            String sut = ProgramBoardHandler.doPost(htmlEditor, Param.BACK, null).getUri();
+            String sut = ProgramBoardHandler.doPost(htmlEditor, Param.BACK, null, null).getUri();
             assertThat(sut, is(ProgramBoardHtmlList.INDEX_HTML.getUri()));
 
             htmlEditor.resetAllFiles();
@@ -398,10 +403,15 @@ public class ProgramBoardHandlerTest {
     }
 
     public static class writeIndexメソッドのテスト {
+        HtmlEditor htmlEditor;
+
+        @Before
+        public void setUp() {
+            htmlEditor = new HtmlEditor();
+        }
+
         @Test
         public void 正しく動作するか() throws Exception {
-            HtmlEditor htmlEditor = new HtmlEditor();
-
             List<Message> testList = new ArrayList<>();
             Message m = new Message();
             m.setMessageID(1);
@@ -410,6 +420,7 @@ public class ProgramBoardHandlerTest {
             m.setTitle("test");
             m.setText("こんにちは");
             m.setDate("2017/5/11 11:56");
+            m.setTimeID("hogehoge");
             testList.add(m);
             m = new Message();
             m.setMessageID(2);
@@ -418,10 +429,11 @@ public class ProgramBoardHandlerTest {
             m.setTitle("t");
             m.setText("こんにちは");
             m.setDate("2017/5/11 11:57");
+            m.setTimeID("hogehoge");
             testList.add(m);
             ModelController.setMessageList(testList);
 
-            String s = ProgramBoardHandler.writeIndex(htmlEditor).getUri();
+            String s = ProgramBoardHandler.writeIndex(htmlEditor, "timeIdOfValue").getUri();
 
             //Verify
             assertThat(s, is(ProgramBoardHtmlList.INDEX_HTML.getUri()));
@@ -435,8 +447,10 @@ public class ProgramBoardHandlerTest {
                     assertThat(str, is(br2.readLine()));
                 }
             }
+        }
 
-            //TearDown
+        @After
+        public void tearDown() {
             htmlEditor.resetAllFiles();
         }
     }

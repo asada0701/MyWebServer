@@ -28,7 +28,7 @@ public class CsvHelper {
     /**
      * CSVに書き込むメッセージの項目数
      */
-    private static final int MESSAGE_NUM_ITEMS = 6;
+    private static final int MESSAGE_NUM_ITEMS = 7;
 
     /**
      * 過去のMessageListを、CSVファイルから読み出すメソッド
@@ -51,7 +51,8 @@ public class CsvHelper {
                     m.setName(s[i++]);
                     m.setTitle(s[i++]);
                     m.setText(s[i++]);
-                    m.setDate(s[i]);
+                    m.setDate(s[i++]);
+                    m.setTimeID(s[i]);
 
                     messageList.add(m);
                 } else {
@@ -79,8 +80,9 @@ public class CsvHelper {
                 String title = m.getTitle();
                 String text = m.getText();
                 String date = m.getDate();
+                String timeID = m.getTimeID();
 
-                String[] strings = {messageID, password, name, title, text, date};
+                String[] strings = {messageID, password, name, title, text, date, timeID};
 
                 String line = String.join(CSV_SEPARATOR, strings) + "\n";
 

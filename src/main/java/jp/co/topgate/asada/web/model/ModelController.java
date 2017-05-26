@@ -49,7 +49,7 @@ public final class ModelController {
     /**
      * messageListにメッセージクラスを追加する
      */
-    public static void addMessage(String name, String title, String text, String password) {
+    public static void addMessage(String name, String title, String text, String password, String timeID) {
         Message message = new Message();
         message.setMessageID(nextMessageID);
         message.setName(name);
@@ -57,6 +57,7 @@ public final class ModelController {
         message.setText(text);
         message.setPassword(new BCryptPasswordEncoder().encode(password));  //パスワードハッシュ化
         message.setDate(getNowDate());
+        message.setTimeID(timeID);
         messageList.add(message);
 
         nextMessageID++;
@@ -137,6 +138,22 @@ public final class ModelController {
     }
 
     /**
+     * 二重リクエスト対策のメソッド
+     * messageListに登録してあるメッセージがもつtimeIDと同じ場合は追加しない
+     *
+     * @param timeID 比較したい文字列
+     * @return trueの場合は存在する。falseの場合は存在しない。
+     */
+    public static boolean isExist(String timeID) {
+        for (Message message : messageList) {
+            if (message.getTimeID().equals(timeID)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * 現在の日付をフォーマットして文字列で返す
      *
      * @return （例)2017/5/5 17:20
@@ -149,7 +166,6 @@ public final class ModelController {
     }
 
     //テスト用
-
     static void resetNextMessageID() {
         nextMessageID = 1;
     }

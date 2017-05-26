@@ -12,6 +12,7 @@ public class Message {
     private String title;
     private String text;
     private String date;
+    private String timeID;
 
     public int getMessageID() {
         return messageID;
@@ -59,5 +60,13 @@ public class Message {
 
     public void setDate(String date) {
         this.date = date;
+    }
+
+    public String getTimeID() {
+        return timeID;
+    }
+
+    public void setTimeID(String timeID) {
+        this.timeID = timeID;
     }
 }
