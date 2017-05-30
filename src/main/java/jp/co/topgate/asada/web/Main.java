@@ -29,9 +29,6 @@ public class Main {
      */
     public static final String PROTOCOL_VERSION = "HTTP/1.1";
 
-    /**
-     * メインメソッド
-     */
     public static void main(String[] args) {
         System.out.println("this server's port number is " + PORT_NUMBER);
         try {

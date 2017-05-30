@@ -4,7 +4,6 @@ package jp.co.topgate.asada.web;
  * URLパターンのEnum
  */
 public enum UrlPattern {
-
     /**
      * URLのパターン、ファイルのディレクトリ
      * で登録する

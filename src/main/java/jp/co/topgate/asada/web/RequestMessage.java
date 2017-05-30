@@ -31,8 +31,8 @@ public class RequestMessage {
 
     private String method = null;
     private String uri = null;
-    private Map<String, String> uriQuery = new HashMap<>();
-    private Map<String, String> headerField = new HashMap<>();
+    private Map<String, String> uriQuery = null;
+    private Map<String, String> headerField = null;
     private byte[] messageBody = null;
 
     public String getMethod() {

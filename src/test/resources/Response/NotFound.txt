@@ -1,0 +1,4 @@
+HTTP/1.1 404 Not Found
+Content-Type: text/html; charset=UTF-8
+
+<html><head><title>404 Not Found</title></head><body><h1>Not Found</h1><p>お探しのページは見つかりませんでした。</p></body></html>

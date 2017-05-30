@@ -35,16 +35,20 @@ public final class ContentType {
     }
 
     /**
-     * ステータスコード:200以外の場合のレスポンスのコンテンツタイプ
-     */
-    public static final String ERROR_RESPONSE = "text/html; charset=UTF-8";
-
-    /**
      * コンストラクタ
      * インスタンス化禁止
      */
     private ContentType() {
 
+    }
+
+    /**
+     * HTMLのコンテンツタイプを取得するメソッド
+     *
+     * @return HTMLのコンテンツタイプを返す
+     */
+    public static String getHtmlType() {
+        return fileType.get("html");
     }
 
     /**

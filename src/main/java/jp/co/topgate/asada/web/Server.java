@@ -2,8 +2,6 @@ package jp.co.topgate.asada.web;
 
 import jp.co.topgate.asada.web.exception.HttpVersionException;
 import jp.co.topgate.asada.web.exception.RequestParseException;
-import jp.co.topgate.asada.web.program.board.model.ModelController;
-import jp.co.topgate.asada.web.util.CsvHelper;
 
 import java.io.*;
 import java.net.*;
@@ -13,7 +11,7 @@ import java.net.*;
  *
  * @author asada
  */
-class Server extends Thread {
+class Server {
     /**
      * コンストラクタ
      *
@@ -22,8 +20,6 @@ class Server extends Thread {
     static void run(int portNumber) throws IOException {
         ServerSocket serverSocket = new ServerSocket(portNumber);
         while (true) {
-            ModelController.setMessageList(CsvHelper.readMessage());
-
             Socket clientSocket = serverSocket.accept();
 
             ResponseMessage responseMessage = new ResponseMessage(clientSocket.getOutputStream());
@@ -45,15 +41,13 @@ class Server extends Thread {
 
             } finally {
                 if (statusLineOfException != null) {
-                    responseMessage.addHeaderWithContentType(ContentType.ERROR_RESPONSE);
+                    responseMessage.addHeaderWithContentType(ContentType.getHtmlType());
                     PrintWriter printWriter = responseMessage.getPrintWriter(statusLineOfException);
                     printWriter.write(ResponseMessage.getErrorMessageBody(statusLineOfException));
                     printWriter.flush();
                 }
             }
             clientSocket.close();
-
-            CsvHelper.writeMessage(ModelController.getAllMessage());
         }
     }
 }

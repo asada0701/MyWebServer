@@ -13,13 +13,5 @@ import static org.junit.Assert.assertThat;
  * @author asada
  */
 public class ServerTest {
-    @Test
-    public void startServerメソッドのテスト() throws IOException {
-        Server sut = new Server(8080);
-        sut.startServer();
-        assertThat(sut.getState(), is(Thread.State.RUNNABLE));
-        assertThat(sut.stopServer(), is(true));
-        assertThat(sut.getState(), is(Thread.State.RUNNABLE));
-        sut.endServer();
-    }
+
 }

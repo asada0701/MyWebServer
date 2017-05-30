@@ -3,6 +3,7 @@ package jp.co.topgate.asada.web;
 import org.junit.Test;
 
 import static jp.co.topgate.asada.web.ContentType.getContentType;
+import static jp.co.topgate.asada.web.ContentType.getHtmlType;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -12,6 +13,11 @@ import static org.junit.Assert.assertThat;
  * @author asada
  */
 public class ContentTypeTest {
+    @Test
+    public void getHtmlTypeメソッドのテスト() {
+        assertThat(getHtmlType(), is("text/html; charset=UTF-8"));
+    }
+
     @Test(expected = NullPointerException.class)
     public void nullチェック() {
         getContentType(null);

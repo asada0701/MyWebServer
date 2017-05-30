@@ -10,7 +10,7 @@ import java.util.*;
  *
  * @author asada
  */
-public class HtmlEditor {
+class HtmlEditor {
 
     /**
      * HTMLの編集する場所のスタート地点を

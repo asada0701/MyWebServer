@@ -72,12 +72,6 @@ public class RequestMessageTest {
     }
 
     @Test
-    public void messageBodyのテストヘッダーフィールドがnullの場合() {
-        sut.setMessageBody(exapmleMessageBody.getBytes());
-        assertThat(sut.parseMessageBodyToMap(), is(nullValue()));
-    }
-
-    @Test
     public void messageBodyのテストコンテンツタイプが想定外のもの() {
         Map<String, String> headerField = new HashMap<>();
         headerField.put("Content-Type", "multipart/form-data");

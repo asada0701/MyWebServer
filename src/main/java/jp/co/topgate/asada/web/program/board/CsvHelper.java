@@ -1,4 +1,4 @@
-package jp.co.topgate.asada.web.util;
+package jp.co.topgate.asada.web.program.board;
 
 import com.google.common.base.Strings;
 import jp.co.topgate.asada.web.exception.CsvRuntimeException;
@@ -38,9 +38,9 @@ public class CsvHelper {
      */
     public static List<Message> readMessage() throws CsvRuntimeException {
         List<Message> messageList = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(new File(CSV_FILE_PATH)))) {
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(CSV_FILE_PATH)))) {
             String line;
-            while (!Strings.isNullOrEmpty(line = br.readLine())) {
+            while (!Strings.isNullOrEmpty(line = bufferedReader.readLine())) {
 
                 String[] s = line.split(CSV_SEPARATOR);
 
@@ -49,14 +49,13 @@ public class CsvHelper {
                 }
 
                 Message m = new Message();
-                int i = 0;
-                m.setMessageID(Integer.parseInt(s[i++]));
-                m.setPassword(s[i++]);
-                m.setName(s[i++]);
-                m.setTitle(s[i++]);
-                m.setText(s[i++]);
-                m.setDate(s[i++]);
-                m.setTimeID(s[i]);
+                m.setMessageID(Integer.parseInt(s[0]));
+                m.setPassword(s[1]);
+                m.setName(s[2]);
+                m.setTitle(s[3]);
+                m.setText(s[4]);
+                m.setDate(s[5]);
+                m.setTimeID(s[6]);
 
                 messageList.add(m);
             }

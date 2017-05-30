@@ -1,6 +1,7 @@
 package jp.co.topgate.asada.web.util;
 
 import jp.co.topgate.asada.web.exception.CsvRuntimeException;
+import jp.co.topgate.asada.web.program.board.CsvHelper;
 import jp.co.topgate.asada.web.program.board.model.Message;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;

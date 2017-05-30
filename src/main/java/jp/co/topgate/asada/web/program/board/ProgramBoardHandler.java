@@ -3,6 +3,7 @@ package jp.co.topgate.asada.web.program.board;
 import jp.co.topgate.asada.web.*;
 import jp.co.topgate.asada.web.Handler;
 import jp.co.topgate.asada.web.UrlPattern;
+import jp.co.topgate.asada.web.exception.CsvRuntimeException;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 import jp.co.topgate.asada.web.util.*;
 import jp.co.topgate.asada.web.exception.IllegalRequestException;
@@ -13,13 +14,11 @@ import org.apache.commons.lang3.math.NumberUtils;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
 /**
  * ProgramBoardの配信を行うハンドラークラス
- * TODO 色々と無駄がある。
  *
  * @author asada
  */
@@ -54,52 +53,62 @@ public class ProgramBoardHandler extends Handler {
      */
     @Override
     public void handleRequest() {
-        String method = requestMessage.getMethod();
-        String uri = requestMessage.getUri();
-
-        if (!ProgramBoardHandler.matchMethod(method)) {
-            sendErrorResponse(responseMessage, StatusLine.NOT_IMPLEMENTED);
-            return;
-        }
-
-        if (method.equals("GET")) {
-            String targetPath = Handler.getFilePath(UrlPattern.PROGRAM_BOARD, uri);
-
-            if (targetPath.endsWith("/") || targetPath.endsWith(Main.WELCOME_PAGE_NAME)) {
-                //ウェルカムページをレスポンスする
-                try {
-                    doGet(responseMessage);
-                } catch (IOException e) {
-                    sendErrorResponse(responseMessage, StatusLine.INTERNAL_SERVER_ERROR);
-                }
-                return;
-            }
-
-            File targetFile = new File(targetPath);
-            if (!targetFile.exists() || !targetFile.isFile()) {
-                sendErrorResponse(responseMessage, StatusLine.NOT_FOUND);
-                return;
-            }
-            responseMessage.addHeaderWithContentType(ContentType.getContentType(targetPath));
-            responseMessage.addHeaderWithContentLength(String.valueOf(targetFile.length()));
-            sendResponse(responseMessage, targetFile);
-            return;
-        }
-
         try {
-            if (method.equals("POST")) {
-                Map<String, String> messageBody = requestMessage.parseMessageBodyToMap();
-                if (messageBody == null) {
-                    sendErrorResponse(responseMessage, StatusLine.BAD_REQUEST);
-                }
-                doPost(responseMessage, Param.getParam(messageBody.get("param")), messageBody);
+            ModelController.setMessageList(CsvHelper.readMessage());
+
+            String method = requestMessage.getMethod();
+            String uri = requestMessage.getUri();
+
+            if (!ProgramBoardHandler.matchMethod(method)) {
+                sendErrorResponse(responseMessage, StatusLine.NOT_IMPLEMENTED);
+                return;
             }
 
-        } catch (RequestParseException | IllegalRequestException e) {
-            sendErrorResponse(responseMessage, StatusLine.BAD_REQUEST);
+            if (method.equals("GET")) {
+                String targetPath = Handler.getFilePath(UrlPattern.PROGRAM_BOARD, uri);
 
-        } catch (IOException e) {
+                if (targetPath.endsWith("/") || targetPath.endsWith(Main.WELCOME_PAGE_NAME)) {
+                    //ウェルカムページをレスポンスする
+                    try {
+                        doGet(responseMessage);
+                    } catch (IOException e) {
+                        sendErrorResponse(responseMessage, StatusLine.INTERNAL_SERVER_ERROR);
+                    }
+                    return;
+                }
+
+                File targetFile = new File(targetPath);
+                if (!targetFile.exists() || !targetFile.isFile()) {
+                    sendErrorResponse(responseMessage, StatusLine.NOT_FOUND);
+                    return;
+                }
+                responseMessage.addHeaderWithContentType(ContentType.getContentType(targetPath));
+                responseMessage.addHeaderWithContentLength(String.valueOf(targetFile.length()));
+                sendResponse(responseMessage, targetFile);
+                return;
+            }
+
+            try {
+                if (method.equals("POST")) {
+                    Map<String, String> messageBody = requestMessage.parseMessageBodyToMap();
+                    if (messageBody == null) {
+                        sendErrorResponse(responseMessage, StatusLine.BAD_REQUEST);
+                    }
+                    doPost(responseMessage, Param.getParam(messageBody.get("param")), messageBody);
+
+                    CsvHelper.writeMessage(ModelController.getAllMessage());
+                }
+
+            } catch (RequestParseException | IllegalRequestException e) {
+                sendErrorResponse(responseMessage, StatusLine.BAD_REQUEST);
+
+            } catch (IOException e) {
+                sendErrorResponse(responseMessage, StatusLine.INTERNAL_SERVER_ERROR);
+            }
+        } catch (CsvRuntimeException e) {
             sendErrorResponse(responseMessage, StatusLine.INTERNAL_SERVER_ERROR);
+            e.printStackTrace();
+            System.exit(1);
         }
     }
 
@@ -257,7 +266,7 @@ public class ProgramBoardHandler extends Handler {
      * @param html
      */
     static void sendResponse(ResponseMessage responseMessage, String html) {
-        responseMessage.addHeaderWithContentType("text/html; charset=UTF-8");
+        responseMessage.addHeaderWithContentType(ContentType.getHtmlType());
         responseMessage.addHeaderWithContentLength(String.valueOf(html.getBytes().length));
 
         PrintWriter printWriter = responseMessage.getPrintWriter(StatusLine.OK);
@@ -289,7 +298,7 @@ public class ProgramBoardHandler extends Handler {
      * @param statusLine      ステータスラインを渡す
      */
     static void sendErrorResponse(ResponseMessage responseMessage, StatusLine statusLine) {
-        responseMessage.addHeaderWithContentType(ContentType.ERROR_RESPONSE);
+        responseMessage.addHeaderWithContentType(ContentType.getHtmlType());
 
         PrintWriter pw = responseMessage.getPrintWriter(statusLine);
         pw.write(ResponseMessage.getErrorMessageBody(statusLine));
@@ -305,7 +314,8 @@ public class ProgramBoardHandler extends Handler {
         LocalDateTime ldt = LocalDateTime.now();
         String timeID = "" + ldt.getYear() + ldt.getMonthValue() + ldt.getDayOfMonth() + ldt.getHour() +
                 ldt.getMinute() + ldt.getSecond() + ldt.getNano();
-        return Base64.getEncoder().encodeToString(timeID.getBytes());
+        return timeID;
+        //return Base64.getEncoder().encodeToString(timeID.getBytes());
     }
 }
 

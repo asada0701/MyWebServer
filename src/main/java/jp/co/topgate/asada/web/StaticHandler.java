@@ -1,6 +1,8 @@
 package jp.co.topgate.asada.web;
 
 import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * 静的なコンテンツの配信を行うハンドラー
@@ -34,11 +36,13 @@ public class StaticHandler extends Handler {
     @Override
     public void handleRequest() {
         String method = requestMessage.getMethod();
-        String uri = changeUriToWelcomePage(requestMessage.getUri());
 
-        StatusLine statusLine = StaticHandler.decideStatusLine(method, uri);
+        String rawUri = requestMessage.getUri();
+        String uri = changeUriToWelcomePage(rawUri);
+        Path filePath = Paths.get(Handler.FILE_PATH + uri);
 
-        sendResponse(responseMessage, statusLine, Handler.FILE_PATH + uri);
+        StatusLine statusLine = StaticHandler.decideStatusLine(method, filePath);
+        sendResponse(responseMessage, statusLine, filePath);
     }
 
     /**
@@ -48,10 +52,10 @@ public class StaticHandler extends Handler {
      * @return "/"で終わっている場合は{@link Main}のwelcome pageを連結して返す
      */
     static String changeUriToWelcomePage(String uri) {
-        if (uri.endsWith("/")) {
-            return uri + Main.WELCOME_PAGE_NAME;
+        if (!uri.endsWith("/")) {
+            return uri;
         }
-        return uri;
+        return uri + Main.WELCOME_PAGE_NAME;
     }
 
     /**
@@ -61,15 +65,15 @@ public class StaticHandler extends Handler {
      * 3.URIで指定されたファイルがリソースフォルダにない、もしくはディレクトリの場合は404:Not Found
      * 4.1,2,3でチェックして問題がなければ200:OK
      *
-     * @param method リクエストメッセージのメソッドを渡す
-     * @param uri    URIを渡す
+     * @param method   リクエストメッセージのメソッドを渡す
+     * @param filePath リソースファイルのPathを渡す
      * @return レスポンスメッセージの状態行(StatusLine)を返す
      */
-    static StatusLine decideStatusLine(String method, String uri) {
+    static StatusLine decideStatusLine(String method, Path filePath) {
         if (!StaticHandler.METHOD.equals(method)) {
             return StatusLine.NOT_IMPLEMENTED;
         }
-        File file = new File(Handler.FILE_PATH + uri);
+        File file = filePath.toFile();
         if (!file.exists() || !file.isFile()) {
             return StatusLine.NOT_FOUND;
         }
@@ -81,15 +85,20 @@ public class StaticHandler extends Handler {
      *
      * @param responseMessage レスポンスメッセージを渡す
      * @param statusLine      ステータスラインを渡す
-     * @param path            リソースファイルのパス
+     * @param filePath        リソースファイルのパス
      */
-    static void sendResponse(ResponseMessage responseMessage, StatusLine statusLine, String path) {
-        if (statusLine.equals(StatusLine.OK)) {
-            responseMessage.addHeaderWithContentType(ContentType.getContentType(path));
-            responseMessage.addHeaderWithContentLength(String.valueOf(new File(path).length()));
+    static void sendResponse(ResponseMessage responseMessage, StatusLine statusLine, Path filePath) {
 
+        if (statusLine.equals(StatusLine.OK)) {
+            //レスポンスメッセージにヘッダーフィールドを追加
+            String contentType = ContentType.getContentType(filePath.toString());
+            responseMessage.addHeaderWithContentType(contentType);
+            long contentLength = filePath.toFile().length();
+            responseMessage.addHeaderWithContentLength(String.valueOf(contentLength));
+
+            //メッセージボディを書き込む
             OutputStream outputStream = responseMessage.getOutputStream(statusLine);
-            try (InputStream in = new FileInputStream(path)) {
+            try (InputStream in = new FileInputStream(filePath.toFile())) {
                 int num;
                 while ((num = in.read()) != -1) {
                     outputStream.write(num);
@@ -99,7 +108,7 @@ public class StaticHandler extends Handler {
             }
 
         } else {
-            responseMessage.addHeaderWithContentType(ContentType.ERROR_RESPONSE);
+            responseMessage.addHeaderWithContentType(ContentType.getHtmlType());
 
             PrintWriter pw = responseMessage.getPrintWriter(statusLine);
             pw.write(ResponseMessage.getErrorMessageBody(statusLine));
@@ -109,6 +118,10 @@ public class StaticHandler extends Handler {
 
     //テスト用
     RequestMessage getRequestMessage() {
-        return this.requestMessage;
+        return requestMessage;
+    }
+
+    ResponseMessage getResponseMessage() {
+        return responseMessage;
     }
 }
