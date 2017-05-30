@@ -1,4 +1,4 @@
-package jp.co.topgate.asada.web.model;
+package jp.co.topgate.asada.web.program.board.model;
 
 /**
  * 掲示板に投稿されたメッセージのオブジェクト

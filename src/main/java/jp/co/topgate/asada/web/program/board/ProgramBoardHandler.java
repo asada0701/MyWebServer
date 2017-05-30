@@ -6,39 +6,25 @@ import jp.co.topgate.asada.web.UrlPattern;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 import jp.co.topgate.asada.web.util.*;
 import jp.co.topgate.asada.web.exception.IllegalRequestException;
-import jp.co.topgate.asada.web.exception.HtmlInitializeException;
-import jp.co.topgate.asada.web.model.Message;
-import jp.co.topgate.asada.web.model.ModelController;
+import jp.co.topgate.asada.web.program.board.model.Message;
+import jp.co.topgate.asada.web.program.board.model.ModelController;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
 /**
  * ProgramBoardの配信を行うハンドラークラス
+ * TODO 色々と無駄がある。
  *
  * @author asada
  */
 public class ProgramBoardHandler extends Handler {
-
-    /**
-     * HTTPリクエストのプロトコルバージョン
-     */
-    private static final String PROTOCOL_VERSION = "HTTP/1.1";
-
-    /**
-     * このハンドラーが担当するPOSTリクエストのコンテンツタイプ
-     */
-    private static final String CONTENT_TYPE_WITH_EDITING_POST = "application/x-www-form-urlencoded";
-
-    /**
-     * このハンドラーが修正を行うファイルの拡張子
-     */
-    private static final String FILENAME_EXTENSION_WITH_EDITING_POST = "html";
-
     /**
      * HTTPリクエストのメソッド
      */
@@ -50,166 +36,94 @@ public class ProgramBoardHandler extends Handler {
     }
 
     private RequestMessage requestMessage;
+    private ResponseMessage responseMessage;
 
     /**
      * コンストラクタ
      *
-     * @param requestMessage リクエストメッセージのオブジェクト
-     * @throws HtmlInitializeException {@link HtmlEditor#HtmlEditor()}を参照
+     * @param requestMessage  リクエストメッセージのオブジェクト
+     * @param responseMessage レスポンスメッセージのオブジェクト
      */
-    public ProgramBoardHandler(RequestMessage requestMessage) throws HtmlInitializeException {
+    public ProgramBoardHandler(RequestMessage requestMessage, ResponseMessage responseMessage) {
         this.requestMessage = requestMessage;
+        this.responseMessage = responseMessage;
     }
 
     /**
      * {@link Handler#handleRequest()}を参照
      * returnしていても、finallyは必ず通るので、finallyの中でhtmlの初期化を行う。
-     *
-     * @return ResponseMessageのオブジェクトを生成して返す。
-     * @throws HtmlInitializeException {@link HtmlEditor#resetAllFiles()}を参照
      */
     @Override
-    public ResponseMessage handleRequest() throws HtmlInitializeException {
+    public void handleRequest() {
         String method = requestMessage.getMethod();
         String uri = requestMessage.getUri();
-        String protocolVersion = requestMessage.getProtocolVersion();
-
-        StatusLine statusLine = ProgramBoardHandler.decideStatusLine(method, uri, protocolVersion);
-        ResponseMessage responseMessage;
-
-        if (!statusLine.equals(StatusLine.OK)) {
-            return createErrorResponseMessage(statusLine);
-        }
-
-        HtmlEditor htmlEditor = new HtmlEditor();
-
-        try {
-
-            if ("GET".equals(requestMessage.getMethod()) && uri.endsWith(Main.WELCOME_PAGE_NAME)) {
-                doGet(htmlEditor, htmlEditor.issueTimeIdInHtml());
-
-            } else if ("POST".equals(requestMessage.getMethod()) && uri.endsWith(Main.WELCOME_PAGE_NAME)) {
-                if (ProgramBoardHandler.CONTENT_TYPE_WITH_EDITING_POST.equals(requestMessage.findHeaderByName("Content-Type"))) {
-
-                    Map<String, String> messageBody = RequestMessageBodyParser.parseToMapString(requestMessage.getMessageBody());
-                    String param = messageBody.get("param");
-                    ProgramBoardHtmlList programBoardHtmlList = doPost(htmlEditor, Param.getParam(param), messageBody, htmlEditor.issueTimeIdInHtml());
-                    String newUri = programBoardHtmlList.getUri();
-                    requestMessage.setUri(newUri);
-
-                } else {
-                    return createErrorResponseMessage(StatusLine.BAD_REQUEST);
-                }
-            }
-
-            String path = Handler.getFilePath(UrlPattern.PROGRAM_BOARD, requestMessage.getUri());
-            ContentType contentType = new ContentType(path);
-            if (path.endsWith(FILENAME_EXTENSION_WITH_EDITING_POST)) {
-                try {
-                    String resultHtml = htmlEditor.readHtml(path);
-                    responseMessage = new ResponseMessage(statusLine, resultHtml.getBytes());
-
-                } catch (IOException e) {
-                    return createErrorResponseMessage(StatusLine.INTERNAL_SERVER_ERROR);
-                }
-
-            } else {
-                responseMessage = new ResponseMessage(statusLine, path);
-            }
-
-            responseMessage.addHeaderWithContentType(contentType.getContentType());
-            responseMessage.addHeader("Content-Length", String.valueOf(new File(path).length()));
-
-            return responseMessage;
-
-        } catch (RequestParseException | IllegalRequestException e) {
-            return createErrorResponseMessage(StatusLine.BAD_REQUEST);
-
-        } catch (IOException e) {
-            return createErrorResponseMessage(StatusLine.INTERNAL_SERVER_ERROR);
-
-        } finally {
-            htmlEditor.resetAllFiles();
-        }
-    }
-
-    /**
-     * ステータスコード:200 OK 以外のステータスコードの場合のResponseMessageのオブジェクトの生成、ヘッダーフィールドの追加をまとめたメソッド
-     *
-     * @param statusLine ステータスラインを渡す
-     * @return ResponseMessageのオブジェクトを返す
-     */
-    static ResponseMessage createErrorResponseMessage(StatusLine statusLine) {
-        ResponseMessage responseMessage = new ResponseMessage(statusLine);
-        responseMessage.addHeaderWithContentType(ContentType.ERROR_RESPONSE);
-        return responseMessage;
-    }
-
-    /**
-     * リクエストメッセージのmethod,uri,protocolVersionから、レスポンスのステータスコードを決定するメソッド
-     * 1.プロトコルバージョンがHTTP/1.1以外の場合は500:HTTP Version Not Supported
-     * 2.GET,POST以外のメソッドの場合は501:Not Implemented
-     * 3.URIで指定されたファイルがリソースフォルダにない、もしくはディレクトリの場合は404:Not Found
-     * 4.1,2,3でチェックして問題がなければ200:OK
-     *
-     * @param method          リクエストメッセージのメソッドを渡す
-     * @param uri             URIを渡す
-     * @param protocolVersion プロトコルバージョンを渡す
-     * @return レスポンスラインの状態行(StatusLine)を返す
-     */
-    static StatusLine decideStatusLine(String method, String uri, String protocolVersion) {
-        if (!ProgramBoardHandler.PROTOCOL_VERSION.equals(protocolVersion)) {
-            return StatusLine.HTTP_VERSION_NOT_SUPPORTED;
-        }
 
         if (!ProgramBoardHandler.matchMethod(method)) {
-            return StatusLine.NOT_IMPLEMENTED;
+            sendErrorResponse(responseMessage, StatusLine.NOT_IMPLEMENTED);
+            return;
         }
 
-        if ("GET".equals(method)) {
-            String path = Handler.getFilePath(UrlPattern.PROGRAM_BOARD, uri);
-            File file = new File(path);
-            if (!file.exists() || !file.isFile()) {
-                return StatusLine.NOT_FOUND;
+        if (method.equals("GET")) {
+            String targetPath = Handler.getFilePath(UrlPattern.PROGRAM_BOARD, uri);
+
+            if (targetPath.endsWith("/") || targetPath.endsWith(Main.WELCOME_PAGE_NAME)) {
+                //ウェルカムページをレスポンスする
+                try {
+                    doGet(responseMessage);
+                } catch (IOException e) {
+                    sendErrorResponse(responseMessage, StatusLine.INTERNAL_SERVER_ERROR);
+                }
+                return;
             }
 
-        } else if ("POST".equals(method)) {
-            if (!ProgramBoardHtmlList.INDEX_HTML.getUri().equals(uri)) {
-                return StatusLine.BAD_REQUEST;
+            File targetFile = new File(targetPath);
+            if (!targetFile.exists() || !targetFile.isFile()) {
+                sendErrorResponse(responseMessage, StatusLine.NOT_FOUND);
+                return;
             }
+            responseMessage.addHeaderWithContentType(ContentType.getContentType(targetPath));
+            responseMessage.addHeaderWithContentLength(String.valueOf(targetFile.length()));
+            sendResponse(responseMessage, targetFile);
+            return;
         }
 
-        return StatusLine.OK;
+        try {
+            if (method.equals("POST")) {
+                Map<String, String> messageBody = requestMessage.parseMessageBodyToMap();
+                if (messageBody == null) {
+                    sendErrorResponse(responseMessage, StatusLine.BAD_REQUEST);
+                }
+                doPost(responseMessage, Param.getParam(messageBody.get("param")), messageBody);
+            }
+
+        } catch (RequestParseException | IllegalRequestException e) {
+            sendErrorResponse(responseMessage, StatusLine.BAD_REQUEST);
+
+        } catch (IOException e) {
+            sendErrorResponse(responseMessage, StatusLine.INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
      * GETの場合の処理
      * POSTでindex.htmlファイルに書き込む場合も呼ばれる
      *
-     * @param htmlEditor HtmlEditorのオブジェクト
-     * @param timeID     HTMLページに埋め込むユニークな値
-     * @throws IOException HTMLファイルに書き込み中に例外発生
+     * @param responseMessage ResponseMessageのオブジェクト
      */
-    static void doGet(HtmlEditor htmlEditor, String timeID) throws IOException {
-        String html = htmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.INDEX_HTML, ModelController.getAllMessage(), timeID);
-        htmlEditor.writeHtml(ProgramBoardHtmlList.INDEX_HTML, html);
+    static void doGet(ResponseMessage responseMessage) throws IOException {
+        String html = HtmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.INDEX_HTML, ModelController.getAllMessage(), issueTimeId());
+        sendResponse(responseMessage, html);
     }
 
     /**
      * POSTの場合の処理
      *
-     * @param htmlEditor  HtmlEditorのオブジェクトを渡す
      * @param param       メッセージボディで送られてくるparamのEnum
      * @param messageBody リクエストのメッセージボディを渡す
-     * @param timeID      HTMLページに埋め込むユニークな値
-     * @return レスポンスメッセージのボディの参照を変更
      * @throws IOException             HTMLファイルに書き込み中に例外発生
      * @throws IllegalRequestException リクエストメッセージに問題があった
      */
-    static ProgramBoardHtmlList doPost(HtmlEditor htmlEditor, Param param, Map<String, String> messageBody, String timeID) throws IOException, IllegalRequestException {
-        if (htmlEditor == null) {
-            throw new IllegalRequestException("doPostメソッドの引数HtmlEditorがnullでした。");
-        }
+    static void doPost(ResponseMessage responseMessage, Param param, Map<String, String> messageBody) throws IOException, IllegalRequestException {
         if (param == null) {
             throw new IllegalRequestException("POSTのリクエストメッセージのヘッダーフィールドにparamが含まれていませんでした。");
         }
@@ -217,31 +131,32 @@ public class ProgramBoardHandler extends Handler {
         ProgramBoardHtmlList programBoardHtmlList;
         switch (param) {
             case WRITE: {
-                String name = messageBody.get("name");
-                String title = messageBody.get("title");
-                String text = messageBody.get("text");
-                String password = messageBody.get("password");
+                String unsafe_name = messageBody.get("name");
+                String unsafe_title = messageBody.get("title");
+                String unsafe_text = messageBody.get("text");
+                String unsafe_password = messageBody.get("password");
                 String timeIdOfRequest = messageBody.get("timeID");
 
-                if (name == null || title == null || text == null || password == null || timeIdOfRequest == null) {
-                    throw new IllegalRequestException("param:" + param + " name:" + name + " title:" + title + " text:"
-                            + text + " password:" + password + " timeID:" + timeIdOfRequest + "のいずれかの項目に問題があります。");
+                if (unsafe_name == null || unsafe_title == null || unsafe_text == null || unsafe_password == null || timeIdOfRequest == null) {
+                    throw new IllegalRequestException("param:" + param + " name:" + unsafe_name + " title:" + unsafe_title + " text:"
+                            + unsafe_text + " password:" + unsafe_password + " timeID:" + timeIdOfRequest + "のいずれかの項目に問題があります。");
                 }
 
-                name = InvalidChar.replace(name);
-                title = InvalidChar.replace(title);
-                text = InvalidChar.replace(text);
-                password = InvalidChar.replace(password);
+                String safe_name = UnsafeChar.replace(unsafe_name);
+                String safe_title = UnsafeChar.replace(unsafe_title);
+                String safe_text = UnsafeChar.replace(unsafe_text);
+                String safe_password = UnsafeChar.replace(unsafe_password);
 
-                text = HtmlEditor.changeLineFeedToBrTag(text);
+                safe_text = HtmlEditor.changeLineFeedToBrTag(safe_text);
 
                 if (ModelController.isExist(timeIdOfRequest)) {
-                    return writeIndex(htmlEditor, timeID);
+                    writeIndex(responseMessage);
+                    return;
                 }
 
-                ModelController.addMessage(name, title, text, password, timeIdOfRequest);
-
-                return writeIndex(htmlEditor, timeID);
+                ModelController.addMessage(safe_name, safe_title, safe_text, safe_password, timeIdOfRequest);
+                writeIndex(responseMessage);
+                return;
             }
 
             case SEARCH: {
@@ -254,8 +169,8 @@ public class ProgramBoardHandler extends Handler {
 
                 if (messageList.size() > 0) {
                     programBoardHtmlList = ProgramBoardHtmlList.SEARCH_HTML;
-                    htmlEditor.writeHtml(programBoardHtmlList, htmlEditor.editIndexOrSearchHtml(programBoardHtmlList, messageList, timeID));
-                    return ProgramBoardHtmlList.SEARCH_HTML;
+                    sendResponse(responseMessage, HtmlEditor.editIndexOrSearchHtml(programBoardHtmlList, messageList, issueTimeId()));
+                    return;
 
                 } else {
                     throw new IllegalRequestException(param + "で 検索結果が 0 でした。");
@@ -270,9 +185,8 @@ public class ProgramBoardHandler extends Handler {
 
                 Message message = ModelController.findMessageByID(Integer.parseInt(number));
                 if (message != null) {
-                    programBoardHtmlList = ProgramBoardHtmlList.DELETE_HTML;
-                    htmlEditor.writeHtml(programBoardHtmlList, htmlEditor.editDeleteHtml(message));
-                    return ProgramBoardHtmlList.DELETE_HTML;
+                    sendResponse(responseMessage, HtmlEditor.editDeleteHtml(message));
+                    return;
 
                 } else {
                     throw new IllegalRequestException(param + "で message が null でした。");
@@ -288,15 +202,15 @@ public class ProgramBoardHandler extends Handler {
                 }
 
                 if (ModelController.deleteMessage(Integer.parseInt(number), password)) {
-                    return ProgramBoardHtmlList.RESULT_HTML;
+                    sendResponse(responseMessage, new File(ProgramBoardHtmlList.RESULT_HTML.getPath()));
+                    return;
 
                 } else {
                     Message message = ModelController.findMessageByID(Integer.parseInt(messageBody.get("number")));
 
                     if (message != null) {
-                        programBoardHtmlList = ProgramBoardHtmlList.DELETE_HTML;
-                        htmlEditor.writeHtml(programBoardHtmlList, htmlEditor.editDeleteHtml(message));
-                        return ProgramBoardHtmlList.DELETE_HTML;
+                        sendResponse(responseMessage, HtmlEditor.editDeleteHtml(message));
+                        return;
 
                     } else {
                         throw new IllegalRequestException(param + "で message が null でした。");
@@ -305,7 +219,7 @@ public class ProgramBoardHandler extends Handler {
             }
 
             case BACK:
-                return writeIndex(htmlEditor, timeID);
+                writeIndex(responseMessage);
 
             default:
                 throw new IllegalRequestException("param:" + param + " paramに想定されているもの以外が送られました。");
@@ -315,15 +229,11 @@ public class ProgramBoardHandler extends Handler {
     /**
      * index.htmlを編集するメソッド
      *
-     * @param htmlEditor HtmlEditorのオブジェクト
-     * @param timeID     timeIdOfRequest
-     * @return レスポンスメッセージのボディの参照を変更
      * @throws IOException HTMLファイルに書き込み中に例外発生
      */
-    static ProgramBoardHtmlList writeIndex(HtmlEditor htmlEditor, String timeID) throws IOException {
-        String html = htmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.INDEX_HTML, ModelController.getAllMessage(), timeID);
-        htmlEditor.writeHtml(ProgramBoardHtmlList.INDEX_HTML, html);
-        return ProgramBoardHtmlList.INDEX_HTML;
+    static void writeIndex(ResponseMessage responseMessage) throws IOException {
+        String html = HtmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.INDEX_HTML, ModelController.getAllMessage(), issueTimeId());
+        sendResponse(responseMessage, html);
     }
 
     /**
@@ -341,129 +251,62 @@ public class ProgramBoardHandler extends Handler {
         return false;
     }
 
-    //テスト用
-
-    RequestMessage getRequestMessage() {
-        return requestMessage;
-    }
-}
-
-/**
- * POSTで送られてくるparam
- *
- * @author asada
- */
-enum Param {
-
     /**
-     * index.htmlでメッセージを投稿する場合
-     */
-    WRITE("write"),
-
-    /**
-     * index.htmlで投稿者の名前で検索する場合
-     */
-    SEARCH("search"),
-
-    /**
-     * index.htmlで投稿したメッセージを削除する場合
-     */
-    DELETE_STEP_1("delete_step_1"),
-
-    /**
-     * delete.htmlでパスワードの確認する場合
-     */
-    DELETE_STEP_2("delete_step_2"),
-
-    /**
-     * index.htmlのページに戻る
-     */
-    BACK("back");
-
-    private String name;
-
-    public String getName() {
-        return name;
-    }
-
-    Param(String name) {
-        this.name = name;
-    }
-
-    /**
-     * このメソッドは、文字列を元に、enumを返します。
+     * 編集したHTMLをレスポンスで返すメソッド
      *
-     * @param str 文字列（例）search
-     * @return Enum（例）Param.SEARCH
+     * @param responseMessage
+     * @param html
      */
-    public static Param getParam(String str) {
-        if (str == null) {
-            return null;
+    static void sendResponse(ResponseMessage responseMessage, String html) {
+        responseMessage.addHeaderWithContentType("text/html; charset=UTF-8");
+        responseMessage.addHeaderWithContentLength(String.valueOf(html.getBytes().length));
+
+        PrintWriter printWriter = responseMessage.getPrintWriter(StatusLine.OK);
+        for (String line : html.split("\n")) {
+            printWriter.write(line + "\n");
         }
+        printWriter.flush();
+    }
 
-        Param[] array = Param.values();
-
-        for (Param param : array) {
-            if (str.equals(param.name)) {
-                return param;
+    /**
+     * バイナリデータをレスポンスで返すメソッド
+     */
+    static void sendResponse(ResponseMessage responseMessage, File file) {
+        OutputStream outputStream = responseMessage.getOutputStream(StatusLine.OK);
+        try (InputStream in = new FileInputStream(file)) {
+            int num;
+            while ((num = in.read()) != -1) {
+                outputStream.write(num);
             }
+        } catch (IOException e) {
+
         }
-        return null;
-    }
-}
-
-/**
- * 編集するHTMLのリスト
- *
- * @author asada
- */
-enum ProgramBoardHtmlList {
-    /**
-     * index.html
-     * URI、ファイルのパス
-     */
-    INDEX_HTML("/program/board/index.html", "./src/main/resources/2/index.html"),
-
-    /**
-     * search.html
-     */
-    SEARCH_HTML("/program/board/search.html", "./src/main/resources/2/search.html"),
-
-    /**
-     * delete.html
-     */
-    DELETE_HTML("/program/board/delete.html", "./src/main/resources/2/delete.html"),
-
-    /**
-     * result.html
-     */
-    RESULT_HTML("/program/board/result.html", "./src/main/resources/2/result.html");
-
-    private final String uri;
-
-    private final String path;
-
-    ProgramBoardHtmlList(String uri, String path) {
-        this.uri = uri;
-        this.path = path;
     }
 
     /**
-     * URIを取得するメソッド
+     * エラー場合のレスポンスメッセージを書き込むメソッド
      *
-     * @return URIを返す
+     * @param responseMessage レスポンスメッセージを渡す
+     * @param statusLine      ステータスラインを渡す
      */
-    public String getUri() {
-        return uri;
+    static void sendErrorResponse(ResponseMessage responseMessage, StatusLine statusLine) {
+        responseMessage.addHeaderWithContentType(ContentType.ERROR_RESPONSE);
+
+        PrintWriter pw = responseMessage.getPrintWriter(statusLine);
+        pw.write(ResponseMessage.getErrorMessageBody(statusLine));
+        pw.flush();
     }
 
     /**
-     * ファイルのパスを取得するメソッド
+     * HTMLページに書き込むID（二重リクエスト防ぐためのもの）を発行するメソッド
      *
-     * @return ファイルのパスを返す
+     * @return エンコードされて発行する
      */
-    public String getPath() {
-        return path;
+    static String issueTimeId() {
+        LocalDateTime ldt = LocalDateTime.now();
+        String timeID = "" + ldt.getYear() + ldt.getMonthValue() + ldt.getDayOfMonth() + ldt.getHour() +
+                ldt.getMinute() + ldt.getSecond() + ldt.getNano();
+        return Base64.getEncoder().encodeToString(timeID.getBytes());
     }
 }
 

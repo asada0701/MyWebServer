@@ -2,7 +2,7 @@ package jp.co.topgate.asada.web.util;
 
 import com.google.common.base.Strings;
 import jp.co.topgate.asada.web.exception.CsvRuntimeException;
-import jp.co.topgate.asada.web.model.Message;
+import jp.co.topgate.asada.web.program.board.model.Message;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -43,21 +43,22 @@ public class CsvHelper {
             while (!Strings.isNullOrEmpty(line = br.readLine())) {
 
                 String[] s = line.split(CSV_SEPARATOR);
-                if (s.length == MESSAGE_NUM_ITEMS) {
-                    Message m = new Message();
-                    int i = 0;
-                    m.setMessageID(Integer.parseInt(s[i++]));
-                    m.setPassword(s[i++]);
-                    m.setName(s[i++]);
-                    m.setTitle(s[i++]);
-                    m.setText(s[i++]);
-                    m.setDate(s[i++]);
-                    m.setTimeID(s[i]);
 
-                    messageList.add(m);
-                } else {
+                if (s.length != MESSAGE_NUM_ITEMS) {
                     throw new CsvRuntimeException("指定されたCSVが規定の形にそっていないため読み込めません。");
                 }
+
+                Message m = new Message();
+                int i = 0;
+                m.setMessageID(Integer.parseInt(s[i++]));
+                m.setPassword(s[i++]);
+                m.setName(s[i++]);
+                m.setTitle(s[i++]);
+                m.setText(s[i++]);
+                m.setDate(s[i++]);
+                m.setTimeID(s[i]);
+
+                messageList.add(m);
             }
         } catch (IOException e) {
             throw new CsvRuntimeException(e.getMessage(), e.getCause());

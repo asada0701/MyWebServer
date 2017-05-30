@@ -1,11 +1,11 @@
 package jp.co.topgate.asada.web;
 
 import com.google.common.base.Strings;
+import jp.co.topgate.asada.web.exception.HttpVersionException;
 import jp.co.topgate.asada.web.exception.RequestParseException;
+import org.apache.commons.lang3.math.NumberUtils;
 
 import java.io.*;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -56,15 +56,13 @@ public final class RequestMessageParser {
      * ASCIIコード:13(CR)
      * InputStreamをreadした時に改行かのチェックを行う
      */
-    private static final int REQUEST_MESSAGE_CARRIAGE_RETURN = 13;
+    private static final int REQUEST_MESSAGE_CARRIAGE_RETURN = '\r';
 
     /**
      * ASCIIコード:10(LF)
      * InputStreamをreadした時に改行かのチェックを行う
      */
-    private static final int REQUEST_MESSAGE_LINE_FEED = 10;
-
-    private static final String REQUEST_URI_WELCOME_PAGE = "/";
+    private static final int REQUEST_MESSAGE_LINE_FEED = '\n';
 
     /**
      * コンストラクタ
@@ -75,148 +73,57 @@ public final class RequestMessageParser {
     }
 
     /**
-     * HTTPリクエストのパースを行うメソッド
+     * リクエストメッセージのパースを行うメソッド
      *
-     * @param inputStream inputStreamを渡す
+     * @param inputStream 読みたいInputStreamを渡す
      * @return リクエストメッセージのオブジェクトを返す
-     * @throws RequestParseException HTTPリクエストがRFCに準拠した形でないものである場合、発生する。詳細な情報は例外のメッセージをみる。
+     * @throws RequestParseException リクエストメッセージに問題があった場合に発生する
+     * @throws HttpVersionException  リクエストメッセージのプロトコルバージョンがHTTP/1.1以外の場合発生する
      */
-    public static RequestMessage parse(InputStream inputStream) throws RequestParseException {
-        RequestMessage requestMessage;
-        String method;
-        String uri;
-        String protocolVersion;
-        Map<String, String> headerField = null;
-
-        BufferedInputStream bis = new BufferedInputStream(inputStream);
+    public static RequestMessage parse(InputStream inputStream) throws RequestParseException, HttpVersionException {
+        RequestMessage requestMessage = new RequestMessage();
         try {
+            BufferedInputStream bis = new BufferedInputStream(inputStream);
             bis.mark(bis.available());
-            String[] requestLineAndHeader = readRequestLineAndHeaderField(bis);
 
-            if (requestLineAndHeader[0] == null || requestLineAndHeader[1] == null) {
-                throw new RequestParseException("リクエストラインかヘッダーフィールドに異常があります");
+            //リクエストラインの処理
+            bis.reset();
+            String[] requestLine = readRequestLine(bis);
+            requestMessage.setMethod(requestLine[0]);
+            requestMessage.setUri(requestLine[1]);
+
+            //ヘッダーフィールドの処理
+            bis.reset();
+            requestMessage.setHeaderField(readHeaderField(bis));
+
+            //URIクエリーの処理
+            if (requestLine[1].contains("?")) {
+                String[] uri = requestLine[1].split("\\?", URI_QUERY_NUM_ITEMS);
+                requestMessage.setUri(uri[0]);
+                requestMessage.setUriQuery(parseUriQuery(uri[1]));
             }
 
-            String[] requestLine = requestLineAndHeader[0].split(REQUEST_LINE_SEPARATOR);
-            if (requestLine.length != REQUEST_LINE_NUM_ITEMS) {
-                throw new RequestParseException("リクエストラインに異常があります");
-            }
-
-            method = requestLine[0];
-            String[] uriAndUriQuery = splitUri(requestLine[1]);
-            uri = uriAndUriQuery[0];
-            protocolVersion = requestLine[2];
-
-            requestMessage = new RequestMessage(method, uri, protocolVersion);
-
-            if (!requestLineAndHeader[1].isEmpty()) {
-                headerField = parseHeaderField(requestLineAndHeader[1]);
-                requestMessage.setHeaderField(headerField);
-            }
-
-            if ("GET".equals(method) && uriAndUriQuery[1] != null) {                //GETでクエリーがあった場合の処理
-                Map<String, String> uriQuery = parseUriQuery(uriAndUriQuery[1]);
-                requestMessage.setUriQuery(uriQuery);
-            }
-
-            if ("POST".equals(method) && headerField != null) {      //メッセージボディの処理
-                bis.reset();
-                if (!headerField.containsKey("Content-Type") && !headerField.containsKey("Content-Length")) {
-                    throw new RequestParseException("Content-TypeかContent-Lengthがリクエストに含まれていません");
-                }
+            //メッセージボディの処理
+            String sContentLength = requestMessage.findHeaderByName("Content-Length");
+            if (sContentLength != null && NumberUtils.isNumber(sContentLength)) {
                 int contentLength;
                 try {
-                    contentLength = Integer.parseInt(headerField.get("Content-Length"));
+                    contentLength = Integer.parseInt(sContentLength);
                 } catch (NumberFormatException e) {
-                    throw new RequestParseException("Content-Lengthに数字以外の文字が含まれています");
+                    //TODO コンテンツレングスがintの最大値を越えた場合の処理
+                    //NumberFormatExceptionは int の最大値である2147483647を超えた場合に発生する例外。
+                    //サイズが大きいファイルはメモリに用意するとリソースを食うので、inputStreamのまま処理するのが正解だと思われる。
+                    throw new RequestParseException("POSTで送られきたコンテンツレングスがintの最大値である2147483647を越えた");
                 }
-                byte[] messageBody = readMessageBody(bis, contentLength);
-                requestMessage.setMessageBody(messageBody);
+                bis.reset();
+                requestMessage.setMessageBody(readMessageBody(bis, contentLength));
             }
 
         } catch (IOException e) {
-            throw new RequestParseException("bufferedInputStream周りでの例外:" + e.getMessage());
-
+            throw new RequestParseException(e.getMessage(), e.getCause());
         }
+
         return requestMessage;
-    }
-
-    /**
-     * InputStreamを読み、Stringの配列で返す
-     * [0].リクエストライン
-     * [1].ヘッダーフィールド
-     *
-     * @param inputStream サーバーソケットのInputStream
-     * @return Stringの配列で返す
-     * @throws IOException inputStreamを読んでいる時に発生する例外
-     */
-    static String[] readRequestLineAndHeaderField(InputStream inputStream) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, Main.CHARACTER_ENCODING_SCHEME));
-        String[] result = new String[2];
-        result[0] = br.readLine();
-
-        StringBuilder builder = new StringBuilder();
-        String str;
-        while (!Strings.isNullOrEmpty(str = br.readLine())) {
-            builder.append(str).append("\n");
-        }
-        result[1] = builder.toString();
-
-        return result;
-    }
-
-    /**
-     * inputStreamからリクエストメッセージボディを読むメソッド
-     *
-     * @param inputStream   サーバーソケットのInputStream
-     * @param contentLength ヘッダーに含まれるContent-Lengthを渡す
-     * @return メッセージボディの内容がバイトの配列で返される
-     * @throws IOException inputStreamを読んでいる時に発生する例外
-     */
-    static byte[] readMessageBody(InputStream inputStream, int contentLength) throws IOException {
-        byte[] result = new byte[contentLength];
-
-        int index = 0, now, before = 0, moreBefore = 0, moremoreBefore = 0;
-        while ((now = inputStream.read()) != -1) {
-            if (index == 0 && before == REQUEST_MESSAGE_CARRIAGE_RETURN && now == REQUEST_MESSAGE_LINE_FEED) {    //リクエストラインを読み終わる
-                index = 1;
-            }
-            if (index == 1 && moremoreBefore == REQUEST_MESSAGE_CARRIAGE_RETURN && moreBefore == REQUEST_MESSAGE_LINE_FEED
-                    && before == REQUEST_MESSAGE_CARRIAGE_RETURN && now == REQUEST_MESSAGE_LINE_FEED) {           //ヘッダーフィールドを読み終わる
-
-                //メッセージボディを読む
-                int i = inputStream.read(result);
-                break;
-            }
-            moremoreBefore = moreBefore;
-            moreBefore = before;
-            before = now;
-        }
-        return result;
-    }
-
-    /**
-     * URIをパスとクエリーに分割するメソッド
-     *
-     * @param rawUri 分割したいURIを渡す
-     * @return Stringの配列を返す
-     * @throws RequestParseException リクエストのURIが正しい形式に沿っていない場合発生する
-     */
-    static String[] splitUri(String rawUri) throws RequestParseException {
-        String[] str = new String[URI_QUERY_NUM_ITEMS];
-        try {
-            URI uri = new URI(rawUri);
-            str[0] = uri.getPath();
-            str[1] = uri.getQuery();
-
-            if (str[0].endsWith(REQUEST_URI_WELCOME_PAGE)) {
-                str[0] = str[0] + Main.WELCOME_PAGE_NAME;
-            }
-            return str;
-
-        } catch (URISyntaxException e) {
-            throw new RequestParseException(e);
-        }
     }
 
     /**
@@ -228,11 +135,16 @@ public final class RequestMessageParser {
      */
     static Map<String, String> parseUriQuery(String strUri) throws RequestParseException {
         Map<String, String> uriQuery = new HashMap<>();
-        String[] s = strUri.split(URI_EACH_QUERY_SEPARATOR);
-        for (String s2 : s) {
-            String[] s3 = s2.split(URI_QUERY_NAME_VALUE_SEPARATOR);
-            if (s3.length == 2) {
-                uriQuery.put(s3[0], s3[1]);
+
+        //URIのクエリー部分をクエリー毎に分割し、
+        String[] queryList = strUri.split(URI_EACH_QUERY_SEPARATOR);
+        for (String query : queryList) {
+
+            //分割したクエリーをnameとvalueに分割する
+            String[] nameAndValue = query.split(URI_QUERY_NAME_VALUE_SEPARATOR, URI_QUERY_NUM_ITEMS);
+            if (nameAndValue.length == URI_QUERY_NUM_ITEMS) {
+                uriQuery.put(nameAndValue[0], nameAndValue[1]);
+
             } else {
                 throw new RequestParseException("URIのクエリーが不正なものだった");
             }
@@ -241,22 +153,132 @@ public final class RequestMessageParser {
     }
 
     /**
-     * ヘッダーフィールドのパースを行うメソッド
+     * inputStreamからリクエストラインを読み取るメソッド
+     * 返り値の配列の添え字は
+     * [0].method
+     * [1].uri
+     * [2].protocolVersion
+     * となっています。
      *
-     * @param headerField パースしたい文字列
-     * @return パースした結果をMapで返す
+     * @param inputStream 読みたいInputStreamを渡す
+     * @return stringの配列を返す
+     * @throws IOException           inputStreamを読んでいる時に発生する
+     * @throws RequestParseException リクエストメッセージが空の場合発生する
+     * @throws HttpVersionException  リクエストメッセージのプロトコルバージョンが{@link Main}で定義されているものと異なる
      */
-    static Map<String, String> parseHeaderField(String headerField) {
-        Map<String, String> result = new HashMap<>();
-        String[] str = headerField.split("\n");
-        for (String s : str) {
-            String[] header = s.split(HEADER_FIELD_NAME_VALUE_SEPARATOR, HEADER_FIELD_NUM_ITEMS);
-            if (header.length < 2) {
-                throw new RequestParseException("ヘッダーフィールドに問題があった" + s);
-            }
-            header[1] = header[1].trim();
-            result.put(header[0], header[1]);
+    static String[] readRequestLine(InputStream inputStream) throws IOException, RequestParseException, HttpVersionException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, Main.CHARACTER_ENCODING_SCHEME));
+        String str = br.readLine();
+        if (Strings.isNullOrEmpty(str)) {
+            throw new RequestParseException("リクエストメッセージが空である");
         }
-        return result;
+
+        String[] requestLine = str.split(REQUEST_LINE_SEPARATOR, REQUEST_LINE_NUM_ITEMS);
+        if (!requestLine[2].equals(Main.PROTOCOL_VERSION)) {
+            throw new HttpVersionException(requestLine[2]);
+        }
+        return requestLine;
+    }
+
+    /**
+     * inputStreamからヘッダーフィールドを読み取るメソッド
+     *
+     * @param inputStream 読みたいInputStreamを渡す
+     * @return ヘッダーフィールドをMapで返す、ヘッダーフィールドが空の場合はnullを返す
+     * @throws IOException           inputStreamを読んでいる時に発生する
+     * @throws RequestParseException ヘッダーフィールドに異常があった場合に発生する
+     */
+    static Map<String, String> readHeaderField(InputStream inputStream) throws IOException, RequestParseException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream, Main.CHARACTER_ENCODING_SCHEME));
+
+        //一行目はリクエストラインなのでaddしない
+        br.readLine();
+
+        Map<String, String> uriQuery = new HashMap<>();
+        String str;
+        while (!Strings.isNullOrEmpty(str = br.readLine())) {
+            String[] s2 = str.split(HEADER_FIELD_NAME_VALUE_SEPARATOR, HEADER_FIELD_NUM_ITEMS);
+            if (s2.length != HEADER_FIELD_NUM_ITEMS) {
+                throw new RequestParseException("ヘッダーフィールドに異常がありました");
+            }
+            uriQuery.put(s2[0], s2[1].trim());
+        }
+
+        if (uriQuery.size() > 0) {
+            return uriQuery;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * inputStreamからリクエストメッセージボディを読むメソッド
+     *
+     * @param inputStream   読みたいInputStreamを渡す
+     * @param contentLength ヘッダーに含まれるContent-Lengthを渡す
+     * @return メッセージボディの内容がバイトの配列で返される
+     * @throws IOException inputStreamを読んでいる時に発生する例外
+     */
+    static byte[] readMessageBody(InputStream inputStream, int contentLength) throws IOException {
+        byte[] messageBody = new byte[contentLength];
+
+        int index = 0, now, before = 0, moreBefore = 0, moremoreBefore = 0;
+        while ((now = inputStream.read()) != -1) {
+
+            //リクエストラインを読み終わる
+            if (index == 0 && before == REQUEST_MESSAGE_CARRIAGE_RETURN && now == REQUEST_MESSAGE_LINE_FEED) {
+                index = 1;
+            }
+
+            //ヘッダーフィールドを読み終わる
+            if (index == 1 && moremoreBefore == REQUEST_MESSAGE_CARRIAGE_RETURN && moreBefore == REQUEST_MESSAGE_LINE_FEED
+                    && before == REQUEST_MESSAGE_CARRIAGE_RETURN && now == REQUEST_MESSAGE_LINE_FEED) {
+
+                //メッセージボディを読む
+                //TODO すでにリクエストラインとヘッダーフィールドを読んでいるので、どれぐらいスキップすれば良いかわかるはず
+                int i = inputStream.read(messageBody);
+                break;
+            }
+            moremoreBefore = moreBefore;
+            moreBefore = before;
+            before = now;
+        }
+        return messageBody;
+    }
+
+    /**
+     * TODO 何故か2バイト大きくなるようなので注意
+     *
+     * @param inputStream
+     * @return
+     * @throws IOException
+     */
+    static int getRequesetLineAndHeaderLength(InputStream inputStream) throws IOException {
+        BufferedReader br = new BufferedReader(new BufferedReader(new InputStreamReader(inputStream, Main.CHARACTER_ENCODING_SCHEME)));
+        StringBuilder builder = new StringBuilder();
+        String str;
+        while (!Strings.isNullOrEmpty(str = br.readLine())) {
+            builder.append(str).append("\r").append("\n");
+        }
+        return builder.toString().length();
+    }
+
+    /**
+     * inputStreamからリクエストメッセージボディを読むメソッド
+     *
+     * @param inputStream       読みたいInputStreamを渡す
+     * @param messageBodyLength ヘッダーに含まれるContent-Lengthを渡す
+     * @return メッセージボディの内容がバイトの配列で返される
+     * @throws IOException inputStreamを読んでいる時に発生する例外
+     */
+    static byte[] readMessageBody(InputStream inputStream, int requestLineAndHeaderLength, int messageBodyLength) throws IOException {
+        byte[] messageBody = new byte[messageBodyLength];
+
+        inputStream.skip(requestLineAndHeaderLength);
+        //メッセージボディを読む
+        //TODO すでにリクエストラインとヘッダーフィールドを読んでいるので、どれぐらいスキップすれば良いかわかるはず
+        int i = inputStream.read(messageBody);
+
+        return messageBody;
     }
 }

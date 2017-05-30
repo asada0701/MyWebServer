@@ -1,6 +1,6 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.exception.HtmlInitializeException;
+import jp.co.topgate.asada.web.exception.HttpVersionException;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 import jp.co.topgate.asada.web.exception.SocketRuntimeException;
 
@@ -69,26 +69,32 @@ class Server extends Thread {
             while (true) {
                 clientSocket = serverSocket.accept();
 
-                ResponseMessage responseMessage = null;
+                ResponseMessage responseMessage = new ResponseMessage(clientSocket.getOutputStream());
+
+                StatusLine statusLineOfException = null;
 
                 try {
                     RequestMessage requestMessage = RequestMessageParser.parse(clientSocket.getInputStream());
 
-                    Handler handler = Handler.getHandler(requestMessage);
+                    Handler handler = Handler.getHandler(requestMessage, responseMessage);
 
-                    responseMessage = handler.handleRequest();
+                    handler.handleRequest();
 
                 } catch (RequestParseException e) {                 //リクエストメッセージに問題があった場合の例外処理
-                    responseMessage = new ResponseMessage(StatusLine.BAD_REQUEST);
-                    responseMessage.addHeaderWithContentType(ContentType.ERROR_RESPONSE);
+                    statusLineOfException = StatusLine.BAD_REQUEST;
 
-                } catch (HtmlInitializeException e) {               //HTMLファイルに問題が発生した場合の例外処理
-                    responseMessage = new ResponseMessage(StatusLine.INTERNAL_SERVER_ERROR);
-                    responseMessage.addHeaderWithContentType(ContentType.ERROR_RESPONSE);
+//                } catch (HtmlInitializeException e) {               //HTMLファイルに問題が発生した場合の例外処理
+//                    statusLineOfException = StatusLine.INTERNAL_SERVER_ERROR;
+
+                } catch (HttpVersionException e) {                  //リクエストメッセージのプロトコルバージョンが想定外のものである
+                    statusLineOfException = StatusLine.HTTP_VERSION_NOT_SUPPORTED;
 
                 } finally {
-                    if (responseMessage != null) {
-                        responseMessage.write(clientSocket.getOutputStream());
+                    if (statusLineOfException != null) {
+                        responseMessage.addHeaderWithContentType(ContentType.ERROR_RESPONSE);
+                        PrintWriter printWriter = responseMessage.getPrintWriter(statusLineOfException);
+                        printWriter.write(ResponseMessage.getErrorMessageBody(statusLineOfException));
+                        printWriter.flush();
                     }
                 }
                 clientSocket.close();

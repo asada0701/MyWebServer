@@ -8,12 +8,12 @@ import java.util.Map;
  *
  * @author asada
  */
-public class ContentType {
+public final class ContentType {
 
     /**
      * デフォルトコンテンツタイプ
      */
-    private static final String defaultFileType = "application/octet-stream";
+    private static final String DEFAULT_FILE_TYPE = "application/octet-stream";
 
     /**
      * ファイル拡張子とコンテンツタイプのマップ
@@ -40,30 +40,25 @@ public class ContentType {
     public static final String ERROR_RESPONSE = "text/html; charset=UTF-8";
 
     /**
-     * ファイルの拡張子
-     */
-    private String extension;
-
-    /**
      * コンストラクタ
-     * filePathに置いてあるファイルの拡張子を取得する
-     *
-     * @param filePath リクエストメッセージで指定されたファイルのパス
+     * インスタンス化禁止
      */
-    public ContentType(String filePath) {
-        for (String key : fileType.keySet()) {
-            if (filePath.endsWith(key)) {
-                extension = key;
-            }
-        }
+    private ContentType() {
+
     }
 
     /**
      * コンテンツタイプを取得できるメソッド
      *
+     * @param filePath ファイルのパス
      * @return コンテンツタイプを返す
      */
-    public String getContentType() {
-        return fileType.getOrDefault(extension, defaultFileType);
+    public static String getContentType(String filePath) {
+        for (String key : fileType.keySet()) {
+            if (filePath.endsWith(key)) {
+                return fileType.get(key);
+            }
+        }
+        return DEFAULT_FILE_TYPE;
     }
 }

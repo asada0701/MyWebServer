@@ -1,6 +1,10 @@
 package jp.co.topgate.asada.web;
 
+import jp.co.topgate.asada.web.exception.RequestParseException;
+
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.*;
 
 /**
@@ -10,44 +14,53 @@ import java.util.*;
  * @author asada
  */
 public class RequestMessage {
-    private String method;
-    private String uri;
-    private Map<String, String> uriQuery = null;
-    private String protocolVersion;
-    private Map<String, String> headerField = null;
-    private byte[] messageBody = null;
+    /**
+     * メッセージボディのクエリーをクエリー毎に分割する
+     */
+    private static final String MESSAGE_BODY_EACH_QUERY_SEPARATOR = "&";
 
     /**
-     * コンストラクタ
-     *
-     * @param method          リクエストメッセージのメソッドを渡す
-     * @param uri             URIを渡す
-     * @param protocolVersion プロトコルバージョンを渡す
+     * メッセージボディのイコール
      */
-    RequestMessage(String method, String uri, String protocolVersion) {
-        this.method = method;
-        this.uri = uri;
-        this.protocolVersion = protocolVersion;
-    }
+    private static final String MESSAGE_BODY_NAME_VALUE_SEPARATOR = "=";
+
+    /**
+     * メッセージボディの項目数
+     */
+    private static final int MESSAGE_BODY_NUM_ITEMS = 2;
+
+    private String method = null;
+    private String uri = null;
+    private Map<String, String> uriQuery = new HashMap<>();
+    private Map<String, String> headerField = new HashMap<>();
+    private byte[] messageBody = null;
 
     public String getMethod() {
         return method;
     }
 
-    public void setUri(String uri) {
-        this.uri = uri;
+    public void setMethod(String method) {
+        this.method = method;
     }
 
     public String getUri() {
         return uri;
     }
 
-    public String getProtocolVersion() {
-        return protocolVersion;
+    public void setUri(String uri) {
+        this.uri = uri;
     }
 
-    void setUriQuery(Map<String, String> uriQuery) {
+    public void setUriQuery(Map<String, String> uriQuery) {
         this.uriQuery = uriQuery;
+    }
+
+    public void setHeaderField(Map<String, String> headerField) {
+        this.headerField = headerField;
+    }
+
+    public void setMessageBody(byte[] messageBody) {
+        this.messageBody = messageBody;
     }
 
     /**
@@ -56,12 +69,8 @@ public class RequestMessage {
      * @param name 探したいQuery名
      * @return Query値を返す。URIに含まれていなかった場合はNullを返す
      */
-    String findUriQuery(String name) {
+    public String findUriQuery(String name) {
         return uriQuery.getOrDefault(name, null);
-    }
-
-    void setHeaderField(Map<String, String> headerField) {
-        this.headerField = headerField;
     }
 
     /**
@@ -74,11 +83,38 @@ public class RequestMessage {
         return headerField.get(fieldName);
     }
 
-    void setMessageBody(byte[] messageBody) {
-        this.messageBody = messageBody;
-    }
+    /**
+     * メッセージボディをパースするメソッド
+     * 注意点
+     * コンテンツタイプがapplication/x-www-form-urlencodedではない場合(nullの場合も)は、nullを返す
+     *
+     * @return パースした結果をMapで返す
+     * @throws RequestParseException パースした結果不正なリクエストだった
+     */
+    public Map<String, String> parseMessageBodyToMap() throws RequestParseException {
+        String contentType = headerField.get("Content-Type");
+        if (contentType == null || !contentType.equals("application/x-www-form-urlencoded")) {
+            return null;
+        }
 
-    public byte[] getMessageBody() {
-        return messageBody;
+        String sMessageBody = new String(messageBody);
+        try {
+            sMessageBody = URLDecoder.decode(sMessageBody, Main.CHARACTER_ENCODING_SCHEME);
+
+        } catch (UnsupportedEncodingException e) {
+            throw new RequestParseException(Main.CHARACTER_ENCODING_SCHEME + "でのデコードに失敗");
+        }
+
+        Map<String, String> result = new HashMap<>();
+        String[] s1 = sMessageBody.split(MESSAGE_BODY_EACH_QUERY_SEPARATOR);
+        for (String s : s1) {
+            String[] s2 = s.split(MESSAGE_BODY_NAME_VALUE_SEPARATOR);
+            if (s2.length == MESSAGE_BODY_NUM_ITEMS) {
+                result.put(s2[0], s2[1]);
+            } else {
+                throw new RequestParseException("リクエストのメッセージボディが不正なものだった:" + s2[0]);
+            }
+        }
+        return result;
     }
 }

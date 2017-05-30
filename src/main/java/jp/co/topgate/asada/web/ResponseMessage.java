@@ -8,6 +8,11 @@ import java.util.*;
 
 /**
  * レスポンスメッセージクラス
+ * 注意点
+ * ヘッダーフィールドを追加するタイミングについて
+ * getOutputStreamメソッドかgetPrintWriterメソッドを呼び出す前には、
+ * addHeaderメソッドを使用し、ヘッダーフィールドを追加してください。
+ * getした出力ストリームに書き込めるのはメッセージボディのみです。
  *
  * @author asada
  */
@@ -24,95 +29,82 @@ public class ResponseMessage {
     private static final String HEADER_FIELD_NAME_VALUE_SEPARATOR = ": ";
 
     /**
-     * プロトコルバージョン
-     */
-    private String protocolVersion = "HTTP/1.1";
-
-    /**
      * ヘッダーフィールド
      */
     private List<String> headerField = new ArrayList<>();
 
-    private StatusLine statusLine;
-
-    private String filePath = null;
-
-    private byte[] target = null;
+    private OutputStream outputStream;
 
     /**
-     * JSONなど、リソースファイルを使わない場合に使用するコンストラクタ
+     * コンストラクタ
      *
-     * @param statusLine レスポンスメッセージのステータスライン（状態行）
-     * @param target     byteの配列でレスポンスメッセージのメッセージボディを渡す
+     * @param outputStream レスポンスを書き込みたいoutputStreamのオブジェクトを渡す
      */
-    public ResponseMessage(StatusLine statusLine, byte[] target) {
-        this.statusLine = statusLine;
-        this.target = target;
+    ResponseMessage(OutputStream outputStream) {
+        this.outputStream = outputStream;
     }
 
     /**
-     * リソースファイルを使用したい場合に使用するコンストラクタ
+     * レスポンスにバイナリデータを出力する際に使用する outputStreamのオブジェクトを返す
+     * StatusLineに定義されていないHTTPステータスコードを使用したい場合に使用する
      *
-     * @param statusLine レスポンスメッセージのステータスライン（状態行）
-     * @param filePath   リソースファイルのパスを渡す
-     *                   （例）./src/main/resources/index.html
+     * @param statusCode   ステータスコードを渡す
+     * @param reasonPhrase ステータスコードのテキスト記述
+     * @return outputStreamのオブジェクトを返す
      */
-    public ResponseMessage(StatusLine statusLine, String filePath) {
-        this.statusLine = statusLine;
-        this.filePath = filePath;
-    }
-
-    /**
-     * エラーメッセージを送りたい場合など、メッセージボディの内容が必要ない場合に使用するコンストラクタ
-     *
-     * @param statusLine レスポンスメッセージのステータスライン（状態行）
-     */
-    public ResponseMessage(StatusLine statusLine) {
-        this.statusLine = statusLine;
-    }
-
-    /**
-     * 引数で渡された出力ストリームにレスポンスメッセージを書き出す
-     *
-     * @param outputStream ソケットの出力ストリーム
-     */
-    public void write(OutputStream outputStream) {
-        try {
-            outputStream.write(createResponseLine(protocolVersion, statusLine).getBytes());
-            outputStream.write(createHeader(headerField).getBytes());
-
-            if (statusLine.equals(StatusLine.OK) && filePath != null) {         //リソースファイルを読んで書き込む
-                try (InputStream in = new FileInputStream(filePath)) {
-                    int num;
-                    while ((num = in.read()) != -1) {
-                        outputStream.write(num);
-                    }
-                }
-
-            } else if (statusLine.equals(StatusLine.OK) && target != null) {    //リソースファイルは読まず、targetに入っているbyte配列を書き込む
-                outputStream.write(target);
-
-            } else {
-                outputStream.write(getErrorMessageBody(statusLine).getBytes()); //filePathとtargetがnull、ステータスラインは200以外である場合
-            }
-            outputStream.flush();
-
-        } catch (IOException e) {
-
+    public OutputStream getOutputStream(int statusCode, String reasonPhrase) {
+        PrintWriter printWriter = new PrintWriter(outputStream);
+        printWriter.write(createResponseLine(statusCode, reasonPhrase));
+        if (headerField.size() > 0) {
+            printWriter.write(createHeader(headerField));
+        } else {
+            printWriter.write("\r\n");
         }
+        printWriter.flush();
+        return outputStream;
     }
 
     /**
-     * レスポンスラインを生成する
+     * レスポンスにバイナリデータを出力する際に使用する outputStreamのオブジェクトを返す
      *
-     * @param protocolVersion プロトコルバージョンを渡す
-     * @param statusLine      StatusLineを渡す
+     * @param statusLine ステータスラインを渡す
+     * @return outputStreamのオブジェクトを返す
+     */
+    public OutputStream getOutputStream(StatusLine statusLine) {
+        return getOutputStream(statusLine.getStatusCode(), statusLine.getReasonPhrase());
+    }
+
+    /**
+     * レスポンスに文字データを出力する際に使用する printWriterのオブジェクトを返す
+     * StatusLineに定義されていないHTTPステータスコードを使用したい場合に使用する
+     *
+     * @return printWriterのオブジェクトを返す
+     */
+    public PrintWriter getPrintWriter(int statusCode, String reasonPhrase) {
+        return new PrintWriter(getOutputStream(statusCode, reasonPhrase));
+    }
+
+    /**
+     * レスポンスに文字データを出力する際に使用する printWriterのオブジェクトを返す
+     *
+     * @param statusLine ステータスラインを渡す
+     * @return printWriterのオブジェクトを返す
+     */
+    public PrintWriter getPrintWriter(StatusLine statusLine) {
+        return new PrintWriter(getOutputStream(statusLine.getStatusCode(), statusLine.getReasonPhrase()));
+    }
+
+    /**
+     * ステータスコードとステータスコードのテキスト記述を渡すとレスポンスラインを生成する
+     *
+     * @param statusCode   ステータスコードを渡す
+     * @param reasonPhrase ステータスコードのテキスト記述
      * @return レスポンスラインの文字列が返される
      */
     @NotNull
-    static String createResponseLine(String protocolVersion, StatusLine statusLine) {
-        String[] str = {protocolVersion, String.valueOf(statusLine.getStatusCode()), statusLine.getReasonPhrase()};
-        return String.join(REQUEST_LINE_SEPARATOR, str) + "\n";
+    static String createResponseLine(int statusCode, String reasonPhrase) {
+        String[] str = {Main.PROTOCOL_VERSION, String.valueOf(statusCode), reasonPhrase};
+        return String.join(REQUEST_LINE_SEPARATOR, str) + "\r\n";
     }
 
     /**
@@ -124,10 +116,10 @@ public class ResponseMessage {
     @NotNull
     static String createHeader(List<String> headerField) {
         StringBuilder builder = new StringBuilder();
-        for (String s : headerField) {
-            builder.append(s).append("\n");
+        for (String str : headerField) {
+            builder.append(str).append("\r\n");
         }
-        builder.append("\n");
+        builder.append("\r\n");
         return builder.toString();
     }
 
@@ -138,7 +130,9 @@ public class ResponseMessage {
      * @param statusLine ステータスライン{@code Nullable}
      * @return エラーの場合のレスポンスメッセージの内容{@code NotNull}
      */
-    static String getErrorMessageBody(StatusLine statusLine) {
+    @NotNull
+    @Contract(pure = true)
+    public static String getErrorMessageBody(StatusLine statusLine) {
         if (statusLine == null) {
             return "<html><head><title>500 Internal Server Error</title></head>" +
                     "<body><h1>Internal Server Error</h1>" +
@@ -177,26 +171,13 @@ public class ResponseMessage {
     }
 
     /**
-     * プロトコルバージョンの設定をするメソッド
-     *
-     * @param protocolVersion プロトコルバージョン
-     */
-    void setProtocolVersion(String protocolVersion) {
-        if (protocolVersion != null) {
-            this.protocolVersion = protocolVersion;
-        }
-    }
-
-    /**
      * ヘッダーフィールドに追加するメソッド
      *
      * @param name  ヘッダ名
      * @param value ヘッダ値
      */
     public void addHeader(String name, String value) {
-        if (name != null && value != null) {
-            headerField.add(name + HEADER_FIELD_NAME_VALUE_SEPARATOR + value);
-        }
+        headerField.add(name + HEADER_FIELD_NAME_VALUE_SEPARATOR + value);
     }
 
     /**
@@ -205,30 +186,20 @@ public class ResponseMessage {
      * @param value コンテンツタイプの値
      */
     public void addHeaderWithContentType(String value) {
-        if (value != null) {
-            headerField.add("Content-Type" + HEADER_FIELD_NAME_VALUE_SEPARATOR + value);
-        }
+        headerField.add("Content-Type" + HEADER_FIELD_NAME_VALUE_SEPARATOR + value);
+    }
+
+    /**
+     * ヘッダーフィールドにコンテンツレングスを追加するメソッド
+     *
+     * @param value コンテンツレングスの値
+     */
+    public void addHeaderWithContentLength(String value) {
+        headerField.add("Content-Length" + HEADER_FIELD_NAME_VALUE_SEPARATOR + value);
     }
 
     //テスト用
-
-    public String getProtocolVersion() {
-        return this.protocolVersion;
-    }
-
     public List<String> getHeaderField() {
         return this.headerField;
-    }
-
-    public StatusLine getStatusLine() {
-        return this.statusLine;
-    }
-
-    public String getFilePath() {
-        return this.filePath;
-    }
-
-    public byte[] getTarget() {
-        return this.target;
     }
 }

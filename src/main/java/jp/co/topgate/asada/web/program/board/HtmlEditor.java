@@ -1,10 +1,8 @@
 package jp.co.topgate.asada.web.program.board;
 
-import jp.co.topgate.asada.web.exception.HtmlInitializeException;
-import jp.co.topgate.asada.web.model.Message;
+import jp.co.topgate.asada.web.program.board.model.Message;
 
 import java.io.*;
-import java.time.LocalDateTime;
 import java.util.*;
 
 /**
@@ -26,11 +24,6 @@ public class HtmlEditor {
     private static final String INSERT_MESSAGE_FROM = "</tr>";
 
     /**
-     * 編集するHTMLの初期状態を保存するマップ
-     */
-    private static Map<ProgramBoardHtmlList, String> rawHtml = new HashMap<>();
-
-    /**
      * ブラウザから送られてきた文字列に含まれている改行コードを
      * HTMLのbrタグに置換する際に使用するリスト
      */
@@ -46,53 +39,21 @@ public class HtmlEditor {
      */
     private static final String LINE_FEED_HTML = "<br>";
 
-    /**
-     * コンストラクタ
-     * HTMLファイルの初期状態を保存する
-     *
-     * @throws HtmlInitializeException HTMLファイルの読み込み中にエラー発生
-     */
-    public HtmlEditor() throws HtmlInitializeException {
-        for (ProgramBoardHtmlList programBoardHtmlList : ProgramBoardHtmlList.values()) {
-            try (BufferedReader br = new BufferedReader(new FileReader(new File(programBoardHtmlList.getPath())))) {
-                String line;
-                StringBuilder builder = new StringBuilder();
-                while ((line = br.readLine()) != null) {
-                    builder.append(line).append("\n");
-                }
-                rawHtml.put(programBoardHtmlList, builder.toString());
 
-            } catch (IOException e) {
-                throw new HtmlInitializeException(e.getMessage(), e.getCause());
-            }
-        }
+    private HtmlEditor() {
+
     }
 
     /**
-     * 登録されているHTMLファイルを初期化する
-     *
-     * @throws HtmlInitializeException HTMLファイルに書き込み中にエラー発生
-     */
-    public void resetAllFiles() throws HtmlInitializeException {
-        for (ProgramBoardHtmlList programBoardHtmlList : ProgramBoardHtmlList.values()) {
-            try (OutputStream outputStream = new FileOutputStream(new File(programBoardHtmlList.getPath()))) {
-                outputStream.write(rawHtml.get(programBoardHtmlList).getBytes());
-                outputStream.flush();
-            } catch (IOException e) {
-                throw new HtmlInitializeException(e.getMessage(), e.getCause());
-            }
-        }
-    }
-
-    /**
-     * indexまたはsearchのHTML文章を編集する
+     * indexまたはsearchのHTML文章を編集し、編集したHTML文章を文字列で返す
      *
      * @param programBoardHtmlList 編集したいHTMLのEnum
      * @param messageList          HTML文章に書き込みたいMessageのリスト
      * @return 編集後のHTML文章
+     * @throws IOException {@link HtmlEditor#readHtml(String)}を参照
      */
-    String editIndexOrSearchHtml(ProgramBoardHtmlList programBoardHtmlList, List<Message> messageList, String timeID) {
-        String[] lineArray = rawHtml.get(programBoardHtmlList).split("\n");     //改行で分割
+    static String editIndexOrSearchHtml(ProgramBoardHtmlList programBoardHtmlList, List<Message> messageList, String timeID) throws IOException {
+        String[] lineArray = readHtml(programBoardHtmlList.getPath()).split("\n");
         StringBuilder builder = new StringBuilder();
 
         for (int i = 0; i < lineArray.length; i++) {
@@ -123,13 +84,14 @@ public class HtmlEditor {
     }
 
     /**
-     * deleteのHTML文章を編集する
+     * deleteのHTML文章を編集し、編集したHTML文章を文字列で返す
      *
      * @param message メッセージのオブジェクト
      * @return 編集後のHTML文章
+     * @throws IOException {@link HtmlEditor#readHtml(String)}を参照
      */
-    String editDeleteHtml(Message message) {
-        String[] lineArray = rawHtml.get(ProgramBoardHtmlList.DELETE_HTML).split("\n");     //改行で分割
+    static String editDeleteHtml(Message message) throws IOException {
+        String[] lineArray = readHtml(ProgramBoardHtmlList.DELETE_HTML.getPath()).split("\n");
         StringBuilder builder = new StringBuilder();
 
         for (int i = 0; i < lineArray.length; i++) {
@@ -157,13 +119,31 @@ public class HtmlEditor {
     }
 
     /**
+     * HTMLファイルを読み込み、読み込んだ文字列を返す
+     *
+     * @param filePath 読み込みたいファイルのパスを渡す
+     * @return 読み込んだファイルを返す
+     * @throws IOException HTMLファイルの読み込み中にエラー発生
+     */
+    private static String readHtml(String filePath) throws IOException {
+        try (BufferedReader br = new BufferedReader(new FileReader(new File(filePath)))) {
+            String line;
+            StringBuilder builder = new StringBuilder();
+            while ((line = br.readLine()) != null) {
+                builder.append(line).append("\n");
+            }
+            return builder.toString();
+        }
+    }
+
+    /**
      * messageをHTML文章にする
      *
      * @param programBoardHtmlList 編集したいHTMLのEnum
      * @param message              書き込みたいMessageのオブジェクト
      * @return HTML文章
      */
-    static String changeMessageToHtml(ProgramBoardHtmlList programBoardHtmlList, Message message) {
+    private static String changeMessageToHtml(ProgramBoardHtmlList programBoardHtmlList, Message message) {
         switch (programBoardHtmlList) {
             case INDEX_HTML:
                 return "            <tr id=\"No." + message.getMessageID() + "\">" + "\n" +
@@ -226,50 +206,5 @@ public class HtmlEditor {
             str = str.replaceAll(lineFeed, LINE_FEED_HTML);
         }
         return str;
-    }
-
-    /**
-     * HTMLファイルに文章を書き込むメソッド
-     *
-     * @param programBoardHtmlList 書き込みたいHTMLのEnum
-     * @param html                 書き込みたい文字列
-     * @throws IOException 書き込み中の例外
-     */
-    void writeHtml(ProgramBoardHtmlList programBoardHtmlList, String html) throws IOException {
-        try (OutputStream outputStream = new FileOutputStream(new File(programBoardHtmlList.getPath()))) {
-            outputStream.write(html.getBytes());
-            outputStream.flush();
-        }
-    }
-
-    /**
-     * 渡されたファイルパス先にあるファイルを読み込み、Stringで返す。画像ファイルなど読み込みたい場合には使用しないこと。
-     *
-     * @param path 読み込みたいファイルパス
-     * @return ファイルの内容をStringで返す
-     * @throws IOException ファイルが存在しないか、読み込めなかった。
-     */
-    String readHtml(String path) throws IOException {
-        try (BufferedReader br = new BufferedReader(new FileReader(new File(path)))) {
-            StringBuilder builder = new StringBuilder();
-            String str;
-            while ((str = br.readLine()) != null) {
-                builder.append(str).append("\n");
-            }
-
-            return builder.toString();
-        }
-    }
-
-    /**
-     * HTMLページに書き込むID（二重リクエスト防ぐためのもの）を発行するメソッド
-     *
-     * @return エンコードされて発行する
-     */
-    String issueTimeIdInHtml() {
-        LocalDateTime ldt = LocalDateTime.now();
-        String timeID = "" + ldt.getYear() + ldt.getMonthValue() + ldt.getDayOfMonth() + ldt.getHour() +
-                ldt.getMinute() + ldt.getSecond() + ldt.getNano();
-        return Base64.getEncoder().encodeToString(timeID.getBytes());
     }
 }

@@ -4,11 +4,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 不正な文字列をHTMLの特殊文字に置き換えるクラス
+ * HTML文章上で安全ではない文字列を、HTMLの特殊文字に置き換えるクラス
  *
  * @author asada
  */
-public class InvalidChar {
+public class UnsafeChar {
 
     private static Map<String, String> invalidChar = new HashMap<>();
 
@@ -22,14 +22,14 @@ public class InvalidChar {
     /**
      * セキュリティに問題のある入力値(<script></script>など)をHTMLの特殊文字に置き換えるメソッド
      *
-     * @param rawStr 生の文字列
+     * @param unsafeChar 安全ではない文字列
      * @return 置き換えた文字列
      */
-    public static String replace(String rawStr) {
-        rawStr = rawStr.replaceAll("&", "&amp;");
+    public static String replace(String unsafeChar) {
+        String safeChar = unsafeChar.replaceAll("&", "&amp;");
         for (String key : invalidChar.keySet()) {
-            rawStr = rawStr.replaceAll(key, invalidChar.get(key));
+            safeChar = safeChar.replaceAll(key, invalidChar.get(key));
         }
-        return rawStr;
+        return safeChar;
     }
 }

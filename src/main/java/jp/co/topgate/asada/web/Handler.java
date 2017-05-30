@@ -1,7 +1,5 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.exception.HtmlInitializeException;
-import jp.co.topgate.asada.web.program.board.HtmlEditor;
 import jp.co.topgate.asada.web.program.board.ProgramBoardHandler;
 
 /**
@@ -14,7 +12,7 @@ public abstract class Handler {
     /**
      * リソースファイルのパス
      */
-    static final String FILE_PATH = "./src/main/resources";
+    static final String FILE_PATH = "./src/main/resources/static";
 
     /**
      * ハンドラーのファクトリーメソッド
@@ -24,31 +22,26 @@ public abstract class Handler {
      *
      * @param requestMessage リクエストメッセージのオブジェクトを渡す
      * @return 今回の接続を担当するハンドラーのオブジェクトを返す
-     * @throws HtmlInitializeException {@link HtmlEditor#HtmlEditor()}を参照
      */
-    static Handler getHandler(RequestMessage requestMessage) throws HtmlInitializeException {
+    static Handler getHandler(RequestMessage requestMessage, ResponseMessage responseMessage) {
         String uri = requestMessage.getUri();
 
-        Handler handler = new StaticHandler(requestMessage);
-
         if (uri.startsWith(UrlPattern.PROGRAM_BOARD.getUrlPattern())) {
-            handler = new ProgramBoardHandler(requestMessage);
+            return new ProgramBoardHandler(requestMessage, responseMessage);
         }
-        return handler;
+        return new StaticHandler(requestMessage, responseMessage);
     }
 
     /**
      * URIを元に、実際のファイルパスを返すメソッド
      */
     public static String getFilePath(UrlPattern urlPattern, String uri) {
-        return FILE_PATH + uri.replace(urlPattern.getUrlPattern(), urlPattern.getFilePath());
+        return "./src/main/resources" + uri.replace(urlPattern.getUrlPattern(), urlPattern.getFilePath());
     }
 
     /**
      * リクエストを適切に処理し、ResponseMessageのオブジェクトを生成してServerクラスに返す。
      * レスポンスメッセージを実際に書き込むのはServerが行う。
-     *
-     * @return ResponseMessageのオブジェクトを生成して返す。
      */
-    public abstract ResponseMessage handleRequest();
+    public abstract void handleRequest();
 }
