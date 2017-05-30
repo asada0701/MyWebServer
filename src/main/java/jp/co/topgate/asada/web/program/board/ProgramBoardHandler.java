@@ -8,7 +8,6 @@ import jp.co.topgate.asada.web.util.*;
 import jp.co.topgate.asada.web.exception.IllegalRequestException;
 import jp.co.topgate.asada.web.program.board.model.Message;
 import jp.co.topgate.asada.web.program.board.model.ModelController;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 
 import java.io.*;

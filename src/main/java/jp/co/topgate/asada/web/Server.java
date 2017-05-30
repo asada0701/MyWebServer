@@ -2,7 +2,8 @@ package jp.co.topgate.asada.web;
 
 import jp.co.topgate.asada.web.exception.HttpVersionException;
 import jp.co.topgate.asada.web.exception.RequestParseException;
-import jp.co.topgate.asada.web.exception.SocketRuntimeException;
+import jp.co.topgate.asada.web.program.board.model.ModelController;
+import jp.co.topgate.asada.web.util.CsvHelper;
 
 import java.io.*;
 import java.net.*;
@@ -13,101 +14,46 @@ import java.net.*;
  * @author asada
  */
 class Server extends Thread {
-    private ServerSocket serverSocket = null;
-    private Socket clientSocket = null;
-
     /**
      * コンストラクタ
      *
      * @throws IOException サーバーソケットでエラーが発生しました
      */
-    Server(int portNumber) throws IOException {
-        serverSocket = new ServerSocket(portNumber);
-    }
+    static void run(int portNumber) throws IOException {
+        ServerSocket serverSocket = new ServerSocket(portNumber);
+        while (true) {
+            ModelController.setMessageList(CsvHelper.readMessage());
 
-    /**
-     * サーバーを立ち上げるメソッド
-     */
-    void startServer() {
-        this.start();
-    }
+            Socket clientSocket = serverSocket.accept();
 
-    /**
-     * サーバーを停止させるメソッド、サーバーが通信中の場合は停止できない
-     *
-     * @return trueの場合、サーバーの停止に成功
-     * @throws IOException サーバーソケットでエラーが発生しました
-     */
-    boolean stopServer() throws IOException {
-        if (clientSocket == null) {
-            serverSocket.close();
-            return true;
-        }
-        return false;
-    }
+            ResponseMessage responseMessage = new ResponseMessage(clientSocket.getOutputStream());
 
-    /**
-     * サーバーの緊急停止を行うメソッド、サーバーが通信中でも停止できる
-     * サーバーを停止する前に、データを保存する必要がある。
-     *
-     * @throws IOException サーバーソケットでエラーが発生しました
-     */
-    void endServer() throws IOException {
-        if (clientSocket != null) {
-            clientSocket.close();
-        }
-        serverSocket.close();
-    }
+            StatusLine statusLineOfException = null;
 
-    /**
-     * Threadクラスのrunメソッドのオーバーライドメソッド
-     *
-     * @throws RuntimeException ソケットの入出力でエラーが発生しました
-     */
-    public void run() {
-        try {
-            while (true) {
-                clientSocket = serverSocket.accept();
+            try {
+                RequestMessage requestMessage = RequestMessageParser.parse(clientSocket.getInputStream());
 
-                ResponseMessage responseMessage = new ResponseMessage(clientSocket.getOutputStream());
+                Handler handler = Handler.getHandler(requestMessage, responseMessage);
 
-                StatusLine statusLineOfException = null;
+                handler.handleRequest();
 
-                try {
-                    RequestMessage requestMessage = RequestMessageParser.parse(clientSocket.getInputStream());
+            } catch (RequestParseException e) {                 //リクエストメッセージに問題があった場合の例外処理
+                statusLineOfException = StatusLine.BAD_REQUEST;
 
-                    Handler handler = Handler.getHandler(requestMessage, responseMessage);
+            } catch (HttpVersionException e) {                  //リクエストメッセージのプロトコルバージョンが想定外のものである
+                statusLineOfException = StatusLine.HTTP_VERSION_NOT_SUPPORTED;
 
-                    handler.handleRequest();
-
-                } catch (RequestParseException e) {                 //リクエストメッセージに問題があった場合の例外処理
-                    statusLineOfException = StatusLine.BAD_REQUEST;
-
-//                } catch (HtmlInitializeException e) {               //HTMLファイルに問題が発生した場合の例外処理
-//                    statusLineOfException = StatusLine.INTERNAL_SERVER_ERROR;
-
-                } catch (HttpVersionException e) {                  //リクエストメッセージのプロトコルバージョンが想定外のものである
-                    statusLineOfException = StatusLine.HTTP_VERSION_NOT_SUPPORTED;
-
-                } finally {
-                    if (statusLineOfException != null) {
-                        responseMessage.addHeaderWithContentType(ContentType.ERROR_RESPONSE);
-                        PrintWriter printWriter = responseMessage.getPrintWriter(statusLineOfException);
-                        printWriter.write(ResponseMessage.getErrorMessageBody(statusLineOfException));
-                        printWriter.flush();
-                    }
+            } finally {
+                if (statusLineOfException != null) {
+                    responseMessage.addHeaderWithContentType(ContentType.ERROR_RESPONSE);
+                    PrintWriter printWriter = responseMessage.getPrintWriter(statusLineOfException);
+                    printWriter.write(ResponseMessage.getErrorMessageBody(statusLineOfException));
+                    printWriter.flush();
                 }
-                clientSocket.close();
-                clientSocket = null;
             }
+            clientSocket.close();
 
-        } catch (BindException e) {
-            throw new SocketRuntimeException(e.getMessage(), e.getCause());
-
-        } catch (SocketException e) {
-
-        } catch (IOException e) {
-            throw new SocketRuntimeException(e.getMessage(), e.getCause());
+            CsvHelper.writeMessage(ModelController.getAllMessage());
         }
     }
 }
