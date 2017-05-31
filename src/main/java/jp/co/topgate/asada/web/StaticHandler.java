@@ -11,11 +11,6 @@ import java.nio.file.Paths;
  */
 public class StaticHandler extends Handler {
 
-    /**
-     * HTTPリクエストのメソッド
-     */
-    private static final String METHOD = "GET";
-
     private RequestMessage requestMessage;
     private ResponseMessage responseMessage;
 
@@ -35,14 +30,17 @@ public class StaticHandler extends Handler {
      */
     @Override
     public void handleRequest() {
-        String method = requestMessage.getMethod();
-
         String rawUri = requestMessage.getUri();
         String uri = changeUriToWelcomePage(rawUri);
         Path filePath = Paths.get(Handler.FILE_PATH + uri);
 
-        StatusLine statusLine = StaticHandler.decideStatusLine(method, filePath);
+        StatusLine statusLine = StaticHandler.decideStatusLine(filePath);
         sendResponse(responseMessage, statusLine, filePath);
+    }
+
+    @Override
+    public boolean checkMethod(String method) {
+        return method.equals("GET");
     }
 
     /**
@@ -65,14 +63,10 @@ public class StaticHandler extends Handler {
      * 3.URIで指定されたファイルがリソースフォルダにない、もしくはディレクトリの場合は404:Not Found
      * 4.1,2,3でチェックして問題がなければ200:OK
      *
-     * @param method   リクエストメッセージのメソッドを渡す
      * @param filePath リソースファイルのPathを渡す
      * @return レスポンスメッセージの状態行(StatusLine)を返す
      */
-    static StatusLine decideStatusLine(String method, Path filePath) {
-        if (!StaticHandler.METHOD.equals(method)) {
-            return StatusLine.NOT_IMPLEMENTED;
-        }
+    static StatusLine decideStatusLine(Path filePath) {
         File file = filePath.toFile();
         if (!file.exists() || !file.isFile()) {
             return StatusLine.NOT_FOUND;
@@ -93,6 +87,7 @@ public class StaticHandler extends Handler {
             //レスポンスメッセージにヘッダーフィールドを追加
             String contentType = ContentType.getContentType(filePath.toString());
             responseMessage.addHeaderWithContentType(contentType);
+
             long contentLength = filePath.toFile().length();
             responseMessage.addHeaderWithContentLength(String.valueOf(contentLength));
 

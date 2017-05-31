@@ -1,4 +1,4 @@
-package jp.co.topgate.asada.web.util;
+package jp.co.topgate.asada.web;
 
 import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
@@ -13,7 +13,7 @@ import static org.junit.Assert.assertThat;
  * @author asada
  */
 @RunWith(Enclosed.class)
-public class InvalidCharTest {
+public class UnsafeCharTest {
     public static class replaceInputValueメソッドのテスト {
         @Test
         public void 置き換えが発生するパターン() {

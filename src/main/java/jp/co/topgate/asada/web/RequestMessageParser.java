@@ -210,7 +210,7 @@ public final class RequestMessageParser {
     }
 
     /**
-     * リクエストラインとヘッダーフィールドにバイト数を計算して返す
+     * リクエストラインとヘッダーフィールドのバイト数を計算して返す
      *
      * @param inputStream 読みたいInputStreamを渡す
      * @return リクエストラインとヘッダーフィールドの長さ
@@ -223,8 +223,8 @@ public final class RequestMessageParser {
         while (!Strings.isNullOrEmpty(str = bufferedReader.readLine())) {
             builder.append(str).append("\r").append("\n");
         }
-        //TODO ヘッダーフィールドとメッセージボディの間の改行文字を最後に足している。
-        return builder.toString().length() + 2;
+        builder.append("\r\n");
+        return builder.toString().length();
     }
 
     /**

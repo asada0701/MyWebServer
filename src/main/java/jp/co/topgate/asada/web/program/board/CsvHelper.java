@@ -13,7 +13,7 @@ import java.util.List;
  *
  * @author asada
  */
-public class CsvHelper {
+class CsvHelper {
 
     /**
      * CSVのファイルパス
@@ -36,7 +36,7 @@ public class CsvHelper {
      * @return 過去に投稿された文をメッセージクラスのListに格納して返す
      * @throws CsvRuntimeException CSVファイルの中身が規定の形になっていないもしくはファイル読み込みに失敗した
      */
-    public static List<Message> readMessage() throws CsvRuntimeException {
+    static List<Message> readMessage() throws CsvRuntimeException {
         List<Message> messageList = new ArrayList<>();
         try (BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(CSV_FILE_PATH)))) {
             String line;
@@ -71,7 +71,7 @@ public class CsvHelper {
      * @param messageList CSVに書き込みたいListを渡す
      * @throws CsvRuntimeException CSVファイルの書き込み中に失敗したもしくは書き込みに失敗した
      */
-    public static void writeMessage(List<Message> messageList) throws CsvRuntimeException {
+    static void writeMessage(List<Message> messageList) throws CsvRuntimeException {
         try (OutputStream outputStream = new FileOutputStream(new File(CSV_FILE_PATH))) {
             for (Message m : messageList) {
                 String messageID = String.valueOf(m.getMessageID());

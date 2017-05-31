@@ -58,7 +58,7 @@ public class ResponseMessage {
         if (headerField.size() > 0) {
             printWriter.write(createHeader(headerField));
         } else {
-            printWriter.write("\r\n");
+            printWriter.write("\n");
         }
         printWriter.flush();
         return outputStream;
@@ -104,7 +104,7 @@ public class ResponseMessage {
     @NotNull
     static String createResponseLine(int statusCode, String reasonPhrase) {
         String[] str = {Main.PROTOCOL_VERSION, String.valueOf(statusCode), reasonPhrase};
-        return String.join(REQUEST_LINE_SEPARATOR, str) + "\r\n";
+        return String.join(REQUEST_LINE_SEPARATOR, str) + "\n";
     }
 
     /**
@@ -117,9 +117,9 @@ public class ResponseMessage {
     static String createHeader(List<String> headerField) {
         StringBuilder builder = new StringBuilder();
         for (String str : headerField) {
-            builder.append(str).append("\r\n");
+            builder.append(str).append("\n");
         }
-        builder.append("\r\n");
+        builder.append("\n");
         return builder.toString();
     }
 
@@ -196,10 +196,5 @@ public class ResponseMessage {
      */
     public void addHeaderWithContentLength(String value) {
         headerField.add("Content-Length" + HEADER_FIELD_NAME_VALUE_SEPARATOR + value);
-    }
-
-    //テスト用
-    public List<String> getHeaderField() {
-        return this.headerField;
     }
 }

@@ -1,4 +1,4 @@
-package jp.co.topgate.asada.web.util;
+package jp.co.topgate.asada.web;
 
 import java.util.HashMap;
 import java.util.Map;

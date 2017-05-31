@@ -3,6 +3,7 @@ package jp.co.topgate.asada.web.program.board;
 import jp.co.topgate.asada.web.program.board.model.Message;
 
 import java.io.*;
+import java.nio.file.Path;
 import java.util.*;
 
 /**
@@ -50,10 +51,11 @@ class HtmlEditor {
      * @param programBoardHtmlList 編集したいHTMLのEnum
      * @param messageList          HTML文章に書き込みたいMessageのリスト
      * @return 編集後のHTML文章
-     * @throws IOException {@link HtmlEditor#readHtml(String)}を参照
+     * @throws IOException {@link HtmlEditor#readHtml(Path)}を参照
      */
     static String editIndexOrSearchHtml(ProgramBoardHtmlList programBoardHtmlList, List<Message> messageList, String timeID) throws IOException {
-        String[] lineArray = readHtml(programBoardHtmlList.getPath()).split("\n");
+        Path filePath = programBoardHtmlList.getPath();
+        String[] lineArray = readHtml(filePath).split("\n");
         StringBuilder builder = new StringBuilder();
 
         for (int i = 0; i < lineArray.length; i++) {
@@ -88,10 +90,11 @@ class HtmlEditor {
      *
      * @param message メッセージのオブジェクト
      * @return 編集後のHTML文章
-     * @throws IOException {@link HtmlEditor#readHtml(String)}を参照
+     * @throws IOException {@link HtmlEditor#readHtml(Path)}を参照
      */
     static String editDeleteHtml(Message message) throws IOException {
-        String[] lineArray = readHtml(ProgramBoardHtmlList.DELETE_HTML.getPath()).split("\n");
+        Path filePath = ProgramBoardHtmlList.DELETE_HTML.getPath();
+        String[] lineArray = readHtml(filePath).split("\n");
         StringBuilder builder = new StringBuilder();
 
         for (int i = 0; i < lineArray.length; i++) {
@@ -119,14 +122,16 @@ class HtmlEditor {
     }
 
     /**
-     * HTMLファイルを読み込み、読み込んだ文字列を返す
+     * HTMLファイルを読み込み、ファイルの内容を返す
      *
      * @param filePath 読み込みたいファイルのパスを渡す
      * @return 読み込んだファイルを返す
      * @throws IOException HTMLファイルの読み込み中にエラー発生
      */
-    private static String readHtml(String filePath) throws IOException {
-        try (BufferedReader br = new BufferedReader(new FileReader(new File(filePath)))) {
+    private static String readHtml(Path filePath) throws IOException {
+        System.out.println(filePath.toString());
+
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath.toFile()))) {
             String line;
             StringBuilder builder = new StringBuilder();
             while ((line = br.readLine()) != null) {
@@ -137,13 +142,13 @@ class HtmlEditor {
     }
 
     /**
-     * messageをHTML文章にする
+     * Messageのオブジェクトを受け取り、各HTMLに沿ったHTML文章に整形する
      *
      * @param programBoardHtmlList 編集したいHTMLのEnum
      * @param message              書き込みたいMessageのオブジェクト
      * @return HTML文章
      */
-    private static String changeMessageToHtml(ProgramBoardHtmlList programBoardHtmlList, Message message) {
+    static String changeMessageToHtml(ProgramBoardHtmlList programBoardHtmlList, Message message) {
         switch (programBoardHtmlList) {
             case INDEX_HTML:
                 return "            <tr id=\"No." + message.getMessageID() + "\">" + "\n" +

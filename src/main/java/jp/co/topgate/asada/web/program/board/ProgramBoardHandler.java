@@ -5,7 +5,6 @@ import jp.co.topgate.asada.web.Handler;
 import jp.co.topgate.asada.web.UrlPattern;
 import jp.co.topgate.asada.web.exception.CsvRuntimeException;
 import jp.co.topgate.asada.web.exception.RequestParseException;
-import jp.co.topgate.asada.web.util.*;
 import jp.co.topgate.asada.web.exception.IllegalRequestException;
 import jp.co.topgate.asada.web.program.board.model.Message;
 import jp.co.topgate.asada.web.program.board.model.ModelController;
@@ -13,7 +12,6 @@ import org.apache.commons.lang3.math.NumberUtils;
 
 import java.io.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -23,15 +21,6 @@ import java.util.Map;
  * @author asada
  */
 public class ProgramBoardHandler extends Handler {
-    /**
-     * HTTPリクエストのメソッド
-     */
-    private static List<String> method = new ArrayList<>();
-
-    static {
-        method.add("GET");
-        method.add("POST");
-    }
 
     private RequestMessage requestMessage;
     private ResponseMessage responseMessage;
@@ -47,9 +36,15 @@ public class ProgramBoardHandler extends Handler {
         this.responseMessage = responseMessage;
     }
 
+    public void handlerRequest(String test) {
+        String method = requestMessage.getMethod();
+        String uri = requestMessage.getUri();
+
+
+    }
+
     /**
      * {@link Handler#handleRequest()}を参照
-     * returnしていても、finallyは必ず通るので、finallyの中でhtmlの初期化を行う。
      */
     @Override
     public void handleRequest() {
@@ -58,11 +53,6 @@ public class ProgramBoardHandler extends Handler {
 
             String method = requestMessage.getMethod();
             String uri = requestMessage.getUri();
-
-            if (!ProgramBoardHandler.matchMethod(method)) {
-                sendErrorResponse(responseMessage, StatusLine.NOT_IMPLEMENTED);
-                return;
-            }
 
             if (method.equals("GET")) {
                 String targetPath = Handler.getFilePath(UrlPattern.PROGRAM_BOARD, uri);
@@ -112,6 +102,11 @@ public class ProgramBoardHandler extends Handler {
         }
     }
 
+    @Override
+    public boolean checkMethod(String method) {
+        return method.equals("GET") || method.equals("POST");
+    }
+
     /**
      * GETの場合の処理
      * POSTでindex.htmlファイルに書き込む場合も呼ばれる
@@ -119,8 +114,7 @@ public class ProgramBoardHandler extends Handler {
      * @param responseMessage ResponseMessageのオブジェクト
      */
     static void doGet(ResponseMessage responseMessage) throws IOException {
-        String html = HtmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.INDEX_HTML, ModelController.getAllMessage(), issueTimeId());
-        sendResponse(responseMessage, html);
+        writeIndex(responseMessage);
     }
 
     /**
@@ -210,7 +204,7 @@ public class ProgramBoardHandler extends Handler {
                 }
 
                 if (ModelController.deleteMessage(Integer.parseInt(number), password)) {
-                    sendResponse(responseMessage, new File(ProgramBoardHtmlList.RESULT_HTML.getPath()));
+                    sendResponse(responseMessage, ProgramBoardHtmlList.RESULT_HTML.getPath().toFile());
                     return;
 
                 } else {
@@ -242,21 +236,6 @@ public class ProgramBoardHandler extends Handler {
     static void writeIndex(ResponseMessage responseMessage) throws IOException {
         String html = HtmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.INDEX_HTML, ModelController.getAllMessage(), issueTimeId());
         sendResponse(responseMessage, html);
-    }
-
-    /**
-     * 引数targetがmethodのリストに含まれているか判定する
-     *
-     * @param target ターゲット文字列
-     * @return trueの場合は含まれている、falseの場合は含まれない
-     */
-    static boolean matchMethod(String target) {
-        for (String s : method) {
-            if (s.equals(target)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**
@@ -307,15 +286,14 @@ public class ProgramBoardHandler extends Handler {
 
     /**
      * HTMLページに書き込むID（二重リクエスト防ぐためのもの）を発行するメソッド
+     * TODO IDを見られてもいいように、暗号化、エンコードする。その際、URF-8でエンコードをして中身をみるので、例外が発生しないように気をつけないといけない。
      *
      * @return エンコードされて発行する
      */
     static String issueTimeId() {
         LocalDateTime ldt = LocalDateTime.now();
-        String timeID = "" + ldt.getYear() + ldt.getMonthValue() + ldt.getDayOfMonth() + ldt.getHour() +
+        return "" + ldt.getYear() + ldt.getMonthValue() + ldt.getDayOfMonth() + ldt.getHour() +
                 ldt.getMinute() + ldt.getSecond() + ldt.getNano();
-        return timeID;
-        //return Base64.getEncoder().encodeToString(timeID.getBytes());
     }
 }
 

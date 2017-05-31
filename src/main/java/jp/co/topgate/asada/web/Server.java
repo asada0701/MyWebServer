@@ -31,7 +31,11 @@ class Server {
 
                 Handler handler = Handler.getHandler(requestMessage, responseMessage);
 
-                handler.handleRequest();
+                if (handler.checkMethod(requestMessage.getMethod())) {
+                    handler.handleRequest();
+                } else {
+                    statusLineOfException = StatusLine.NOT_IMPLEMENTED; //ハンドラーが処理できないメソッドの場合
+                }
 
             } catch (RequestParseException e) {                 //リクエストメッセージに問題があった場合の例外処理
                 statusLineOfException = StatusLine.BAD_REQUEST;
@@ -50,4 +54,5 @@ class Server {
             clientSocket.close();
         }
     }
+
 }

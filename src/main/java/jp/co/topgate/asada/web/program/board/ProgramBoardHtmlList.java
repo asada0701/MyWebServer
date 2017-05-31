@@ -1,5 +1,8 @@
 package jp.co.topgate.asada.web.program.board;
 
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 /**
  * 編集するHTMLのリスト
  *
@@ -20,7 +23,7 @@ enum ProgramBoardHtmlList {
     /**
      * delete.html
      */
-    DELETE_HTML("/src/main/resources/2/delete.html"),
+    DELETE_HTML("./src/main/resources/2/delete.html"),
 
     /**
      * result.html
@@ -39,7 +42,7 @@ enum ProgramBoardHtmlList {
      *
      * @return ファイルのパスを返す
      */
-    public String getPath() {
-        return path;
+    public Path getPath() {
+        return Paths.get(path);
     }
 }
