@@ -69,91 +69,73 @@ public class StaticHandlerTest {
         }
     }
 
-    public static class changeUriToWelcomePageのテスト {
-        @Test(expected = NullPointerException.class)
-        public void nullチェック() throws Exception {
-            StaticHandler.changeUriToWelcomePage(null);
-        }
-
-        @Test
-        public void 正しく動作するか() throws Exception {
-            assertThat(StaticHandler.changeUriToWelcomePage("/"), is("/index.html"));
-
-            assertThat(StaticHandler.changeUriToWelcomePage("///////"), is("///////index.html"));
-
-            assertThat(StaticHandler.changeUriToWelcomePage("/hoge//"), is("/hoge//index.html"));
-        }
-
-        @Test
-        public void 引数にスラッシュが含まれない場合() throws Exception {
-            assertThat(StaticHandler.changeUriToWelcomePage(""), is(""));
-
-            assertThat(StaticHandler.changeUriToWelcomePage("hoge"), is("hoge"));
-        }
-    }
-
-    public static class decideStatusLineのテスト {
-        @Test
-        public void nullチェック() throws Exception {
-            StatusLine sut;
-
-            sut = StaticHandler.decideStatusLine(null, Paths.get("./src/resources/static/index.html"));
-            assertThat(sut.getStatusCode(), is(501));
-
-            sut = StaticHandler.decideStatusLine(null, null);
-            assertThat(sut.getStatusCode(), is(501));
-        }
+    public static class checkFileのテスト {
+        private File file;
 
         @Test(expected = NullPointerException.class)
-        public void filePathがnull() throws Exception {
-            StaticHandler.decideStatusLine("GET", null);
+        public void nullチェック() throws Exception {
+            StaticHandler.checkFile(null);
         }
 
         @Test
-        public void GETリクエスト200() throws Exception {
-            StatusLine sut = StaticHandler.decideStatusLine("GET", Paths.get("./src/main/resources/static/index.html"));
-            assertThat(sut.getStatusCode(), is(200));
+        public void ディレクトリの場合() throws Exception {
+            file = new File("./src/test/resources/");
+            assertThat(StaticHandler.checkFile(file), is(false));
+
+            file = new File("./src/test/resources");
+            assertThat(StaticHandler.checkFile(file), is(false));
         }
 
         @Test
-        public void 存在しないファイルを指定すると404() throws Exception {
-            StatusLine sut = StaticHandler.decideStatusLine("GET", Paths.get("/hogehoge"));
-            assertThat(sut.getStatusCode(), is(404));
+        public void 存在しないファイルやディレクトリの場合() throws Exception {
+            file = new File("./src/test/resources/hoge");
+            assertThat(StaticHandler.checkFile(file), is(false));
+
+            file = new File("./src/test/resources/hoge.html");
+            assertThat(StaticHandler.checkFile(file), is(false));
         }
 
         @Test
-        public void ディレクトリを指定すると404() throws Exception {
-            StatusLine sut = StaticHandler.decideStatusLine("GET", Paths.get("/"));
-            assertThat(sut.getStatusCode(), is(404));
+        public void 異常系テスト() throws Exception {
+            file = new File("/////////////////////");
+            assertThat(StaticHandler.checkFile(file), is(false));
+
+            file = new File("");
+            assertThat(StaticHandler.checkFile(file), is(false));
+
+            file = new File("....//./////.////");
+            assertThat(StaticHandler.checkFile(file), is(false));
         }
 
         @Test
-        public void GET以外は501() throws Exception {
-            StatusLine sut;
-            sut = StaticHandler.decideStatusLine("POST", Paths.get("/"));
-            assertThat(sut.getStatusCode(), is(501));
+        public void 存在するファイルの場合() throws Exception {
+            file = new File("./src/test/resources/html/index.html");
+            assertThat(StaticHandler.checkFile(file), is(true));
 
-            sut = StaticHandler.decideStatusLine("PUT", Paths.get("/"));
-            assertThat(sut.getStatusCode(), is(501));
+            file = new File("./src/test/resources/responseMessage.txt");
+            assertThat(StaticHandler.checkFile(file), is(true));
 
-            sut = StaticHandler.decideStatusLine("DELETE", Paths.get("/"));
-            assertThat(sut.getStatusCode(), is(501));
+            file = new File("./src/test/resources/漢字テスト/寿司.txt");
+            assertThat(StaticHandler.checkFile(file), is(true));
         }
     }
 
     public static class sendResponseのテスト {
         private FileOutputStream fileOutputStream = null;
+        private RequestMessage requestMessage = null;
         private ResponseMessage responseMessage = null;
+        private StaticHandler staticHandler = null;
 
         @Before
         public void setUp() throws Exception {
             fileOutputStream = new FileOutputStream(new File("./src/test/resources/responseMessage.txt"));
             responseMessage = new ResponseMessage(fileOutputStream);
+            staticHandler = new StaticHandler(requestMessage, responseMessage);
         }
 
         @Test
         public void ステータスコード200のテスト() throws Exception {
-            StaticHandler.sendResponse(responseMessage, StatusLine.OK, Paths.get("./src/test/resources/html/index.html"));
+            staticHandler.sendResponse(StatusLine.OK, Paths.get("./src/test/resources/html/index.html"));
 
             try (BufferedReader responseMessage = new BufferedReader(new FileReader(new File("./src/test/resources/responseMessage.txt")));
                  BufferedReader testData = new BufferedReader(new FileReader(new File("./src/test/resources/Response/getIndexHtml.txt")))) {
@@ -167,7 +149,7 @@ public class StaticHandlerTest {
 
         @Test
         public void ステータスコード200以外のテスト() throws Exception {
-            StaticHandler.sendResponse(responseMessage, StatusLine.NOT_FOUND, null);
+            staticHandler.sendResponse(StatusLine.NOT_FOUND, null);
 
             try (BufferedReader responseMessage = new BufferedReader(new FileReader(new File("./src/test/resources/responseMessage.txt")));
                  BufferedReader testData = new BufferedReader(new FileReader(new File("./src/test/resources/response/NotFound.txt")))) {

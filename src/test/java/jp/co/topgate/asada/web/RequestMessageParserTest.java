@@ -88,6 +88,29 @@ public class RequestMessageParserTest {
         }
     }
 
+    public static class changeUriToWelcomePageのテスト {
+        @Test(expected = NullPointerException.class)
+        public void nullチェック() throws Exception {
+            RequestMessageParser.changeUriToWelcomePage(null);
+        }
+
+        @Test
+        public void 正しく動作するか() throws Exception {
+            assertThat(RequestMessageParser.changeUriToWelcomePage("/"), is("/index.html"));
+
+            assertThat(RequestMessageParser.changeUriToWelcomePage("///////"), is("///////index.html"));
+
+            assertThat(RequestMessageParser.changeUriToWelcomePage("/hoge//"), is("/hoge//index.html"));
+        }
+
+        @Test
+        public void 引数にスラッシュが含まれない場合() throws Exception {
+            assertThat(RequestMessageParser.changeUriToWelcomePage(""), is(""));
+
+            assertThat(RequestMessageParser.changeUriToWelcomePage("hoge"), is("hoge"));
+        }
+    }
+
     public static class parseUriQueryメソッドのテスト {
         @Test(expected = NullPointerException.class)
         public void nullチェック() throws Exception {

@@ -70,6 +70,9 @@ public class RequestMessage {
      * @return Query値を返す。URIに含まれていなかった場合はNullを返す
      */
     public String findUriQuery(String name) {
+        if (uriQuery == null) {
+            return null;
+        }
         return uriQuery.getOrDefault(name, null);
     }
 
@@ -80,6 +83,9 @@ public class RequestMessage {
      * @return ヘッダ値を返す。ヘッダーフィールドに含まれていなかった場合はNullを返す
      */
     public String findHeaderByName(String fieldName) {
+        if (headerField == null) {
+            return null;
+        }
         return headerField.get(fieldName);
     }
 
@@ -92,6 +98,9 @@ public class RequestMessage {
      * @throws RequestParseException パースした結果不正なリクエストだった
      */
     public Map<String, String> parseMessageBodyToMap() throws RequestParseException {
+        if (headerField == null) {
+            return null;
+        }
         String contentType = headerField.get("Content-Type");
         if (contentType == null || !contentType.equals("application/x-www-form-urlencoded")) {
             return null;

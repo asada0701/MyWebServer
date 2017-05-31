@@ -30,21 +30,21 @@ import static org.junit.Assert.assertThat;
  */
 @RunWith(Enclosed.class)
 public class ProgramBoardHandlerTest {
-    public static class matchMethodのテスト {
-        @Test
-        public void trueになるかテスト() {
-            assertThat(ProgramBoardHandler.matchMethod("GET"), is(true));
-            assertThat(ProgramBoardHandler.matchMethod("POST"), is(true));
-        }
-
-        @Test
-        public void falseになるかテスト() {
-            assertThat(ProgramBoardHandler.matchMethod("PUT"), is(false));
-            assertThat(ProgramBoardHandler.matchMethod("DELETE"), is(false));
-            assertThat(ProgramBoardHandler.matchMethod(null), is(false));
-            assertThat(ProgramBoardHandler.matchMethod(""), is(false));
-        }
-    }
+//    public static class matchMethodのテスト {
+//        @Test
+//        public void trueになるかテスト() {
+//            assertThat(ProgramBoardHandler.matchMethod("GET"), is(true));
+//            assertThat(ProgramBoardHandler.matchMethod("POST"), is(true));
+//        }
+//
+//        @Test
+//        public void falseになるかテスト() {
+//            assertThat(ProgramBoardHandler.matchMethod("PUT"), is(false));
+//            assertThat(ProgramBoardHandler.matchMethod("DELETE"), is(false));
+//            assertThat(ProgramBoardHandler.matchMethod(null), is(false));
+//            assertThat(ProgramBoardHandler.matchMethod(""), is(false));
+//        }
+//    }
 
 //    public static class コンストラクタのテスト {
 //        @Test

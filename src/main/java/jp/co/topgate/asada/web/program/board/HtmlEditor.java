@@ -129,8 +129,6 @@ class HtmlEditor {
      * @throws IOException HTMLファイルの読み込み中にエラー発生
      */
     private static String readHtml(Path filePath) throws IOException {
-        System.out.println(filePath.toString());
-
         try (BufferedReader br = new BufferedReader(new FileReader(filePath.toFile()))) {
             String line;
             StringBuilder builder = new StringBuilder();

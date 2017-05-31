@@ -30,58 +30,34 @@ public class StaticHandler extends Handler {
      */
     @Override
     public void handleRequest() {
-        String rawUri = requestMessage.getUri();
-        String uri = changeUriToWelcomePage(rawUri);
-        Path filePath = Paths.get(Handler.FILE_PATH + uri);
+        Path filePath = Paths.get(Handler.getFilePath(requestMessage.getUri()));
 
-        StatusLine statusLine = StaticHandler.decideStatusLine(filePath);
-        sendResponse(responseMessage, statusLine, filePath);
+        System.out.println(filePath.toString());
+
+        StatusLine statusLine;
+        if (Handler.checkFile(filePath.toFile())) {
+            statusLine = StatusLine.OK;
+        } else {
+            statusLine = StatusLine.NOT_FOUND;
+        }
+        sendResponse(statusLine, filePath);
     }
 
+    /**
+     * {@link Handler#checkMethod(String)}を参照
+     */
     @Override
     public boolean checkMethod(String method) {
         return method.equals("GET");
     }
 
     /**
-     * リクエストのURIが"/"で終わっている場合はwelcome pageを表示する
-     *
-     * @param uri URIを渡す
-     * @return "/"で終わっている場合は{@link Main}のwelcome pageを連結して返す
-     */
-    static String changeUriToWelcomePage(String uri) {
-        if (!uri.endsWith("/")) {
-            return uri;
-        }
-        return uri + Main.WELCOME_PAGE_NAME;
-    }
-
-    /**
-     * リクエストメッセージのmethod,uri,protocolVersionから、レスポンスのステータスコードを決定するメソッド
-     * 1.プロトコルバージョンがHTTP/1.1以外の場合は505:HTTP Version Not Supported
-     * 2.GET,POST以外のメソッドの場合は501:Not Implemented
-     * 3.URIで指定されたファイルがリソースフォルダにない、もしくはディレクトリの場合は404:Not Found
-     * 4.1,2,3でチェックして問題がなければ200:OK
-     *
-     * @param filePath リソースファイルのPathを渡す
-     * @return レスポンスメッセージの状態行(StatusLine)を返す
-     */
-    static StatusLine decideStatusLine(Path filePath) {
-        File file = filePath.toFile();
-        if (!file.exists() || !file.isFile()) {
-            return StatusLine.NOT_FOUND;
-        }
-        return StatusLine.OK;
-    }
-
-    /**
      * バイナリデータと文字データをレスポンスメッセージボディに書き込み、送信するメソッド
      *
-     * @param responseMessage レスポンスメッセージを渡す
-     * @param statusLine      ステータスラインを渡す
-     * @param filePath        リソースファイルのパス
+     * @param statusLine ステータスラインを渡す
+     * @param filePath   リソースファイルのパス
      */
-    static void sendResponse(ResponseMessage responseMessage, StatusLine statusLine, Path filePath) {
+    void sendResponse(StatusLine statusLine, Path filePath) {
 
         if (statusLine.equals(StatusLine.OK)) {
             //レスポンスメッセージにヘッダーフィールドを追加

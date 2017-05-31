@@ -2,6 +2,8 @@ package jp.co.topgate.asada.web;
 
 import jp.co.topgate.asada.web.program.board.ProgramBoardHandler;
 
+import java.io.File;
+
 /**
  * ハンドラー抽象クラス
  *
@@ -12,7 +14,7 @@ public abstract class Handler {
     /**
      * リソースファイルのパス
      */
-    static final String FILE_PATH = "./src/main/resources/static";
+    private static final String FILE_PATH = "./src/main/resources/";
 
     /**
      * ハンドラーのファクトリーメソッド
@@ -25,7 +27,7 @@ public abstract class Handler {
      */
     static Handler getHandler(RequestMessage requestMessage, ResponseMessage responseMessage) {
         String uri = requestMessage.getUri();
-        if (uri.startsWith(UrlPattern.PROGRAM_BOARD.getUrlPattern())) {
+        if (uri.startsWith("/program/board/")) {
             return new ProgramBoardHandler(requestMessage, responseMessage);
         }
         return new StaticHandler(requestMessage, responseMessage);
@@ -34,8 +36,18 @@ public abstract class Handler {
     /**
      * URIを元に、実際のファイルパスを返すメソッド
      */
-    public static String getFilePath(UrlPattern urlPattern, String uri) {
-        return "./src/main/resources" + uri.replace(urlPattern.getUrlPattern(), urlPattern.getFilePath());
+    public static String getFilePath(String uri) {
+        return FILE_PATH + uri;
+    }
+
+    /**
+     * ファイルが存在するか、ディレクトリではないかを判定するメソッド
+     *
+     * @param file ファイルを渡す
+     * @return trueの場合はファイルが存在し、ディレクトリではない
+     */
+    public static boolean checkFile(File file) {
+        return file.exists() && file.isFile();
     }
 
     /**
@@ -51,5 +63,7 @@ public abstract class Handler {
      * @param method リクエストメッセージのメソッドを渡す
      * @return trueの場合はハンドラーが処理できるメソッドである。falseの場合はハンドラーが処理しないメソッドである
      */
-    public abstract boolean checkMethod(String method);
+    public boolean checkMethod(String method) {
+        return method.equals("GET") || method.equals("POST");
+    }
 }

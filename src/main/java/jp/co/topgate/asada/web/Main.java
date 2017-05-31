@@ -36,7 +36,7 @@ public class Main {
             Server.run(PORT_NUMBER);
 
         } catch (IOException e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
             System.exit(1);
         }
     }

@@ -70,57 +70,79 @@ public final class RequestMessageParser {
      * @throws HttpVersionException  リクエストメッセージのプロトコルバージョンがHTTP/1.1以外の場合発生する
      */
     static RequestMessage parse(InputStream inputStream) throws RequestParseException, HttpVersionException {
-        RequestMessage requestMessage = new RequestMessage();
+        String method;
+        String uri;
+        Map<String, String> uriQuery = null;
+        Map<String, String> headerField;
+        byte[] messageBody = null;
+
         try {
             BufferedInputStream bis = new BufferedInputStream(inputStream);
             bis.mark(bis.available());
 
             //リクエストラインの処理
-            bis.reset();
             String[] requestLine = readRequestLine(bis);
-            requestMessage.setMethod(requestLine[0]);
-            requestMessage.setUri(requestLine[1]);
+            bis.reset();
+
+            method = requestLine[0];
+            uri = changeUriToWelcomePage(requestLine[1]);
 
             //ヘッダーフィールドの処理
+            headerField = readHeaderField(bis);
             bis.reset();
-            Map<String, String> headerField = readHeaderField(bis);
-            requestMessage.setHeaderField(headerField);
 
             //URIクエリーの処理
             //TODO ? 文字がメソッドによって、扱いが異なる。
             if (requestLine[1].contains("?")) {
-                String[] uri = requestLine[1].split("\\?", URI_QUERY_NUM_ITEMS);
-                requestMessage.setUri(uri[0]);
-                requestMessage.setUriQuery(parseUriQuery(uri[1]));
+                String[] uriAndUriQuery = requestLine[1].split("\\?", URI_QUERY_NUM_ITEMS);
+                uri = uriAndUriQuery[0];
+                uriQuery = parseUriQuery(uriAndUriQuery[1]);
             }
 
             //メッセージボディの処理
-            if (headerField == null) {
-                return requestMessage;
-            }
-            String sContentLength = requestMessage.findHeaderByName("Content-Length");
-            if (sContentLength != null && NumberUtils.isNumber(sContentLength)) {
-                int contentLength;
-                try {
-                    contentLength = Integer.parseInt(sContentLength);
-                } catch (NumberFormatException e) {
-                    //TODO コンテンツレングスがintの最大値を越えた場合の処理
-                    //NumberFormatExceptionは int の最大値である2147483647を超えた場合に発生する例外。
-                    //サイズが大きいファイルはメモリに用意するとリソースを食うので、inputStreamのまま処理するのが正解だと思われる。
-                    throw new RequestParseException("POSTで送られきたコンテンツレングスがintの最大値である2147483647を越えた");
-                }
-                bis.reset();
-                int requestLineAndHeaderLength = countRequestLineAndHeaderLength(bis);
+            if (headerField != null) {
+                String sContentLength = headerField.get("Content-Length");
+                if (sContentLength != null && NumberUtils.isNumber(sContentLength)) {
+                    int contentLength;
+                    try {
+                        contentLength = Integer.parseInt(sContentLength);
+                    } catch (NumberFormatException e) {
+                        //TODO コンテンツレングスがintの最大値を越えた場合の処理
+                        //NumberFormatExceptionは int の最大値である2147483647を超えた場合に発生する例外。
+                        //サイズが大きいファイルはメモリに用意するとリソースを食うので、inputStreamのまま処理するのが正解だと思われる。
+                        throw new RequestParseException("POSTで送られきたコンテンツレングスがintの最大値である2147483647を越えた");
+                    }
+                    int requestLineAndHeaderLength = countRequestLineAndHeaderLength(bis);
+                    bis.reset();
 
-                bis.reset();
-                requestMessage.setMessageBody(readMessageBody(bis, requestLineAndHeaderLength, contentLength));
+                    messageBody = readMessageBody(bis, requestLineAndHeaderLength, contentLength);
+                }
             }
 
         } catch (IOException e) {
             throw new RequestParseException(e.getMessage(), e.getCause());
         }
 
+        RequestMessage requestMessage = new RequestMessage();
+        requestMessage.setMethod(method);
+        requestMessage.setUri(uri);
+        requestMessage.setUriQuery(uriQuery);
+        requestMessage.setHeaderField(headerField);
+        requestMessage.setMessageBody(messageBody);
         return requestMessage;
+    }
+
+    /**
+     * リクエストのURIが"/"で終わっている場合はwelcome pageを表示する
+     *
+     * @param uri URIを渡す
+     * @return "/"で終わっている場合は{@link Main}のwelcome pageを連結して返す
+     */
+    static String changeUriToWelcomePage(String uri) {
+        if (!uri.endsWith("/")) {
+            return uri;
+        }
+        return uri + Main.WELCOME_PAGE_NAME;
     }
 
     /**
@@ -171,6 +193,9 @@ public final class RequestMessageParser {
         }
 
         String[] requestLine = str.split(REQUEST_LINE_SEPARATOR, REQUEST_LINE_NUM_ITEMS);
+        if (requestLine.length != REQUEST_LINE_NUM_ITEMS) {
+            throw new RequestParseException("リクエストラインが不正なものである");
+        }
         if (!requestLine[2].equals(Main.PROTOCOL_VERSION)) {
             throw new HttpVersionException(requestLine[2]);
         }
@@ -195,6 +220,7 @@ public final class RequestMessageParser {
         Map<String, String> uriQuery = new HashMap<>();
         String str;
         while (!Strings.isNullOrEmpty(str = bufferedReader.readLine())) {
+
             String[] s2 = str.split(HEADER_FIELD_NAME_VALUE_SEPARATOR, HEADER_FIELD_NUM_ITEMS);
             if (s2.length != HEADER_FIELD_NUM_ITEMS) {
                 throw new RequestParseException("ヘッダーフィールドに異常がありました");

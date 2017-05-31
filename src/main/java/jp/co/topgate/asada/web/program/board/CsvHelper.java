@@ -18,7 +18,7 @@ class CsvHelper {
     /**
      * CSVのファイルパス
      */
-    private static final String CSV_FILE_PATH = "./src/main/resources/data/message.csv";
+    private static final String CSV_FILE_PATH = "./csv/message.csv";
 
     /**
      * CSVファイルの項目を分割する

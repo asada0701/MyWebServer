@@ -49,9 +49,9 @@ public class ContentTypeTest {
     public void コンテンツタイプの網羅テスト() {
         assertThat(getContentType("/index.html"), is("text/html; charset=UTF-8"));
 
-        assertThat(getContentType("/static/index.html"), is("text/html; charset=UTF-8"));
+        assertThat(getContentType("/index.html"), is("text/html; charset=UTF-8"));
 
-        assertThat(getContentType("/static/css/index.css"), is("text/css"));
+        assertThat(getContentType("/css/index.css"), is("text/css"));
 
         assertThat(getContentType("/javascript/sample.js"), is("application/javascript"));
 

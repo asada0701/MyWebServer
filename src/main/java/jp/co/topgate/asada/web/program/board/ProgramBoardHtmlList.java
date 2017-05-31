@@ -13,22 +13,22 @@ enum ProgramBoardHtmlList {
      * index.html
      * URI、ファイルのパス
      */
-    INDEX_HTML("./src/main/resources/2/index.html"),
+    INDEX_HTML("./src/main/resources/program/board/index.html"),
 
     /**
      * search.html
      */
-    SEARCH_HTML("./src/main/resources/2/search.html"),
+    SEARCH_HTML("./src/main/resources/program/board/search.html"),
 
     /**
      * delete.html
      */
-    DELETE_HTML("./src/main/resources/2/delete.html"),
+    DELETE_HTML("./src/main/resources/program/board/delete.html"),
 
     /**
      * result.html
      */
-    RESULT_HTML("./src/main/resources/2/result.html");
+    RESULT_HTML("./src/main/resources/program/board/result.html");
 
 
     private final String path;
