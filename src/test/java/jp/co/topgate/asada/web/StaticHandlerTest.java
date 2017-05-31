@@ -69,54 +69,31 @@ public class StaticHandlerTest {
         }
     }
 
-    public static class checkFileのテスト {
-        private File file;
+    public static class checkMethodのテスト {
+        private StaticHandler sut;
+
+        @Before
+        public void setUp() throws Exception {
+            sut = new StaticHandler(null, null);
+        }
 
         @Test(expected = NullPointerException.class)
-        public void nullチェック() throws Exception {
-            StaticHandler.checkFile(null);
+        public void nullチェック() {
+            sut.checkMethod(null);
         }
 
         @Test
-        public void ディレクトリの場合() throws Exception {
-            file = new File("./src/test/resources/");
-            assertThat(StaticHandler.checkFile(file), is(false));
-
-            file = new File("./src/test/resources");
-            assertThat(StaticHandler.checkFile(file), is(false));
+        public void GETを渡すとtrue() throws Exception {
+            assertThat(sut.checkMethod("GET"), is(true));
         }
 
         @Test
-        public void 存在しないファイルやディレクトリの場合() throws Exception {
-            file = new File("./src/test/resources/hoge");
-            assertThat(StaticHandler.checkFile(file), is(false));
+        public void GET以外はfalse() throws Exception {
+            assertThat(sut.checkMethod("POST"), is(false));
 
-            file = new File("./src/test/resources/hoge.html");
-            assertThat(StaticHandler.checkFile(file), is(false));
-        }
+            assertThat(sut.checkMethod("PUT"), is(false));
 
-        @Test
-        public void 異常系テスト() throws Exception {
-            file = new File("/////////////////////");
-            assertThat(StaticHandler.checkFile(file), is(false));
-
-            file = new File("");
-            assertThat(StaticHandler.checkFile(file), is(false));
-
-            file = new File("....//./////.////");
-            assertThat(StaticHandler.checkFile(file), is(false));
-        }
-
-        @Test
-        public void 存在するファイルの場合() throws Exception {
-            file = new File("./src/test/resources/html/index.html");
-            assertThat(StaticHandler.checkFile(file), is(true));
-
-            file = new File("./src/test/resources/responseMessage.txt");
-            assertThat(StaticHandler.checkFile(file), is(true));
-
-            file = new File("./src/test/resources/漢字テスト/寿司.txt");
-            assertThat(StaticHandler.checkFile(file), is(true));
+            assertThat(sut.checkMethod(""), is(false));
         }
     }
 

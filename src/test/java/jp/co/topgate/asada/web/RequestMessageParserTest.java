@@ -64,7 +64,7 @@ public class RequestMessageParserTest {
             try (FileInputStream fis = new FileInputStream(new File(path))) {
                 sut = RequestMessageParser.parse(fis);
                 assertThat(sut.getMethod(), is("POST"));
-                assertThat(sut.getUri(), is("/program/board/"));
+                assertThat(sut.getUri(), is("/program/board/index.html"));
 
                 assertThat(sut.findHeaderByName("Host"), is("localhost:8080"));
                 assertThat(sut.findHeaderByName("Connection"), is("keep-alive"));

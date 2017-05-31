@@ -2,7 +2,6 @@ package jp.co.topgate.asada.web;
 
 import java.io.*;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * 静的なコンテンツの配信を行うハンドラー
@@ -33,7 +32,7 @@ public class StaticHandler extends Handler {
         Path filePath = Handler.getFilePath(requestMessage.getUri());
 
         StatusLine statusLine;
-        if (Handler.checkFile(filePath.toFile())) {
+        if (filePath.toFile().exists()) {
             statusLine = StatusLine.OK;
         } else {
             statusLine = StatusLine.NOT_FOUND;

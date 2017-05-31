@@ -1,6 +1,6 @@
 HTTP/1.1 200 OK
 Content-Type: text/html; charset=UTF-8
-Content-Length: 714
+Content-Length: 713
 
 <!DOCTYPE html>
 <html>
@@ -19,11 +19,11 @@ Content-Length: 714
             </script>
         </p>
     </div>
-    <div id="gazou">
+    <div id="image">
         <p>
             <img src="./img/s_1.jpg" width="200" height="180" alt="猫"/>
             <img src="./img/loading-loop.gif" width="200" height="180"/>
-            <img src="./img/s_pet_neko.png" width="200" height="180"/>
+            <img src="./img/s_pet_cat.png" width="200" height="180"/>
         </p>
     </div>
 </center>

@@ -43,16 +43,6 @@ public abstract class Handler {
     }
 
     /**
-     * ファイルが存在するか判定するメソッド
-     *
-     * @param file ファイルを渡す
-     * @return trueの場合はファイルが存在する。
-     */
-    public static boolean checkFile(File file) {
-        return file.exists();
-    }
-
-    /**
      * リクエストを適切に処理し、ResponseMessageのオブジェクトを生成してServerクラスに返す
      * レスポンスメッセージを実際に書き込むのはServerが行う。
      */

@@ -47,7 +47,7 @@ public class RequestMessage {
      * @param headerField ヘッダーフィールド
      * @param messageBody メッセージボディ
      */
-    RequestMessage(String method, String uri, Map<String, String> uriQuery, Map<String, String> headerField, byte[] messageBody) {
+    public RequestMessage(String method, String uri, Map<String, String> uriQuery, Map<String, String> headerField, byte[] messageBody) {
         this.method = method;
         this.uri = uri;
         this.uriQuery = uriQuery;
@@ -73,7 +73,7 @@ public class RequestMessage {
         if (uriQuery == null) {
             return null;
         }
-        return uriQuery.getOrDefault(name, null);
+        return uriQuery.get(name);
     }
 
     /**

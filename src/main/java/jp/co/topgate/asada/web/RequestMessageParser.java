@@ -69,7 +69,7 @@ public final class RequestMessageParser {
      * @throws RequestParseException リクエストメッセージに問題があった場合に発生する
      * @throws HttpVersionException  リクエストメッセージのプロトコルバージョンがHTTP/1.1以外の場合発生する
      */
-    static RequestMessage parse(InputStream inputStream) throws RequestParseException, HttpVersionException {
+    public static RequestMessage parse(InputStream inputStream) throws RequestParseException, HttpVersionException {
         String method;
         String uri;
         Map<String, String> uriQuery = null;

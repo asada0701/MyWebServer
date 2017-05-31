@@ -40,7 +40,7 @@ public class ResponseMessage {
      *
      * @param outputStream レスポンスを書き込みたいoutputStreamのオブジェクトを渡す
      */
-    ResponseMessage(OutputStream outputStream) {
+    public ResponseMessage(OutputStream outputStream) {
         this.outputStream = outputStream;
     }
 

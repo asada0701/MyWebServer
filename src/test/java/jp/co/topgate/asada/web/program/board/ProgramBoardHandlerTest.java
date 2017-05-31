@@ -1,13 +1,8 @@
 package jp.co.topgate.asada.web.program.board;
 
-import jp.co.topgate.asada.web.RequestMessage;
-import jp.co.topgate.asada.web.RequestMessageParser;
-import jp.co.topgate.asada.web.ResponseMessage;
-import jp.co.topgate.asada.web.StatusLine;
-import jp.co.topgate.asada.web.exception.IllegalRequestException;
+import jp.co.topgate.asada.web.*;
 import jp.co.topgate.asada.web.program.board.model.Message;
 import jp.co.topgate.asada.web.program.board.model.ModelController;
-import org.hamcrest.Matchers;
 import org.junit.*;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
@@ -30,44 +25,26 @@ import static org.junit.Assert.assertThat;
  */
 @RunWith(Enclosed.class)
 public class ProgramBoardHandlerTest {
-//    public static class matchMethodのテスト {
-//        @Test
-//        public void trueになるかテスト() {
-//            assertThat(ProgramBoardHandler.matchMethod("GET"), is(true));
-//            assertThat(ProgramBoardHandler.matchMethod("POST"), is(true));
-//        }
-//
-//        @Test
-//        public void falseになるかテスト() {
-//            assertThat(ProgramBoardHandler.matchMethod("PUT"), is(false));
-//            assertThat(ProgramBoardHandler.matchMethod("DELETE"), is(false));
-//            assertThat(ProgramBoardHandler.matchMethod(null), is(false));
-//            assertThat(ProgramBoardHandler.matchMethod(""), is(false));
-//        }
-//    }
+    public static class コンストラクタのテスト {
+        @Test
+        public void nullチェック() throws Exception {
+            ProgramBoardHandler sut = new ProgramBoardHandler(null, null);
+            assertThat(sut.getRequestMessage(), is(nullValue()));
+            assertThat(sut.getResponseMessage(), is(nullValue()));
+        }
 
-//    public static class コンストラクタのテスト {
-//        @Test
-//        public void nullチェック() throws Exception {
-//            ProgramBoardHandler sut = new ProgramBoardHandler(null);
-//            assertThat(sut.getRequestMessage(), is(nullValue()));
-//        }
-//
-//        @Test
-//        public void コンストラクタ() throws Exception {
-//            RequestMessage requestMessage;
-//            String path = "./src/test/resources/GetRequestMessage.txt";
-//            try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(path)))) {
-//                requestMessage = RequestMessageParser.parse(bis);
-//            }
-//            ProgramBoardHandler sut = new ProgramBoardHandler(requestMessage);
-//
-//            assertThat(sut.getRequestMessage(), is(requestMessage));
-//        }
-//    }
-//
+        @Test
+        public void コンストラクタ() throws Exception {
+            RequestMessage requestMessage = new RequestMessage(null, null, null, null, null);
+            ResponseMessage responseMessage = new ResponseMessage(null);
+            ProgramBoardHandler sut = new ProgramBoardHandler(requestMessage, responseMessage);
+
+            assertThat(sut.getRequestMessage(), is(requestMessage));
+            assertThat(sut.getResponseMessage(), is(responseMessage));
+        }
+    }
+
 //    public static class handleRequestメソッドのテスト {
-//        static HtmlEditor htmlEditor = new HtmlEditor();
 //        static List<Message> testList = new ArrayList<>();
 //
 //        static {
@@ -132,7 +109,7 @@ public class ProgramBoardHandlerTest {
 //            htmlEditor.resetAllFiles();
 //        }
 //    }
-//
+
 //    public static class createErrorResponseMessageメソッドのテスト {
 //
 //        @Test
@@ -156,302 +133,207 @@ public class ProgramBoardHandlerTest {
 //            assertThat(sut.getHeaderField().get(1), is("hoge: hogehoge"));
 //        }
 //    }
-//
-//    public static class decideStatusLineメソッドのテスト {
-//
-//        @Test
-//        public void nullチェック() throws Exception {
-//            StatusLine sut = ProgramBoardHandler.decideStatusLine(null, null, null);
-//            assertThat(sut.getStatusCode(), is(505));
-//        }
-//
-//        @Test
-//        public void GETリクエスト200() throws Exception {
-//            StatusLine sut = ProgramBoardHandler.decideStatusLine("GET", "/static/index.html", "HTTP/1.1");
-//            assertThat(sut.getStatusCode(), is(200));
-//        }
-//
-//        @Test
-//        public void POSTリクエスト200() throws Exception {
-//            StatusLine sut = ProgramBoardHandler.decideStatusLine("POST", "/program/board/index.html", "HTTP/1.1");
-//            assertThat(sut.getStatusCode(), is(200));
-//        }
-//
-//        @Test
-//        public void 存在しないファイルを指定すると404() throws Exception {
-//            StatusLine sut = ProgramBoardHandler.decideStatusLine("GET", "/hogehoge", "HTTP/1.1");
-//            assertThat(sut.getStatusCode(), is(404));
-//        }
-//
-//        @Test
-//        public void ディレクトリを指定すると404() throws Exception {
-//            StatusLine sut = ProgramBoardHandler.decideStatusLine("GET", "/", "HTTP/1.1");
-//            assertThat(sut.getStatusCode(), is(404));
-//        }
-//
-//        @Test
-//        public void POSTの時にURIが想定外のものだと400() throws Exception {
-//            StatusLine sut = ProgramBoardHandler.decideStatusLine("POST", "/", "HTTP/1.1");
-//            assertThat(sut.getStatusCode(), is(400));
-//        }
-//
-//        @Test
-//        public void GETとPOST以外は501() throws Exception {
-//            StatusLine sut;
-//            sut = ProgramBoardHandler.decideStatusLine("PUT", "/", "HTTP/1.1");
-//            assertThat(sut.getStatusCode(), is(501));
-//
-//            sut = ProgramBoardHandler.decideStatusLine("DELETE", "/", "HTTP/1.1");
-//            assertThat(sut.getStatusCode(), is(501));
-//        }
-//
-//        @Test
-//        public void HTTPのバージョンが指定と異なる505() throws Exception {
-//            StatusLine sut = ProgramBoardHandler.decideStatusLine("GET", "/", "HTTP/2.0");
-//            assertThat(sut.getStatusCode(), is(505));
-//        }
-//    }
-//
-//    public static class doGetメソッドのテスト {
-//        @Before
-//        public void setUp() {
-//            List<Message> messageList = new ArrayList<>();
-//            Message m;
-//            m = new Message();
-//            m.setMessageID(1);
-//            m.setPassword(new BCryptPasswordEncoder().encode("test"));
-//            m.setName("管理者");
-//            m.setTitle("test");
-//            m.setText("こんにちは");
-//            m.setDate("2017/5/11 11:56");
-//            messageList.add(m);
-//
-//            m = new Message();
-//            m.setMessageID(2);
-//            m.setPassword(new BCryptPasswordEncoder().encode("t"));
-//            m.setName("asada");
-//            m.setTitle("t");
-//            m.setText("こんにちは");
-//            m.setDate("2017/5/11 11:57");
-//            messageList.add(m);
-//
-//            ModelController.setMessageList(messageList);
-//        }
-//
-//        @Test
-//        public void 正しく動作するか() throws Exception {
-//            HtmlEditor htmlEditor = new HtmlEditor();
-//            ProgramBoardHandler.doGet(htmlEditor, "timeIdOfValue");
-//
-//            //Verify
-//            String path = "./src/main/resources/2/index.html";
-//            try (BufferedReader br1 = new BufferedReader(new FileReader(new File(path)));
-//                 BufferedReader br2 = new BufferedReader(new FileReader(new File("./src/test/resources/html/index2message.html")))) {
-//
-//                String str;
-//                while ((str = br1.readLine()) != null) {
-//                    assertThat(str, is(br2.readLine()));
-//                }
-//            }
-//
-//            //TearDown
-//            htmlEditor.resetAllFiles();
-//        }
-//    }
-//
-//    public static class doPostメソッドのテスト {
-//        static HtmlEditor htmlEditor;
-//
-//        @Before
-//        public void setUp() {
-//            htmlEditor = new HtmlEditor();
-//            List<Message> messageList = new ArrayList<>();
-//            Message m;
-//            m = new Message();
-//            m.setMessageID(1);
-//            m.setPassword(new BCryptPasswordEncoder().encode("test"));
-//            m.setName("管理者");
-//            m.setTitle("test");
-//            m.setText("こんにちは");
-//            m.setDate("2017/5/11 11:56");
-//            m.setTimeID("null回避");
-//            messageList.add(m);
-//
-//            m = new Message();
-//            m.setMessageID(2);
-//            m.setPassword(new BCryptPasswordEncoder().encode("t"));
-//            m.setName("asada");
-//            m.setTitle("t");
-//            m.setText("こんにちは");
-//            m.setDate("2017/5/11 11:57");
-//            m.setTimeID("null回避");
-//            messageList.add(m);
-//
-//            m = new Message();
-//            m.setMessageID(3);
-//            m.setPassword(new BCryptPasswordEncoder().encode("t"));
-//            m.setName("asada");
-//            m.setTitle("t");
-//            m.setText("今日は天気がいいですね");
-//            m.setDate("2017/5/11 11:57");
-//            m.setTimeID("null回避");
-//            messageList.add(m);
-//
-//            m = new Message();
-//            m.setMessageID(4);
-//            m.setPassword(new BCryptPasswordEncoder().encode("t"));
-//            m.setName("管理者");
-//            m.setTitle("t");
-//            m.setText("そうですね");
-//            m.setDate("2017/5/11 11:57");
-//            m.setTimeID("null回避");
-//            messageList.add(m);
-//
-//            ModelController.setMessageList(messageList);
-//        }
-//
-//        @Test(expected = NullPointerException.class)
-//        public void messageBodyがnullの場合() throws Exception {
-//            HtmlEditor htmlEditor = new HtmlEditor();
-//
-//            ProgramBoardHandler.doPost(htmlEditor, Param.WRITE, null, null);
-//
-//            htmlEditor.resetAllFiles();
-//        }
-//
-//        @Test(expected = IllegalRequestException.class)
-//        public void paramがnullの場合() throws Exception {
-//            HtmlEditor htmlEditor = new HtmlEditor();
-//            Map<String, String> messageBody = new HashMap<>();
-//
-//            ProgramBoardHandler.doPost(htmlEditor, null, messageBody, null);
-//
-//            htmlEditor.resetAllFiles();
-//        }
-//
-//        @Test(expected = IllegalRequestException.class)
-//        public void htmlEditorがnullの場合() throws Exception {
-//            HtmlEditor htmlEditor = new HtmlEditor();
-//            Map<String, String> messageBody = new HashMap<>();
-//
-//            ProgramBoardHandler.doPost(null, Param.WRITE, messageBody, null);
-//
-//            htmlEditor.resetAllFiles();
-//        }
-//
-//        @Test
-//        public void switchのwriteをテスト() throws Exception {
-//            Map<String, String> map = new HashMap<>();
-//            map.put("name", "asada");
-//            map.put("title", "test");
-//            map.put("text", "メッセージ");
-//            map.put("password", "test");
-//            map.put("timeID", "hoge");
-//
-//            String sut = ProgramBoardHandler.doPost(htmlEditor, Param.WRITE, map, "hoge").getUri();
-//            assertThat(sut, is(ProgramBoardHtmlList.INDEX_HTML.getUri()));
-//
-//            htmlEditor.resetAllFiles();
-//        }
-//
-//        @Test
-//        public void switchのsearchをテスト() throws Exception {
-//            Map<String, String> map = new HashMap<>();
-//            map.put("number", "2");
-//
-//            String sut = ProgramBoardHandler.doPost(htmlEditor, Param.SEARCH, map, null).getUri();
-//            assertThat(sut, Matchers.is(ProgramBoardHtmlList.SEARCH_HTML.getUri()));
-//
-//            htmlEditor.resetAllFiles();
-//        }
-//
-//        @Test
-//        public void switchのdelete_step_1をテスト() throws Exception {
-//            Map<String, String> map = new HashMap<>();
-//            map.put("number", "2");
-//
-//            String sut = ProgramBoardHandler.doPost(htmlEditor, Param.DELETE_STEP_1, map, null).getUri();
-//            assertThat(sut, is(ProgramBoardHtmlList.DELETE_HTML.getUri()));
-//
-//            htmlEditor.resetAllFiles();
-//        }
-//
-//        @Test
-//        public void switchのdelete_step_2をテスト() throws Exception {
-//            Map<String, String> map = new HashMap<>();
-//            map.put("number", "2");
-//            map.put("password", "t");
-//
-//            String sut = ProgramBoardHandler.doPost(htmlEditor, Param.DELETE_STEP_2, map, null).getUri();
-//            assertThat(sut, is(ProgramBoardHtmlList.RESULT_HTML.getUri()));
-//
-//            htmlEditor.resetAllFiles();
-//        }
-//
-//        @Test
-//        public void switchのbackをテスト() throws Exception {
-//            String sut = ProgramBoardHandler.doPost(htmlEditor, Param.BACK, null, null).getUri();
-//            assertThat(sut, is(ProgramBoardHtmlList.INDEX_HTML.getUri()));
-//
-//            htmlEditor.resetAllFiles();
-//        }
-//
-//        @After
-//        public void tearDown() {
-//            htmlEditor.resetAllFiles();
-//        }
-//    }
-//
-//    public static class writeIndexメソッドのテスト {
-//        HtmlEditor htmlEditor;
-//
-//        @Before
-//        public void setUp() {
-//            htmlEditor = new HtmlEditor();
-//        }
-//
-//        @Test
-//        public void 正しく動作するか() throws Exception {
-//            List<Message> testList = new ArrayList<>();
-//            Message m = new Message();
-//            m.setMessageID(1);
-//            m.setPassword("test");
-//            m.setName("管理者");
-//            m.setTitle("test");
-//            m.setText("こんにちは");
-//            m.setDate("2017/5/11 11:56");
-//            m.setTimeID("hogehoge");
-//            testList.add(m);
-//            m = new Message();
-//            m.setMessageID(2);
-//            m.setPassword("t");
-//            m.setName("asada");
-//            m.setTitle("t");
-//            m.setText("こんにちは");
-//            m.setDate("2017/5/11 11:57");
-//            m.setTimeID("hogehoge");
-//            testList.add(m);
-//            ModelController.setMessageList(testList);
-//
-//            String s = ProgramBoardHandler.writeIndex(htmlEditor, "timeIdOfValue").getUri();
-//
-//            //Verify
-//            assertThat(s, is(ProgramBoardHtmlList.INDEX_HTML.getUri()));
-//
-//            String path = "./src/main/resources/2/index.html";
-//            try (BufferedReader br1 = new BufferedReader(new FileReader(new File(path)));
-//                 BufferedReader br2 = new BufferedReader(new FileReader(new File("./src/test/resources/html/index2message.html")))) {
-//
-//                String str;
-//                while ((str = br1.readLine()) != null) {
-//                    assertThat(str, is(br2.readLine()));
-//                }
-//            }
-//        }
-//
-//        @After
-//        public void tearDown() {
-//            htmlEditor.resetAllFiles();
-//        }
-//    }
+
+    public static class doGetメソッドのテスト {
+        private RequestMessage requestMessage;
+        private FileOutputStream outputStream = null;
+        private ResponseMessage responseMessage;
+
+        @Before
+        public void setUp() throws Exception {
+            outputStream = new FileOutputStream(new File("./src/test/resources/responseMessage.txt"));
+            responseMessage = new ResponseMessage(outputStream);
+
+            List<Message> messageList = new ArrayList<>();
+            Message m;
+            m = new Message();
+            m.setMessageID(1);
+            m.setPassword(new BCryptPasswordEncoder().encode("test"));
+            m.setName("管理者");
+            m.setTitle("test");
+            m.setText("こんにちは");
+            m.setDate("2017/5/11 11:56");
+            messageList.add(m);
+
+            m = new Message();
+            m.setMessageID(2);
+            m.setPassword(new BCryptPasswordEncoder().encode("t"));
+            m.setName("asada");
+            m.setTitle("t");
+            m.setText("こんにちは");
+            m.setDate("2017/5/11 11:57");
+            messageList.add(m);
+
+            ModelController.setMessageList(messageList);
+        }
+
+        @Test
+        public void indexをGETしてみる() throws Exception {
+            String method = "GET";
+            String uri = "/program/board/index.html";
+            Map<String, String> headerField = new HashMap<>();
+            headerField.put("hoge", "hogehoge");
+            requestMessage = new RequestMessage(method, uri, null, headerField, null);
+
+            ProgramBoardHandler.doGet(requestMessage, responseMessage, "timeIdOfValue");
+
+            outputStream.close();
+
+            //Verify
+            try (BufferedReader br1 = new BufferedReader(new FileReader(new File("./src/test/resources/responseMessage.txt")));
+                 BufferedReader br2 = new BufferedReader(new FileReader(new File("./src/test/resources/Response/GetProgramBoard.txt")))) {
+
+                String str;
+                while ((str = br1.readLine()) != null) {
+                    assertThat(str, is(br2.readLine()));
+                }
+            }
+        }
+
+        @Test
+        public void searchをGETしてみる() throws Exception {
+            String method = "GET";
+            String uri = "/program/board/search.html";
+            Map<String, String> uriQuery = new HashMap<>();
+            uriQuery.put("param", "search");
+            uriQuery.put("name", "管理者");
+            requestMessage = new RequestMessage(method, uri, uriQuery, null, null);
+
+            ProgramBoardHandler.doGet(requestMessage, responseMessage, "timeIdOfValue");
+
+            outputStream.close();
+
+            //Verify
+            try (BufferedReader br1 = new BufferedReader(new FileReader(new File("./src/test/resources/responseMessage.txt")));
+                 BufferedReader br2 = new BufferedReader(new FileReader(new File("./src/test/resources/Response/GetSearchProgramBoard.txt")))) {
+
+                String str;
+                while ((str = br1.readLine()) != null) {
+                    assertThat(str, is(br2.readLine()));
+                }
+            }
+        }
+
+        @After
+        public void tearDown() throws Exception {
+            if (outputStream != null) {
+                outputStream.close();
+            }
+        }
+    }
+
+    public static class doPostメソッドのテスト {
+        private RequestMessage requestMessage;
+        private FileOutputStream outputStream = null;
+        private ResponseMessage responseMessage;
+
+        @Before
+        public void setUp() throws Exception {
+            outputStream = new FileOutputStream(new File("./src/test/resources/responseMessage.txt"));
+            responseMessage = new ResponseMessage(outputStream);
+
+            List<Message> messageList = new ArrayList<>();
+            Message m;
+            m = new Message();
+            m.setMessageID(1);
+            m.setPassword(new BCryptPasswordEncoder().encode("test"));
+            m.setName("管理者");
+            m.setTitle("test");
+            m.setText("こんにちは");
+            m.setDate("2017/5/11 11:56");
+            messageList.add(m);
+
+            m = new Message();
+            m.setMessageID(2);
+            m.setPassword(new BCryptPasswordEncoder().encode("t"));
+            m.setName("asada");
+            m.setTitle("t");
+            m.setText("こんにちは");
+            m.setDate("2017/5/11 11:57");
+            messageList.add(m);
+
+            ModelController.setMessageList(messageList);
+        }
+
+        @Test
+        public void paramがwriteの場合() throws Exception {
+
+        }
+    }
+
+    public static class sendResponseメソッドのテスト {
+        private ByteArrayOutputStream outputStream;
+        private ResponseMessage responseMessage;
+
+        @Before
+        public void setUp() {
+            outputStream = new ByteArrayOutputStream();
+            responseMessage = new ResponseMessage(outputStream);
+        }
+
+        @Test
+        public void 引数に文字列を渡す() {
+            ProgramBoardHandler.sendResponse(responseMessage, "hoge");
+            String[] response = outputStream.toString().split("\n");
+
+            assertThat(response.length, is(5));
+            assertThat(response[0], is("HTTP/1.1 200 OK"));
+            assertThat(response[1], is("Content-Type: text/html; charset=UTF-8"));
+            assertThat(response[2], is("Content-Length: 4"));
+            assertThat(response[3], is(""));
+            assertThat(response[4], is("hoge"));
+        }
+
+        @Test
+        public void 引数にファイルを渡す() {
+            ProgramBoardHandler.sendResponse(responseMessage, new File("./src/test/resources/漢字テスト/寿司.txt"));
+            String[] response = outputStream.toString().split("\n");
+
+            assertThat(response.length, is(7));
+            assertThat(response[0], is("HTTP/1.1 200 OK"));
+            assertThat(response[1], is("Content-Type: text/plain"));
+            assertThat(response[2], is("Content-Length: 24"));
+            assertThat(response[3], is(""));
+            assertThat(response[4], is("寿司"));
+            assertThat(response[5], is("マグロ"));
+            assertThat(response[6], is("イカ"));
+        }
+    }
+
+    public static class sendErrorResponseメソッドのテスト {
+        private ByteArrayOutputStream outputStream;
+        private ResponseMessage responseMessage;
+
+        @Before
+        public void setUp() {
+            outputStream = new ByteArrayOutputStream();
+            responseMessage = new ResponseMessage(outputStream);
+        }
+
+        @Test
+        public void BadRequestテスト() {
+            ProgramBoardHandler.sendErrorResponse(responseMessage, StatusLine.BAD_REQUEST);
+            String[] response = outputStream.toString().split("\n");
+
+            assertThat(response.length, is(4));
+            assertThat(response[0], is("HTTP/1.1 400 Bad Request"));
+            assertThat(response[1], is("Content-Type: text/html; charset=UTF-8"));
+            assertThat(response[2], is(""));
+            assertThat(response[3], is("<html><head><title>400 Bad Request</title></head><body><h1>Bad Request</h1>" +
+                    "<p>Your browser sent a request that this server could not understand.<br /></p></body></html>"));
+        }
+
+        @Test
+        public void NotFoundテスト() {
+            ProgramBoardHandler.sendErrorResponse(responseMessage, StatusLine.NOT_FOUND);
+            String[] response = outputStream.toString().split("\n");
+
+            assertThat(response.length, is(4));
+            assertThat(response[0], is("HTTP/1.1 404 Not Found"));
+            assertThat(response[1], is("Content-Type: text/html; charset=UTF-8"));
+            assertThat(response[2], is(""));
+            assertThat(response[3], is("<html><head><title>404 Not Found</title></head><body><h1>Not Found</h1>" +
+                    "<p>お探しのページは見つかりませんでした。</p></body></html>"));
+        }
+    }
 }

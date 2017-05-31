@@ -25,7 +25,7 @@ public class CsvHelperTest {
     @BeforeClass
     public static void setUp() throws Exception {
         list = CsvHelper.readMessage();
-        try (FileWriter fileWriter = new FileWriter(new File("./src/main/resources/data/message.csv"))) {
+        try (FileWriter fileWriter = new FileWriter(new File("./csv/message.csv"))) {
             fileWriter.write("");
             fileWriter.flush();
         }
@@ -33,7 +33,7 @@ public class CsvHelperTest {
 
     @Test(expected = CsvRuntimeException.class)
     public void 項目数が少ない不正なCSVをreadする() throws Exception {
-        try (FileWriter fileWriter = new FileWriter(new File("./src/main/resources/data/message.csv"))) {
+        try (FileWriter fileWriter = new FileWriter(new File("./csv/message.csv"))) {
             fileWriter.write("不正なCSVのテスト,項目数が少ない");
             fileWriter.flush();
         }
@@ -42,7 +42,7 @@ public class CsvHelperTest {
 
     @Test(expected = CsvRuntimeException.class)
     public void 項目数が多い場合() throws Exception {
-        try (FileWriter fileWriter = new FileWriter(new File("./src/main/resources/data/message.csv"))) {
+        try (FileWriter fileWriter = new FileWriter(new File("./csv/message.csv"))) {
             fileWriter.write("不,正,な,C,S,V,の,テ,ス,ト,項,目,数,が,多,い");
             fileWriter.flush();
         }

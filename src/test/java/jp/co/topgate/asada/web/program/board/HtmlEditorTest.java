@@ -128,9 +128,9 @@ public class HtmlEditorTest {
         assertThat(result[i++], is("                <td align=\"center\" style=\"word-wrap:break-word;\">管理者</td>"));
         assertThat(result[i++], is("                <td align=\"center\" style=\"word-wrap:break-word;\">2017/5/11 11:56</td>"));
         assertThat(result[i++], is("                <td align=\"center\">"));
-        assertThat(result[i++], is("                    <form action=\"/program/board/\" method=\"post\">"));
+        assertThat(result[i++], is("                    <form action=\"/program/board/search.html\" method=\"get\">"));
         assertThat(result[i++], is("                        <input type=\"hidden\" name=\"param\" value=\"search\">"));
-        assertThat(result[i++], is("                        <input type=\"hidden\" name=\"number\" value=\"1\">"));
+        assertThat(result[i++], is("                        <input type=\"hidden\" name=\"name\" value=\"管理者\">"));
         assertThat(result[i++], is("                        <input type=\"submit\" value=\"この人の他のコメントも見てみる\">"));
         assertThat(result[i++], is("                    </form>"));
         assertThat(result[i++], is("                </td>"));

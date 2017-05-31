@@ -46,10 +46,10 @@ public class ProgramBoardHandler extends Handler {
             ModelController.setMessageList(CsvHelper.readMessage());
 
             if (method.equals("GET")) {
-                doGet(requestMessage, responseMessage);
+                doGet(requestMessage, responseMessage, issueTimeId());
 
             } else if (method.equals("POST")) {
-                doPost(requestMessage, responseMessage);
+                doPost(requestMessage, responseMessage, issueTimeId());
 
                 CsvHelper.writeMessage(ModelController.getAllMessage());
             }
@@ -75,17 +75,17 @@ public class ProgramBoardHandler extends Handler {
      * @param responseMessage ResponseMessageのオブジェクト
      * @throws IOException HTMLファイルに書き込み中に例外発生
      */
-    static void doGet(RequestMessage requestMessage, ResponseMessage responseMessage) throws IOException {
+    static void doGet(RequestMessage requestMessage, ResponseMessage responseMessage, String nowTimeID) throws IOException {
         Path filePath = Handler.getFilePath(requestMessage.getUri());
 
-        if (!Handler.checkFile(filePath.toFile())) {
+        if (!filePath.toFile().exists()) {
             sendErrorResponse(responseMessage, StatusLine.NOT_FOUND);
             return;
         }
 
         //index.htmlをGET要求された場合は編集が入る
         if (filePath.equals(ProgramBoardHtmlList.INDEX_HTML.getPath())) {
-            String html = HtmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.INDEX_HTML, ModelController.getAllMessage(), issueTimeId());
+            String html = HtmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.INDEX_HTML, ModelController.getAllMessage(), nowTimeID);
             sendResponse(responseMessage, html);
             return;
         }
@@ -109,7 +109,7 @@ public class ProgramBoardHandler extends Handler {
                     throw new IllegalRequestException(param + "で 検索結果が 0 でした。");
                 }
 
-                String html = HtmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.SEARCH_HTML, messageList, issueTimeId());
+                String html = HtmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.SEARCH_HTML, messageList, nowTimeID);
                 sendResponse(responseMessage, html);
                 return;
             }
@@ -126,7 +126,7 @@ public class ProgramBoardHandler extends Handler {
      * @throws IOException             HTMLファイルに書き込み中に例外発生
      * @throws IllegalRequestException リクエストメッセージに問題があった
      */
-    static void doPost(RequestMessage requestMessage, ResponseMessage responseMessage) throws IOException, IllegalRequestException {
+    static void doPost(RequestMessage requestMessage, ResponseMessage responseMessage, String nowTimeID) throws IOException, IllegalRequestException {
 
         //リクエストのヘッダーフィールドにparamがあるか、メッセージボディは問題ないか確認。
         Map<String, String> messageBody = requestMessage.parseMessageBodyToMap();
@@ -163,28 +163,10 @@ public class ProgramBoardHandler extends Handler {
                 if (!ModelController.isExist(timeId)) {
                     ModelController.addMessage(safe_name, safe_title, safe_text, password, timeId);
                 }
-                String html = HtmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.INDEX_HTML, ModelController.getAllMessage(), issueTimeId());
+                String html = HtmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.INDEX_HTML, ModelController.getAllMessage(), nowTimeID);
                 sendResponse(responseMessage, html);
                 return;
             }
-
-//            //特定のユーザーが書き込んだ内容だけを表示させる処理
-//            case "search": {
-//                String number = messageBody.get("number");
-//                if (number == null || !NumberUtils.isNumber(number)) {
-//                    throw new IllegalRequestException("param:" + param + " number:" + number + " numberに問題があります。");
-//                }
-//                String name = ModelController.getName(Integer.parseInt(number));
-//                List<Message> messageList = ModelController.findMessageByName(name);
-//
-//                if (messageList.size() == 0) {
-//                    throw new IllegalRequestException(param + "で 検索結果が 0 でした。");
-//                }
-//
-//                String html = HtmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.SEARCH_HTML, messageList, issueTimeId());
-//                sendResponse(responseMessage, html);
-//                return;
-//            }
 
             //ユーザーがindexのページで書き込んだ内容を削除する処理
             case "delete_step_1": {
@@ -233,7 +215,7 @@ public class ProgramBoardHandler extends Handler {
 
             //ページに配置した戻るボタンを押した時の処理
             case "back": {
-                String html = HtmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.INDEX_HTML, ModelController.getAllMessage(), issueTimeId());
+                String html = HtmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.INDEX_HTML, ModelController.getAllMessage(), nowTimeID);
                 sendResponse(responseMessage, html);
                 return;
             }
@@ -303,9 +285,18 @@ public class ProgramBoardHandler extends Handler {
      *
      * @return エンコードされて発行する
      */
-    static String issueTimeId() {
+    private static String issueTimeId() {
         LocalDateTime ldt = LocalDateTime.now();
         return "" + ldt.getYear() + ldt.getMonthValue() + ldt.getDayOfMonth() + ldt.getHour() +
                 ldt.getMinute() + ldt.getSecond() + ldt.getNano();
+    }
+
+    //テスト用
+    RequestMessage getRequestMessage() {
+        return requestMessage;
+    }
+
+    ResponseMessage getResponseMessage() {
+        return responseMessage;
     }
 }
