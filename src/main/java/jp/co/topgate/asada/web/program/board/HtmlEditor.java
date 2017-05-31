@@ -128,7 +128,7 @@ class HtmlEditor {
      * @return 読み込んだファイルを返す
      * @throws IOException HTMLファイルの読み込み中にエラー発生
      */
-    private static String readHtml(Path filePath) throws IOException {
+    static String readHtml(Path filePath) throws IOException {
         try (BufferedReader br = new BufferedReader(new FileReader(filePath.toFile()))) {
             String line;
             StringBuilder builder = new StringBuilder();
@@ -156,9 +156,9 @@ class HtmlEditor {
                         "                <td align=\"center\" style=\"word-wrap:break-word;\">" + message.getName() + "</td>" + "\n" +
                         "                <td align=\"center\" style=\"word-wrap:break-word;\">" + message.getDate() + "</td>" + "\n" +
                         "                <td align=\"center\">\n" +
-                        "                    <form action=\"/program/board/\" method=\"post\">\n" +
+                        "                    <form action=\"/program/board/search.html\" method=\"get\">\n" +
                         "                        <input type=\"hidden\" name=\"param\" value=\"search\">\n" +
-                        "                        <input type=\"hidden\" name=\"number\" value=\"" + message.getMessageID() + "\">\n" +
+                        "                        <input type=\"hidden\" name=\"name\" value=\"" + message.getName() + "\">\n" +
                         "                        <input type=\"submit\" value=\"この人の他のコメントも見てみる\">\n" +
                         "                    </form>\n" +
                         "                </td>\n" +
@@ -200,6 +200,7 @@ class HtmlEditor {
 
     /**
      * 改行コードをHTMLのbrタグに変更するメソッド
+     * 改行文字を<br>タグに変更しないと、CSVファイル内で改行が発生してしまう
      *
      * @param str HTMLに書き込みたい文章を渡す
      * @return 改行コードを全てbrタグに修正して返す

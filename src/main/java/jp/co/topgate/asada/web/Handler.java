@@ -3,6 +3,8 @@ package jp.co.topgate.asada.web;
 import jp.co.topgate.asada.web.program.board.ProgramBoardHandler;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * ハンドラー抽象クラス
@@ -36,29 +38,29 @@ public abstract class Handler {
     /**
      * URIを元に、実際のファイルパスを返すメソッド
      */
-    public static String getFilePath(String uri) {
-        return FILE_PATH + uri;
+    public static Path getFilePath(String uri) {
+        return Paths.get(FILE_PATH + uri);
     }
 
     /**
-     * ファイルが存在するか、ディレクトリではないかを判定するメソッド
+     * ファイルが存在するか判定するメソッド
      *
      * @param file ファイルを渡す
-     * @return trueの場合はファイルが存在し、ディレクトリではない
+     * @return trueの場合はファイルが存在する。
      */
     public static boolean checkFile(File file) {
-        return file.exists() && file.isFile();
+        return file.exists();
     }
 
     /**
      * リクエストを適切に処理し、ResponseMessageのオブジェクトを生成してServerクラスに返す
-     * レスポンスメッセージを実際に書き込むのはServerが行う
+     * レスポンスメッセージを実際に書き込むのはServerが行う。
      */
     public abstract void handleRequest();
 
     /**
-     * リクエストのメソッドが担当するハンドラーが処理できるものか判定する
-     * falseの場合はサーバーが実装されていないメソッドである旨をレスポンスする
+     * リクエストのメソッドが担当するハンドラーが処理できるものか判定する。デフォルトでは、GETとPOSTは対応することになる。
+     * falseの場合はServerクラス内で実装されていないメソッドである旨をレスポンスする。
      *
      * @param method リクエストメッセージのメソッドを渡す
      * @return trueの場合はハンドラーが処理できるメソッドである。falseの場合はハンドラーが処理しないメソッドである

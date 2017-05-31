@@ -3,7 +3,6 @@ package jp.co.topgate.asada.web.program.board;
 import jp.co.topgate.asada.web.*;
 import jp.co.topgate.asada.web.Handler;
 import jp.co.topgate.asada.web.exception.CsvRuntimeException;
-import jp.co.topgate.asada.web.exception.RequestParseException;
 import jp.co.topgate.asada.web.exception.IllegalRequestException;
 import jp.co.topgate.asada.web.program.board.model.Message;
 import jp.co.topgate.asada.web.program.board.model.ModelController;
@@ -11,7 +10,6 @@ import org.apache.commons.lang3.math.NumberUtils;
 
 import java.io.*;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -43,20 +41,24 @@ public class ProgramBoardHandler extends Handler {
     @Override
     public void handleRequest() {
         String method = requestMessage.getMethod();
-        String uri = requestMessage.getUri();
 
         try {
             ModelController.setMessageList(CsvHelper.readMessage());
 
             if (method.equals("GET")) {
-                doGet(responseMessage, uri);
+                doGet(requestMessage, responseMessage);
 
             } else if (method.equals("POST")) {
-                doPost(responseMessage, null, null);
+                doPost(requestMessage, responseMessage);
 
                 CsvHelper.writeMessage(ModelController.getAllMessage());
             }
+        } catch (IllegalRequestException e) {
+            e.printStackTrace();
+            sendErrorResponse(responseMessage, StatusLine.BAD_REQUEST);
+
         } catch (IOException e) {
+            e.printStackTrace();
             sendErrorResponse(responseMessage, StatusLine.INTERNAL_SERVER_ERROR);
 
         } catch (CsvRuntimeException e) {
@@ -66,39 +68,15 @@ public class ProgramBoardHandler extends Handler {
         }
     }
 
-    public void handleRequest(String test) {
-
-        String method = requestMessage.getMethod();
-
-        try {
-            if (method.equals("POST")) {
-                Map<String, String> messageBody = requestMessage.parseMessageBodyToMap();
-                if (messageBody == null) {
-                    sendErrorResponse(responseMessage, StatusLine.BAD_REQUEST);
-                }
-                doPost(responseMessage, Param.getParam(messageBody.get("param")), messageBody);
-            }
-
-        } catch (RequestParseException | IllegalRequestException e) {
-            sendErrorResponse(responseMessage, StatusLine.BAD_REQUEST);
-
-        } catch (IOException e) {
-            sendErrorResponse(responseMessage, StatusLine.INTERNAL_SERVER_ERROR);
-        }
-    }
-
-
     /**
      * GETの場合の処理
-     * POSTでindex.htmlファイルに書き込む場合も呼ばれる
      *
+     * @param requestMessage  RequestMessageのオブジェクト
      * @param responseMessage ResponseMessageのオブジェクト
-     * @param uri
+     * @throws IOException HTMLファイルに書き込み中に例外発生
      */
-    static void doGet(ResponseMessage responseMessage, String uri) throws IOException {
-        Path filePath = Paths.get(Handler.getFilePath(uri));
-
-        System.out.println(filePath.toString());
+    static void doGet(RequestMessage requestMessage, ResponseMessage responseMessage) throws IOException {
+        Path filePath = Handler.getFilePath(requestMessage.getUri());
 
         if (!Handler.checkFile(filePath.toFile())) {
             sendErrorResponse(responseMessage, StatusLine.NOT_FOUND);
@@ -112,88 +90,121 @@ public class ProgramBoardHandler extends Handler {
             return;
         }
 
+        if (filePath.equals(ProgramBoardHtmlList.SEARCH_HTML.getPath())) {
+            //リクエストのヘッダーフィールドにparamがあるか、メッセージボディは問題ないか確認。
+            String param = requestMessage.findUriQuery("param");
+            if (param == null) {
+                throw new IllegalRequestException("paramがnullである。");
+            }
+
+            //特定のユーザーの書き込んだ内容を表示する処理
+            if (param.equals("search")) {
+                String name = requestMessage.findUriQuery("name");
+                if (name == null) {
+                    throw new IllegalRequestException("param:" + param + " nameがnullです。");
+                }
+                List<Message> messageList = ModelController.findMessageByName(name);
+
+                if (messageList.size() == 0) {
+                    throw new IllegalRequestException(param + "で 検索結果が 0 でした。");
+                }
+
+                String html = HtmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.SEARCH_HTML, messageList, issueTimeId());
+                sendResponse(responseMessage, html);
+                return;
+            }
+        }
+
         sendResponse(responseMessage, filePath.toFile());
     }
 
     /**
      * POSTの場合の処理
      *
-     * @param param       メッセージボディで送られてくるparamのEnum
-     * @param messageBody リクエストのメッセージボディを渡す
+     * @param requestMessage  RequestMessageのオブジェクト
+     * @param responseMessage ResponseMessageのオブジェクト
      * @throws IOException             HTMLファイルに書き込み中に例外発生
      * @throws IllegalRequestException リクエストメッセージに問題があった
      */
-    static void doPost(ResponseMessage responseMessage, Param param, Map<String, String> messageBody) throws IOException, IllegalRequestException {
+    static void doPost(RequestMessage requestMessage, ResponseMessage responseMessage) throws IOException, IllegalRequestException {
+
+        //リクエストのヘッダーフィールドにparamがあるか、メッセージボディは問題ないか確認。
+        Map<String, String> messageBody = requestMessage.parseMessageBodyToMap();
+        if (messageBody == null) {
+            throw new IllegalRequestException("messageBodyがnullである。");
+        }
+        String param = messageBody.get("param");
         if (param == null) {
-            throw new IllegalRequestException("POSTのリクエストメッセージのヘッダーフィールドにparamが含まれていませんでした。");
+            throw new IllegalRequestException("paramがnullである。");
         }
 
-        ProgramBoardHtmlList programBoardHtmlList;
         switch (param) {
-            case WRITE: {
+
+            //ユーザーがメッセージを投稿する処理
+            case "write": {
                 String unsafe_name = messageBody.get("name");
                 String unsafe_title = messageBody.get("title");
                 String unsafe_text = messageBody.get("text");
-                String unsafe_password = messageBody.get("password");
-                String timeIdOfRequest = messageBody.get("timeID");
+                String password = messageBody.get("password");
+                String timeId = messageBody.get("timeID");
 
-                if (unsafe_name == null || unsafe_title == null || unsafe_text == null || unsafe_password == null || timeIdOfRequest == null) {
+                if (unsafe_name == null || unsafe_title == null || unsafe_text == null || password == null || timeId == null) {
+
                     throw new IllegalRequestException("param:" + param + " name:" + unsafe_name + " title:" + unsafe_title + " text:"
-                            + unsafe_text + " password:" + unsafe_password + " timeID:" + timeIdOfRequest + "のいずれかの項目に問題があります。");
+                            + unsafe_text + " password:" + password + " timeID:" + timeId + "のいずれかがnullである。");
                 }
 
                 String safe_name = UnsafeChar.replace(unsafe_name);
                 String safe_title = UnsafeChar.replace(unsafe_title);
                 String safe_text = UnsafeChar.replace(unsafe_text);
-                String safe_password = UnsafeChar.replace(unsafe_password);
 
                 safe_text = HtmlEditor.changeLineFeedToBrTag(safe_text);
 
-                if (ModelController.isExist(timeIdOfRequest)) {
-                    writeIndex(responseMessage);
-                    return;
+                if (!ModelController.isExist(timeId)) {
+                    ModelController.addMessage(safe_name, safe_title, safe_text, password, timeId);
                 }
-
-                ModelController.addMessage(safe_name, safe_title, safe_text, safe_password, timeIdOfRequest);
-                writeIndex(responseMessage);
+                String html = HtmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.INDEX_HTML, ModelController.getAllMessage(), issueTimeId());
+                sendResponse(responseMessage, html);
                 return;
             }
 
-            case SEARCH: {
-                String number = messageBody.get("number");
-                if (number == null || !NumberUtils.isNumber(number)) {
-                    throw new IllegalRequestException("param:" + param + " number:" + number + " numberに問題があります。");
-                }
-                String name = ModelController.getName(Integer.parseInt(number));
-                List<Message> messageList = ModelController.findMessageByName(name);
+//            //特定のユーザーが書き込んだ内容だけを表示させる処理
+//            case "search": {
+//                String number = messageBody.get("number");
+//                if (number == null || !NumberUtils.isNumber(number)) {
+//                    throw new IllegalRequestException("param:" + param + " number:" + number + " numberに問題があります。");
+//                }
+//                String name = ModelController.getName(Integer.parseInt(number));
+//                List<Message> messageList = ModelController.findMessageByName(name);
+//
+//                if (messageList.size() == 0) {
+//                    throw new IllegalRequestException(param + "で 検索結果が 0 でした。");
+//                }
+//
+//                String html = HtmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.SEARCH_HTML, messageList, issueTimeId());
+//                sendResponse(responseMessage, html);
+//                return;
+//            }
 
-                if (messageList.size() > 0) {
-                    programBoardHtmlList = ProgramBoardHtmlList.SEARCH_HTML;
-                    sendResponse(responseMessage, HtmlEditor.editIndexOrSearchHtml(programBoardHtmlList, messageList, issueTimeId()));
-                    return;
-
-                } else {
-                    throw new IllegalRequestException(param + "で 検索結果が 0 でした。");
-                }
-            }
-
-            case DELETE_STEP_1: {
+            //ユーザーがindexのページで書き込んだ内容を削除する処理
+            case "delete_step_1": {
                 String number = messageBody.get("number");
                 if (number == null || !NumberUtils.isNumber(number)) {
                     throw new IllegalRequestException("param:" + param + " number:" + number + " numberに問題があります。");
                 }
 
                 Message message = ModelController.findMessageByID(Integer.parseInt(number));
-                if (message != null) {
-                    sendResponse(responseMessage, HtmlEditor.editDeleteHtml(message));
-                    return;
-
-                } else {
+                if (message == null) {
                     throw new IllegalRequestException(param + "で message が null でした。");
                 }
+
+                String html = HtmlEditor.editDeleteHtml(message);
+                sendResponse(responseMessage, html);
+                return;
             }
 
-            case DELETE_STEP_2: {
+            //step1でdeleteページを表示し、ユーザーが削除ボタンを押した時の処理
+            case "delete_step_2": {
                 String number = messageBody.get("number");
                 String password = messageBody.get("password");
 
@@ -202,11 +213,13 @@ public class ProgramBoardHandler extends Handler {
                 }
 
                 if (ModelController.deleteMessage(Integer.parseInt(number), password)) {
+                    //パスワードがあっていて、削除できた時の処理
                     sendResponse(responseMessage, ProgramBoardHtmlList.RESULT_HTML.getPath().toFile());
                     return;
 
                 } else {
-                    Message message = ModelController.findMessageByID(Integer.parseInt(messageBody.get("number")));
+                    //削除に失敗した時の処理
+                    Message message = ModelController.findMessageByID(Integer.parseInt(number));
 
                     if (message != null) {
                         sendResponse(responseMessage, HtmlEditor.editDeleteHtml(message));
@@ -218,8 +231,12 @@ public class ProgramBoardHandler extends Handler {
                 }
             }
 
-            case BACK:
-                writeIndex(responseMessage);
+            //ページに配置した戻るボタンを押した時の処理
+            case "back": {
+                String html = HtmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.INDEX_HTML, ModelController.getAllMessage(), issueTimeId());
+                sendResponse(responseMessage, html);
+                return;
+            }
 
             default:
                 throw new IllegalRequestException("param:" + param + " paramに想定されているもの以外が送られました。");
@@ -227,20 +244,10 @@ public class ProgramBoardHandler extends Handler {
     }
 
     /**
-     * index.htmlを編集するメソッド
+     * HTMLを編集した場合にレスポンスを送信するメソッド
      *
-     * @throws IOException HTMLファイルに書き込み中に例外発生
-     */
-    static void writeIndex(ResponseMessage responseMessage) throws IOException {
-        String html = HtmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.INDEX_HTML, ModelController.getAllMessage(), issueTimeId());
-        sendResponse(responseMessage, html);
-    }
-
-    /**
-     * 編集したHTMLをレスポンスで返すメソッド
-     *
-     * @param responseMessage
-     * @param html
+     * @param responseMessage レスポンスメッセージを渡す
+     * @param html            編集したHTMLの文字列を渡す
      */
     static void sendResponse(ResponseMessage responseMessage, String html) {
         responseMessage.addHeaderWithContentType(ContentType.getHtmlType());
@@ -254,25 +261,30 @@ public class ProgramBoardHandler extends Handler {
     }
 
     /**
-     * バイナリデータをレスポンスで返すメソッド
+     * バイナリデータやハンドラー内で編集しなかった場合のメソッド
+     *
+     * @param responseMessage レスポンスメッセージを渡す
+     * @param file            レスポンスしたいリソースファイルを渡す
      */
     static void sendResponse(ResponseMessage responseMessage, File file) {
         responseMessage.addHeaderWithContentType(ContentType.getContentType(file.getPath()));
         responseMessage.addHeaderWithContentLength(String.valueOf(file.length()));
 
         OutputStream outputStream = responseMessage.getOutputStream(StatusLine.OK);
-        try (InputStream in = new FileInputStream(file)) {
-            int num;
-            while ((num = in.read()) != -1) {
-                outputStream.write(num);
+        try (InputStream inputStream = new FileInputStream(file)) {
+            int tmp;
+            while ((tmp = inputStream.read()) != -1) {
+                outputStream.write(tmp);
             }
+            outputStream.flush();
+
         } catch (IOException e) {
 
         }
     }
 
     /**
-     * エラー場合のレスポンスメッセージを書き込むメソッド
+     * エラーレスポンスを送信するメソッド
      *
      * @param responseMessage レスポンスメッセージを渡す
      * @param statusLine      ステータスラインを渡す
@@ -280,14 +292,14 @@ public class ProgramBoardHandler extends Handler {
     static void sendErrorResponse(ResponseMessage responseMessage, StatusLine statusLine) {
         responseMessage.addHeaderWithContentType(ContentType.getHtmlType());
 
-        PrintWriter pw = responseMessage.getPrintWriter(statusLine);
-        pw.write(ResponseMessage.getErrorMessageBody(statusLine));
-        pw.flush();
+        PrintWriter printWriter = responseMessage.getPrintWriter(statusLine);
+        printWriter.write(ResponseMessage.getErrorMessageBody(statusLine));
+        printWriter.flush();
     }
 
     /**
      * HTMLページに書き込むID（二重リクエスト防ぐためのもの）を発行するメソッド
-     * TODO IDを見られてもいいように、暗号化、エンコードする。その際、URF-8でエンコードをして中身をみるので、例外が発生しないように気をつけないといけない。
+     * TODO HTMLのソースコードを見られてもいいようにする。問題は、リクエストメッセージパースクラスのメソッドで、URF-8でエンコードするので、例外が発生するものがある。
      *
      * @return エンコードされて発行する
      */
@@ -297,5 +309,3 @@ public class ProgramBoardHandler extends Handler {
                 ldt.getMinute() + ldt.getSecond() + ldt.getNano();
     }
 }
-
-

@@ -107,10 +107,10 @@ public final class RequestMessageParser {
                     try {
                         contentLength = Integer.parseInt(sContentLength);
                     } catch (NumberFormatException e) {
-                        //TODO コンテンツレングスがintの最大値を越えた場合の処理
-                        //NumberFormatExceptionは int の最大値である2147483647を超えた場合に発生する例外。
-                        //サイズが大きいファイルはメモリに用意するとリソースを食うので、inputStreamのまま処理するのが正解だと思われる。
-                        throw new RequestParseException("POSTで送られきたコンテンツレングスがintの最大値である2147483647を越えた");
+                        //TODO ヘッダーフィールドのContent-Length が int の最大値を越えた場合の処理
+                        //ここの、NumberFormatExceptionは int の最大値である2147483647を超えた場合に発生する。
+                        //サイズが大きいファイルはメモリに用意するとリソースを消費するので、inputStreamのまま処理するのが正解だと思われる。
+                        throw new RequestParseException("POSTで送られきたContent-Length が int の最大値である2147483647を越えた");
                     }
                     int requestLineAndHeaderLength = countRequestLineAndHeaderLength(bis);
                     bis.reset();
@@ -123,13 +123,7 @@ public final class RequestMessageParser {
             throw new RequestParseException(e.getMessage(), e.getCause());
         }
 
-        RequestMessage requestMessage = new RequestMessage();
-        requestMessage.setMethod(method);
-        requestMessage.setUri(uri);
-        requestMessage.setUriQuery(uriQuery);
-        requestMessage.setHeaderField(headerField);
-        requestMessage.setMessageBody(messageBody);
-        return requestMessage;
+        return new RequestMessage(method, uri, uriQuery, headerField, messageBody);
     }
 
     /**
@@ -214,7 +208,7 @@ public final class RequestMessageParser {
     static Map<String, String> readHeaderField(InputStream inputStream) throws IOException, RequestParseException {
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, Main.CHARACTER_ENCODING_SCHEME));
 
-        //一行目はリクエストラインなのでaddしない
+        //一行目はリクエストラインなので無視する
         bufferedReader.readLine();
 
         Map<String, String> uriQuery = new HashMap<>();
@@ -247,7 +241,7 @@ public final class RequestMessageParser {
         StringBuilder builder = new StringBuilder();
         String str;
         while (!Strings.isNullOrEmpty(str = bufferedReader.readLine())) {
-            builder.append(str).append("\r").append("\n");
+            builder.append(str).append("\r\n");
         }
         builder.append("\r\n");
         return builder.toString().length();
@@ -264,10 +258,8 @@ public final class RequestMessageParser {
      */
     static byte[] readMessageBody(InputStream inputStream, int requestLineAndHeaderLength, int messageBodyLength) throws IOException {
 
-        //リクエストラインとヘッダーフィールドをスキップする
         long num = inputStream.skip(requestLineAndHeaderLength);
 
-        //メッセージボディを読む
         byte[] messageBody = new byte[messageBodyLength];
         int i = inputStream.read(messageBody);
         return messageBody;

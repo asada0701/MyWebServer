@@ -35,32 +35,32 @@ public class RequestMessage {
     private Map<String, String> headerField = null;
     private byte[] messageBody = null;
 
+    /**
+     * コンストラクタ
+     * リクエストメッセージパーサークラスから呼び出される。
+     * 注意点
+     * uriQuery、headerField、messageBodyはnullが入ってくることがあり、その場合は各find,getメソッドはnullを返すことになる。
+     *
+     * @param method      リクエストのメソッド
+     * @param uri         URI
+     * @param uriQuery    URIのクエリー
+     * @param headerField ヘッダーフィールド
+     * @param messageBody メッセージボディ
+     */
+    RequestMessage(String method, String uri, Map<String, String> uriQuery, Map<String, String> headerField, byte[] messageBody) {
+        this.method = method;
+        this.uri = uri;
+        this.uriQuery = uriQuery;
+        this.headerField = headerField;
+        this.messageBody = messageBody;
+    }
+
     public String getMethod() {
         return method;
     }
 
-    public void setMethod(String method) {
-        this.method = method;
-    }
-
     public String getUri() {
         return uri;
-    }
-
-    public void setUri(String uri) {
-        this.uri = uri;
-    }
-
-    public void setUriQuery(Map<String, String> uriQuery) {
-        this.uriQuery = uriQuery;
-    }
-
-    public void setHeaderField(Map<String, String> headerField) {
-        this.headerField = headerField;
-    }
-
-    public void setMessageBody(byte[] messageBody) {
-        this.messageBody = messageBody;
     }
 
     /**
@@ -78,9 +78,11 @@ public class RequestMessage {
 
     /**
      * ヘッダーフィールドのヘッダ名を元にヘッダ値を返す
+     * 注意点
+     * 送られてきたリクエストにヘッダーフィールドが含まれていなかった場合はnullを返す。
      *
      * @param fieldName 探したいヘッダ名
-     * @return ヘッダ値を返す。ヘッダーフィールドに含まれていなかった場合はNullを返す
+     * @return ヘッダ値を返す。ヘッダーフィールドに含まれていなかった場合はnullを返す
      */
     public String findHeaderByName(String fieldName) {
         if (headerField == null) {
@@ -92,7 +94,7 @@ public class RequestMessage {
     /**
      * メッセージボディをパースするメソッド
      * 注意点
-     * コンテンツタイプがapplication/x-www-form-urlencodedではない場合(nullの場合も)は、nullを返す
+     * コンテンツタイプがapplication/x-www-form-urlencodedではない場合(コンテンツタイプがnullの場合も)、nullを返す
      *
      * @return パースした結果をMapで返す
      * @throws RequestParseException パースした結果不正なリクエストだった

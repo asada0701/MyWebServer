@@ -33,7 +33,7 @@ public class Main {
         System.out.println("this server's port number is " + PORT_NUMBER);
         try {
             System.out.println("start up http server..");
-            Server.run(PORT_NUMBER);
+            Server.start(PORT_NUMBER);
 
         } catch (IOException e) {
             e.printStackTrace();

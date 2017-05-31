@@ -13,11 +13,11 @@ import java.net.*;
  */
 class Server {
     /**
-     * コンストラクタ
+     * サーバーを立ち上げるメソッド
      *
      * @throws IOException サーバーソケットでエラーが発生しました
      */
-    static void run(int portNumber) throws IOException {
+    static void start(int portNumber) throws IOException {
         ServerSocket serverSocket = new ServerSocket(portNumber);
         while (true) {
             Socket clientSocket = serverSocket.accept();
@@ -38,9 +38,11 @@ class Server {
                 }
 
             } catch (RequestParseException e) {                 //リクエストメッセージに問題があった場合の例外処理
+                e.printStackTrace();
                 statusLineOfException = StatusLine.BAD_REQUEST;
 
             } catch (HttpVersionException e) {                  //リクエストメッセージのプロトコルバージョンが想定外のものである
+                e.printStackTrace();
                 statusLineOfException = StatusLine.HTTP_VERSION_NOT_SUPPORTED;
 
             } finally {
@@ -54,5 +56,4 @@ class Server {
             clientSocket.close();
         }
     }
-
 }

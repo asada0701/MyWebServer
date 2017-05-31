@@ -30,9 +30,7 @@ public class StaticHandler extends Handler {
      */
     @Override
     public void handleRequest() {
-        Path filePath = Paths.get(Handler.getFilePath(requestMessage.getUri()));
-
-        System.out.println(filePath.toString());
+        Path filePath = Handler.getFilePath(requestMessage.getUri());
 
         StatusLine statusLine;
         if (Handler.checkFile(filePath.toFile())) {
