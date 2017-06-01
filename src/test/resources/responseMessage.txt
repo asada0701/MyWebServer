@@ -1,31 +1,131 @@
 HTTP/1.1 200 OK
 Content-Type: text/html; charset=UTF-8
-Content-Length: 713
+Content-Length: 5774
 
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <link rel="stylesheet" type="text/css" href="./css/style.css">
-    <script type="text/javascript" src="./js/myjs.js"></script>
 </head>
+
 <body>
 <center>
     <div id="header">
-        <h1>こんにちは</h1>
-        <p>
-            <script>
-            koshin();
-            </script>
-        </p>
+        <h1>掲示板-LightBoard</h1>
+        <a href="./caution.html" target="_blank">注意事項を読む</a>
     </div>
-    <div id="image">
-        <p>
-            <img src="./img/s_1.jpg" width="200" height="180" alt="猫"/>
-            <img src="./img/loading-loop.gif" width="200" height="180"/>
-            <img src="./img/s_pet_cat.png" width="200" height="180"/>
-        </p>
+    <div id="form">
+        <form action="/program/board/" method="post">
+            <p>
+                名前<input type="text" name="name" size="21" maxlength="20" required>(20文字まで)
+            </p>
+            <p>
+                タイトル<input type="text" name="title" size="21" maxlength="20" required>(20文字まで)
+            </p>
+            <p>
+                メッセージ<br>
+                <textarea name="text" rows="5" cols="42" maxlength="200" required></textarea>
+                <br>(200文字まで)
+            </p>
+            <p>
+                パスワード<input type="password" name="password" size="21" maxlength="20" required>(20文字まで)
+                <br>(投稿した文を削除するときに使います。)
+            </p>
+            <input type="hidden" name="param" value="write">
+            <input type="hidden" name="timeID" value="timeIdOfValue">
+            <input type="submit" value="投稿">
+        </form>
+    </div>
+    <div id="log">
+        <table border="1" style="table-layout:fixed;width:100%;">
+            <colgroup>
+                <col style="width:5%;">
+                <col style="width:10%;">
+                <col style="width:30%;">
+                <col style="width:10%;">
+                <col style="width:15%;">
+                <col style="width:20%;">
+                <col style="width:10%;">
+            </colgroup>
+            <tbody>
+            <tr>
+                <th>No</th>
+                <th>タイトル</th>
+                <th>本文</th>
+                <th>ユーザー名</th>
+                <th>日付</th>
+                <th></th>
+                <th></th>
+            </tr>
+            <tr id="No.3">
+                <td align="center" style="word-wrap:break-word;">No.3</td>
+                <td align="center" style="word-wrap:break-word;">test</td>
+                <td align="center" style="word-wrap:break-word;">こんにちは</td>
+                <td align="center" style="word-wrap:break-word;">asada</td>
+                <td align="center" style="word-wrap:break-word;">2017/6/1 15:52</td>
+                <td align="center">
+                    <form action="/program/board/search.html" method="get">
+                        <input type="hidden" name="param" value="search">
+                        <input type="hidden" name="name" value="asada">
+                        <input type="submit" value="この人の他のコメントも見てみる">
+                    </form>
+                </td>
+                <td align="center">
+                    <form action="/program/board/" method="post">
+                        <input type="hidden" name="param" value="delete_step_1">
+                        <input type="hidden" name="number" value="3">
+                        <input type="submit" value="削除する">
+                    </form>
+                </td>
+            </tr>
+            <tr id="No.2">
+                <td align="center" style="word-wrap:break-word;">No.2</td>
+                <td align="center" style="word-wrap:break-word;">t</td>
+                <td align="center" style="word-wrap:break-word;">こんにちは</td>
+                <td align="center" style="word-wrap:break-word;">asada</td>
+                <td align="center" style="word-wrap:break-word;">2017/5/11 11:57</td>
+                <td align="center">
+                    <form action="/program/board/search.html" method="get">
+                        <input type="hidden" name="param" value="search">
+                        <input type="hidden" name="name" value="asada">
+                        <input type="submit" value="この人の他のコメントも見てみる">
+                    </form>
+                </td>
+                <td align="center">
+                    <form action="/program/board/" method="post">
+                        <input type="hidden" name="param" value="delete_step_1">
+                        <input type="hidden" name="number" value="2">
+                        <input type="submit" value="削除する">
+                    </form>
+                </td>
+            </tr>
+            <tr id="No.1">
+                <td align="center" style="word-wrap:break-word;">No.1</td>
+                <td align="center" style="word-wrap:break-word;">test</td>
+                <td align="center" style="word-wrap:break-word;">こんにちは</td>
+                <td align="center" style="word-wrap:break-word;">管理者</td>
+                <td align="center" style="word-wrap:break-word;">2017/5/11 11:56</td>
+                <td align="center">
+                    <form action="/program/board/search.html" method="get">
+                        <input type="hidden" name="param" value="search">
+                        <input type="hidden" name="name" value="管理者">
+                        <input type="submit" value="この人の他のコメントも見てみる">
+                    </form>
+                </td>
+                <td align="center">
+                    <form action="/program/board/" method="post">
+                        <input type="hidden" name="param" value="delete_step_1">
+                        <input type="hidden" name="number" value="1">
+                        <input type="submit" value="削除する">
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
     </div>
 </center>
 </body>
+
 </html>

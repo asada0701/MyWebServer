@@ -243,18 +243,74 @@ public class ProgramBoardHandlerTest {
             outputStream.close();
 
             //verify
-            try (BufferedReader br1 = new BufferedReader(new FileReader(new File(responseMessagePath)));
-                 BufferedReader br2 = new BufferedReader(new FileReader(new File("./src/test/resources/response/PostWriteProgramBoard.txt")))) {
-
-                String str;
-                while ((str = br1.readLine()) != null) {
-                    assertThat(str, is(br2.readLine()));
-
-                    //TODO これ以降の部分では現在時刻を使用する
-                    if (str.equals("                <td align=\"center\" style=\"word-wrap:break-word;\">asada</td>")) {
-                        break;
-                    }
-                }
+            //メッセージの投稿は、現在時刻を取り扱うため、テストは途中までとする。
+            try (BufferedReader br = new BufferedReader(new FileReader(new File(responseMessagePath)))) {
+                assertThat(br.readLine(), is("HTTP/1.1 200 OK"));
+                assertThat(br.readLine(), is("Content-Type: text/html; charset=UTF-8"));
+                assertThat(br.readLine(), is("Content-Length: 5774"));
+                assertThat(br.readLine(), is(""));
+                assertThat(br.readLine(), is("<!DOCTYPE html>"));
+                assertThat(br.readLine(), is("<html>"));
+                assertThat(br.readLine(), is(""));
+                assertThat(br.readLine(), is("<head>"));
+                assertThat(br.readLine(), is("    <meta http-equiv=\"content-type\" content=\"text/html; charset=utf-8\">"));
+                assertThat(br.readLine(), is("    <link rel=\"stylesheet\" type=\"text/css\" href=\"./css/style.css\">"));
+                assertThat(br.readLine(), is("</head>"));
+                assertThat(br.readLine(), is(""));
+                assertThat(br.readLine(), is("<body>"));
+                assertThat(br.readLine(), is("<center>"));
+                assertThat(br.readLine(), is("    <div id=\"header\">"));
+                assertThat(br.readLine(), is("        <h1>掲示板-LightBoard</h1>"));
+                assertThat(br.readLine(), is("        <a href=\"./caution.html\" target=\"_blank\">注意事項を読む</a>"));
+                assertThat(br.readLine(), is("    </div>"));
+                assertThat(br.readLine(), is("    <div id=\"form\">"));
+                assertThat(br.readLine(), is("        <form action=\"/program/board/\" method=\"post\">"));
+                assertThat(br.readLine(), is("            <p>"));
+                assertThat(br.readLine(), is("                名前<input type=\"text\" name=\"name\" size=\"21\" maxlength=\"20\" required>(20文字まで)"));
+                assertThat(br.readLine(), is("            </p>"));
+                assertThat(br.readLine(), is("            <p>"));
+                assertThat(br.readLine(), is("                タイトル<input type=\"text\" name=\"title\" size=\"21\" maxlength=\"20\" required>(20文字まで)"));
+                assertThat(br.readLine(), is("            </p>"));
+                assertThat(br.readLine(), is("            <p>"));
+                assertThat(br.readLine(), is("                メッセージ<br>"));
+                assertThat(br.readLine(), is("                <textarea name=\"text\" rows=\"5\" cols=\"42\" maxlength=\"200\" required></textarea>"));
+                assertThat(br.readLine(), is("                <br>(200文字まで)"));
+                assertThat(br.readLine(), is("            </p>"));
+                assertThat(br.readLine(), is("            <p>"));
+                assertThat(br.readLine(), is("                パスワード<input type=\"password\" name=\"password\" size=\"21\" maxlength=\"20\" required>(20文字まで)"));
+                assertThat(br.readLine(), is("                <br>(投稿した文を削除するときに使います。)"));
+                assertThat(br.readLine(), is("            </p>"));
+                assertThat(br.readLine(), is("            <input type=\"hidden\" name=\"param\" value=\"write\">"));
+                assertThat(br.readLine(), is("            <input type=\"hidden\" name=\"timeID\" value=\"timeIdOfValue\">"));
+                assertThat(br.readLine(), is("            <input type=\"submit\" value=\"投稿\">"));
+                assertThat(br.readLine(), is("        </form>"));
+                assertThat(br.readLine(), is("    </div>"));
+                assertThat(br.readLine(), is("    <div id=\"log\">"));
+                assertThat(br.readLine(), is("        <table border=\"1\" style=\"table-layout:fixed;width:100%;\">"));
+                assertThat(br.readLine(), is("            <colgroup>"));
+                assertThat(br.readLine(), is("                <col style=\"width:5%;\">"));
+                assertThat(br.readLine(), is("                <col style=\"width:10%;\">"));
+                assertThat(br.readLine(), is("                <col style=\"width:30%;\">"));
+                assertThat(br.readLine(), is("                <col style=\"width:10%;\">"));
+                assertThat(br.readLine(), is("                <col style=\"width:15%;\">"));
+                assertThat(br.readLine(), is("                <col style=\"width:20%;\">"));
+                assertThat(br.readLine(), is("                <col style=\"width:10%;\">"));
+                assertThat(br.readLine(), is("            </colgroup>"));
+                assertThat(br.readLine(), is("            <tbody>"));
+                assertThat(br.readLine(), is("            <tr>"));
+                assertThat(br.readLine(), is("                <th>No</th>"));
+                assertThat(br.readLine(), is("                <th>タイトル</th>"));
+                assertThat(br.readLine(), is("                <th>本文</th>"));
+                assertThat(br.readLine(), is("                <th>ユーザー名</th>"));
+                assertThat(br.readLine(), is("                <th>日付</th>"));
+                assertThat(br.readLine(), is("                <th></th>"));
+                assertThat(br.readLine(), is("                <th></th>"));
+                assertThat(br.readLine(), is("            </tr>"));
+                assertThat(br.readLine(), is("            <tr id=\"No.3\">"));
+                assertThat(br.readLine(), is("                <td align=\"center\" style=\"word-wrap:break-word;\">No.3</td>"));
+                assertThat(br.readLine(), is("                <td align=\"center\" style=\"word-wrap:break-word;\">test</td>"));
+                assertThat(br.readLine(), is("                <td align=\"center\" style=\"word-wrap:break-word;\">こんにちは</td>"));
+                assertThat(br.readLine(), is("                <td align=\"center\" style=\"word-wrap:break-word;\">asada</td>"));
             }
         }
 
