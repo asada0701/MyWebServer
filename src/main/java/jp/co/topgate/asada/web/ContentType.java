@@ -1,5 +1,6 @@
 package jp.co.topgate.asada.web;
 
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,9 +58,9 @@ public final class ContentType {
      * @param filePath ファイルのパス
      * @return コンテンツタイプを返す
      */
-    public static String getContentType(String filePath) {
+    public static String getContentType(Path filePath) {
         for (String key : fileType.keySet()) {
-            if (filePath.endsWith(key)) {
+            if (filePath.toString().endsWith(key)) {
                 return fileType.get(key);
             }
         }

@@ -5,7 +5,8 @@ import jp.co.topgate.asada.web.exception.RequestParseException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * リクエストメッセージクラスHTTP/1.1に対応しています。
@@ -112,7 +113,7 @@ public class RequestMessage {
      * @throws RequestParseException パースした結果不正なリクエストだった
      */
     public Map<String, String> parseMessageBodyToMap() throws RequestParseException {
-        if (headerField == null) {
+        if (headerField == null || messageBody == null) {
             return null;
         }
         String contentType = headerField.get("Content-Type");

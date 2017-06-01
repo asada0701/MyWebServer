@@ -7,7 +7,6 @@ import jp.co.topgate.asada.web.program.board.model.Message;
 import jp.co.topgate.asada.web.program.board.model.ModelController;
 import org.apache.commons.lang3.math.NumberUtils;
 
-import java.io.*;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -53,11 +52,9 @@ public class ProgramBoardHandler extends Handler {
                 CsvHelper.writeMessage(ModelController.getAllMessage());
             }
         } catch (IllegalRequestException e) {
-            e.printStackTrace();
             sendErrorResponse(responseMessage, StatusLine.BAD_REQUEST);
 
-        } catch (IOException | NullPointerException e) {
-            e.printStackTrace();
+        } catch (NullPointerException e) {
             sendErrorResponse(responseMessage, StatusLine.INTERNAL_SERVER_ERROR);
 
         } catch (CsvRuntimeException e) {
@@ -72,14 +69,12 @@ public class ProgramBoardHandler extends Handler {
      *
      * @param requestMessage  RequestMessageのオブジェクト
      * @param responseMessage ResponseMessageのオブジェクト
-     * @throws IOException HTMLファイルに書き込み中に例外発生
      */
-    static void doGet(RequestMessage requestMessage, ResponseMessage responseMessage, String nowTimeID) throws IOException {
+    static void doGet(RequestMessage requestMessage, ResponseMessage responseMessage, String nowTimeID) {
         Path filePath = Handler.getFilePath(requestMessage.getUri());
 
         //index.htmlをGET要求された場合の処理
         if (filePath.equals(HtmlList.INDEX_HTML.getPath())) {
-            //String html = HtmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.INDEX_HTML, ModelController.getAllMessage(), nowTimeID);
             String html = HtmlEditor.editIndexHtml(ModelController.getAllMessage(), nowTimeID);
             sendResponse(responseMessage, html);
             return;
@@ -87,7 +82,6 @@ public class ProgramBoardHandler extends Handler {
 
         //search.htmlをGETリクエストされた場合の処理
         if (filePath.equals(HtmlList.SEARCH_HTML.getPath())) {
-            //リクエストのヘッダーフィールドにparamがあるか、メッセージボディは問題ないか確認。
             String param = requestMessage.findUriQuery("param");
             if (param == null) {
                 String html = HtmlEditor.editIndexHtml(ModelController.getAllMessage(), nowTimeID);
@@ -118,7 +112,7 @@ public class ProgramBoardHandler extends Handler {
             return;
         }
 
-        sendResponse(responseMessage, filePath.toFile());
+        Handler.sendResponse(responseMessage, filePath);
     }
 
     /**
@@ -126,13 +120,12 @@ public class ProgramBoardHandler extends Handler {
      *
      * @param requestMessage  RequestMessageのオブジェクト
      * @param responseMessage ResponseMessageのオブジェクト
-     * @throws IOException             HTMLファイルに書き込み中に例外発生
      * @throws IllegalRequestException リクエストメッセージに問題があった
      * @throws NullPointerException    引数がnullの場合
      */
-    static void doPost(RequestMessage requestMessage, ResponseMessage responseMessage, String nowTimeID) throws IOException, IllegalRequestException, NullPointerException {
+    static void doPost(RequestMessage requestMessage, ResponseMessage responseMessage, String nowTimeID) throws IllegalRequestException, NullPointerException {
 
-        //このメソッドの責務は重く、副作用が大きいため、特別にnullチェックを行う。
+        //このメソッドの責務は重く、副作用が大きい(CSVファイルに書き込むデータを扱う)ため、特別にnullチェックを行う。
         if (requestMessage == null || responseMessage == null || nowTimeID == null) {
             throw new NullPointerException();
         }
@@ -232,60 +225,6 @@ public class ProgramBoardHandler extends Handler {
             default:
                 throw new IllegalRequestException("param:" + param + " paramに想定されているもの以外が送られました。");
         }
-    }
-
-    /**
-     * HTMLを編集した場合にレスポンスを送信するメソッド
-     *
-     * @param responseMessage レスポンスメッセージを渡す
-     * @param html            編集したHTMLの文字列を渡す
-     */
-    static void sendResponse(ResponseMessage responseMessage, String html) {
-        responseMessage.addHeaderWithContentType(ContentType.getHtmlType());
-        responseMessage.addHeaderWithContentLength(String.valueOf(html.getBytes().length));
-
-        PrintWriter printWriter = responseMessage.getPrintWriter(StatusLine.OK);
-        for (String line : html.split("\n")) {
-            printWriter.write(line + "\n");
-        }
-        printWriter.flush();
-    }
-
-    /**
-     * バイナリデータやハンドラー内で編集しなかった場合のメソッド
-     *
-     * @param responseMessage レスポンスメッセージを渡す
-     * @param file            レスポンスしたいリソースファイルを渡す
-     */
-    static void sendResponse(ResponseMessage responseMessage, File file) {
-        responseMessage.addHeaderWithContentType(ContentType.getContentType(file.getPath()));
-        responseMessage.addHeaderWithContentLength(String.valueOf(file.length()));
-
-        OutputStream outputStream = responseMessage.getOutputStream(StatusLine.OK);
-        try (InputStream inputStream = new FileInputStream(file)) {
-            int tmp;
-            while ((tmp = inputStream.read()) != -1) {
-                outputStream.write(tmp);
-            }
-            outputStream.flush();
-
-        } catch (IOException e) {
-
-        }
-    }
-
-    /**
-     * エラーレスポンスを送信するメソッド
-     *
-     * @param responseMessage レスポンスメッセージを渡す
-     * @param statusLine      ステータスラインを渡す
-     */
-    static void sendErrorResponse(ResponseMessage responseMessage, StatusLine statusLine) {
-        responseMessage.addHeaderWithContentType(ContentType.getHtmlType());
-
-        PrintWriter printWriter = responseMessage.getPrintWriter(statusLine);
-        printWriter.write(ResponseMessage.getErrorMessageBody(statusLine));
-        printWriter.flush();
     }
 
     /**

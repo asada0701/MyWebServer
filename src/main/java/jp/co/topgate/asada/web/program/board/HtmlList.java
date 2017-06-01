@@ -4,7 +4,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * HtmlEditorで使用するEnum
+ * ProgramBoardHandlerのGETの処理で使用するEnum
  *
  * @author asada
  */

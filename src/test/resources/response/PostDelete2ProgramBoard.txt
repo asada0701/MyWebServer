@@ -1,0 +1,32 @@
+HTTP/1.1 200 OK
+Content-Type: text/html; charset=UTF-8
+Content-Length: 710
+
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <meta http-equiv="refresh" content="5;URL=index.html">
+    <link rel="stylesheet" type="text/css" href="./css/deleteStyle.css">
+</head>
+
+<body>
+<center>
+    <div id="header">
+        <h1>掲示板-LightBoard</h1>
+    </div>
+    <div id="result">
+        <h2>5秒後に自動的に掲示板へ戻ります。</h2>
+        <p>削除しました。</p>
+    </div>
+    <div id="back">
+        <form action="/program/board/" method="post">
+            <input type="hidden" name="param" value="back">
+            <input type="submit" value="topへ戻る">
+        </form>
+    </div>
+</center>
+</body>
+
+</html>

@@ -2,7 +2,7 @@ package jp.co.topgate.asada.web.program.board;
 
 import jp.co.topgate.asada.web.RequestMessage;
 import jp.co.topgate.asada.web.ResponseMessage;
-import jp.co.topgate.asada.web.StatusLine;
+import jp.co.topgate.asada.web.exception.IllegalRequestException;
 import jp.co.topgate.asada.web.program.board.model.Message;
 import jp.co.topgate.asada.web.program.board.model.ModelController;
 import org.junit.After;
@@ -12,7 +12,10 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -48,104 +51,15 @@ public class ProgramBoardHandlerTest {
         }
     }
 
-//    public static class handleRequestメソッドのテスト {
-//        static List<Message> testList = new ArrayList<>();
-//
-//        static {
-//            Message m = new Message();
-//            m.setMessageID(1);
-//            m.setPassword("test");
-//            m.setName("管理者");
-//            m.setTitle("test");
-//            m.setText("こんにちは");
-//            m.setDate("2017/5/11 11:56");
-//            testList.add(m);
-//
-//            m = new Message();
-//            m.setMessageID(2);
-//            m.setPassword("t");
-//            m.setName("asada");
-//            m.setTitle("t");
-//            m.setText("こんにちは");
-//            m.setDate("2017/5/11 11:57");
-//            testList.add(m);
-//        }
-//
-//        @Before
-//        public void setUp() throws Exception {
-//            ModelController.setMessageList(testList);
-//        }
-//
-//        @Test
-//        public void ステータスコード200のテスト() throws Exception {
-//            try (FileInputStream is = new FileInputStream(new File("./src/test/resources/GetRequestMessage.txt"))) {
-//
-//                RequestMessage requestMessage = RequestMessageParser.parse(is);
-//
-//                ProgramBoardHandler sut = new ProgramBoardHandler(requestMessage);
-//
-//                ResponseMessage responseMessage = sut.handleRequest();
-//
-//                responseMessage.addHeaderWithContentType("Test");
-//
-//                assertThat(responseMessage.getProtocolVersion(), is("HTTP/1.1"));
-//                assertThat(responseMessage.getStatusLine(), is(StatusLine.OK));
-//                List<String> headerField = responseMessage.getHeaderField();
-//                assertThat(headerField.size(), is(3));
-//                assertThat(headerField.get(0), is("Content-Type: text/html; charset=UTF-8"));
-//                assertThat(headerField.get(1), is("Content-Length: 714"));
-//                assertThat(headerField.get(2), is("Content-Type: Test"));
-//                assertThat(responseMessage.getFilePath(), is(nullValue()));
-//
-//                StringBuilder builder = new StringBuilder();
-//                try (BufferedReader br = new BufferedReader(new FileReader(new File("./src/test/resources/html/index.html")))) {
-//                    String str;
-//                    while ((str = br.readLine()) != null) {
-//                        builder.append(str).append("\n");
-//                    }
-//                }
-//                assertThat(responseMessage.getTarget(), is(builder.toString().getBytes()));
-//            }
-//        }
-//
-//        @After
-//        public void tearDown() throws Exception {
-//            htmlEditor.resetAllFiles();
-//        }
-//    }
-
-//    public static class createErrorResponseMessageメソッドのテスト {
-//
-//        @Test
-//        public void nullチェック() throws Exception {
-//            ResponseMessage sut = ProgramBoardHandler.createErrorResponseMessage(null);
-//            assertThat(sut.getStatusLine(), is(nullValue()));
-//        }
-//
-//        @Test
-//        public void 正しく動作するか() throws Exception {
-//            ResponseMessage sut = ProgramBoardHandler.createErrorResponseMessage(StatusLine.OK);
-//            assertThat(sut.getStatusLine(), is(StatusLine.OK));
-//            assertThat(sut.getHeaderField().size(), is(1));
-//            assertThat(sut.getHeaderField().get(0), is("Content-Type: text/html; charset=UTF-8"));
-//
-//            sut = ProgramBoardHandler.createErrorResponseMessage(StatusLine.BAD_REQUEST);
-//            sut.addHeader("hoge", "hogehoge");
-//            assertThat(sut.getStatusLine(), is(StatusLine.BAD_REQUEST));
-//            assertThat(sut.getHeaderField().size(), is(2));
-//            assertThat(sut.getHeaderField().get(0), is("Content-Type: text/html; charset=UTF-8"));
-//            assertThat(sut.getHeaderField().get(1), is("hoge: hogehoge"));
-//        }
-//    }
-
     public static class doGetメソッドのテスト {
+        private static final String responseMessagePath = "./src/test/resources/responseMessage.txt";
         private RequestMessage requestMessage;
         private FileOutputStream outputStream = null;
         private ResponseMessage responseMessage;
 
         @Before
         public void setUp() throws Exception {
-            outputStream = new FileOutputStream(new File("./src/test/resources/responseMessage.txt"));
+            outputStream = new FileOutputStream(new File(responseMessagePath));
             responseMessage = new ResponseMessage(outputStream);
 
             List<Message> messageList = new ArrayList<>();
@@ -184,7 +98,7 @@ public class ProgramBoardHandlerTest {
             outputStream.close();
 
             //Verify
-            try (BufferedReader br1 = new BufferedReader(new FileReader(new File("./src/test/resources/responseMessage.txt")));
+            try (BufferedReader br1 = new BufferedReader(new FileReader(new File(responseMessagePath)));
                  BufferedReader br2 = new BufferedReader(new FileReader(new File("./src/test/resources/response/GetProgramBoard.txt")))) {
 
                 String str;
@@ -201,15 +115,57 @@ public class ProgramBoardHandlerTest {
             Map<String, String> uriQuery = new HashMap<>();
             uriQuery.put("param", "search");
             uriQuery.put("name", "管理者");
-            requestMessage = new RequestMessage(method, uri, uriQuery, null, null);
+            requestMessage = new RequestMessage(method, uri, uriQuery);
 
             ProgramBoardHandler.doGet(requestMessage, responseMessage, "timeIdOfValue");
 
             outputStream.close();
 
             //Verify
-            try (BufferedReader br1 = new BufferedReader(new FileReader(new File("./src/test/resources/responseMessage.txt")));
+            try (BufferedReader br1 = new BufferedReader(new FileReader(new File(responseMessagePath)));
                  BufferedReader br2 = new BufferedReader(new FileReader(new File("./src/test/resources/response/GetSearchProgramBoard.txt")))) {
+
+                String str;
+                while ((str = br1.readLine()) != null) {
+                    assertThat(str, is(br2.readLine()));
+                }
+            }
+        }
+
+        @Test
+        public void cssをGETしてみる() throws Exception {
+            String method = "GET";
+            String uri = "/program/board/css/style.css";
+            requestMessage = new RequestMessage(method, uri, null);
+
+            ProgramBoardHandler.doGet(requestMessage, responseMessage, "timeIdOfValue");
+
+            outputStream.close();
+
+            //verify
+            try (BufferedReader br1 = new BufferedReader(new FileReader(new File(responseMessagePath)));
+                 BufferedReader br2 = new BufferedReader(new FileReader(new File("./src/test/resources/response/GetProgramBoardStyleCss.txt")))) {
+
+                String str;
+                while ((str = br1.readLine()) != null) {
+                    assertThat(str, is(br2.readLine()));
+                }
+            }
+        }
+
+        @Test
+        public void 存在しないファイルをGETしてみる() throws Exception {
+            String method = "GET";
+            String uri = "/program/board/hoge.txt";
+            requestMessage = new RequestMessage(method, uri, null);
+
+            ProgramBoardHandler.doGet(requestMessage, responseMessage, "timeIdOfValue");
+
+            outputStream.close();
+
+            //verify
+            try (BufferedReader br1 = new BufferedReader(new FileReader(new File(responseMessagePath)));
+                 BufferedReader br2 = new BufferedReader(new FileReader(new File("./src/test/resources/response/NotFound.txt")))) {
 
                 String str;
                 while ((str = br1.readLine()) != null) {
@@ -227,13 +183,14 @@ public class ProgramBoardHandlerTest {
     }
 
     public static class doPostメソッドのテスト {
+        private static final String responseMessagePath = "./src/test/resources/responseMessage.txt";
         private RequestMessage requestMessage;
         private FileOutputStream outputStream = null;
         private ResponseMessage responseMessage;
 
         @Before
         public void setUp() throws Exception {
-            outputStream = new FileOutputStream(new File("./src/test/resources/responseMessage.txt"));
+            outputStream = new FileOutputStream(new File(responseMessagePath));
             responseMessage = new ResponseMessage(outputStream);
 
             List<Message> messageList = new ArrayList<>();
@@ -245,6 +202,7 @@ public class ProgramBoardHandlerTest {
             m.setTitle("test");
             m.setText("こんにちは");
             m.setDate("2017/5/11 11:56");
+            m.setTimeID("timeID1");
             messageList.add(m);
 
             m = new Message();
@@ -254,6 +212,7 @@ public class ProgramBoardHandlerTest {
             m.setTitle("t");
             m.setText("こんにちは");
             m.setDate("2017/5/11 11:57");
+            m.setTimeID("timeID2");
             messageList.add(m);
 
             ModelController.setMessageList(messageList);
@@ -268,86 +227,160 @@ public class ProgramBoardHandlerTest {
         public void nullチェック2() throws Exception {
             ProgramBoardHandler.doPost(new RequestMessage(null, null, null), null, "timeID");
         }
-    }
 
-    public static class sendResponseメソッドのテスト {
-        private ByteArrayOutputStream outputStream;
-        private ResponseMessage responseMessage;
+        @Test
+        public void paramがwriteの場合() throws Exception {
+            String method = "POST";
+            String uri = "/program/board/";
+            Map<String, String> headerField = new HashMap<>();
+            headerField.put("Content-Type", "application/x-www-form-urlencoded");
+            headerField.put("Content-Length", "132");
+            byte[] messageBody = "name%3dasada%26title%3dtest%26text%3d%e3%81%93%e3%82%93%e3%81%ab%e3%81%a1%e3%81%af%26password%3dtest%26param%3dwrite%26timeID%3dtest".getBytes();
+            requestMessage = new RequestMessage(method, uri, null, headerField, messageBody);
 
-        @Before
-        public void setUp() {
-            outputStream = new ByteArrayOutputStream();
-            responseMessage = new ResponseMessage(outputStream);
-        }
+            ProgramBoardHandler.doPost(requestMessage, responseMessage, "timeIdOfValue");
 
-        @Test(expected = NullPointerException.class)
-        public void nullチェック() {
-            ProgramBoardHandler.sendResponse(null, "hoge");
+            outputStream.close();
+
+            //verify
+            try (BufferedReader br1 = new BufferedReader(new FileReader(new File(responseMessagePath)));
+                 BufferedReader br2 = new BufferedReader(new FileReader(new File("./src/test/resources/response/PostWriteProgramBoard.txt")))) {
+
+                String str;
+                while ((str = br1.readLine()) != null) {
+                    assertThat(str, is(br2.readLine()));
+
+                    //TODO これ以降の部分では現在時刻を使用する
+                    if (str.equals("                <td align=\"center\" style=\"word-wrap:break-word;\">asada</td>")) {
+                        break;
+                    }
+                }
+            }
         }
 
         @Test
-        public void 引数に文字列を渡す() {
-            ProgramBoardHandler.sendResponse(responseMessage, "hoge");
-            String[] response = outputStream.toString().split("\n");
+        public void paramがdelete_step_1の場合() throws Exception {
+            String method = "POST";
+            String uri = "/program/board/";
+            Map<String, String> headerField = new HashMap<>();
+            headerField.put("Content-Type", "application/x-www-form-urlencoded");
+            headerField.put("Content-Length", "34");
+            byte[] messageBody = "param%3ddelete_step_1%26number%3d1".getBytes();
+            requestMessage = new RequestMessage(method, uri, null, headerField, messageBody);
 
-            assertThat(response.length, is(5));
-            assertThat(response[0], is("HTTP/1.1 200 OK"));
-            assertThat(response[1], is("Content-Type: text/html; charset=UTF-8"));
-            assertThat(response[2], is("Content-Length: 4"));
-            assertThat(response[3], is(""));
-            assertThat(response[4], is("hoge"));
+            ProgramBoardHandler.doPost(requestMessage, responseMessage, "timeIdOfValue");
+
+            outputStream.close();
+
+            //verify
+            try (BufferedReader br1 = new BufferedReader(new FileReader(new File(responseMessagePath)));
+                 BufferedReader br2 = new BufferedReader(new FileReader(new File("./src/test/resources/response/PostDelete1ProgramBoard.txt")))) {
+
+                String str;
+                while ((str = br1.readLine()) != null) {
+                    assertThat(str, is(br2.readLine()));
+                }
+            }
         }
 
         @Test
-        public void 引数にファイルを渡す() {
-            ProgramBoardHandler.sendResponse(responseMessage, new File("./src/test/resources/漢字テスト/寿司.txt"));
-            String[] response = outputStream.toString().split("\n");
+        public void paramがdelete_step_2の場合() throws Exception {
+            String method = "POST";
+            String uri = "/program/board/";
+            Map<String, String> headerField = new HashMap<>();
+            headerField.put("Content-Type", "application/x-www-form-urlencoded");
+            headerField.put("Content-Length", "36");
+            byte[] messageBody = "password%3dtest%26number%3d1%26param%3ddelete_step_2".getBytes();
+            requestMessage = new RequestMessage(method, uri, null, headerField, messageBody);
 
-            assertThat(response.length, is(7));
-            assertThat(response[0], is("HTTP/1.1 200 OK"));
-            assertThat(response[1], is("Content-Type: text/plain"));
-            assertThat(response[2], is("Content-Length: 24"));
-            assertThat(response[3], is(""));
-            assertThat(response[4], is("寿司"));
-            assertThat(response[5], is("マグロ"));
-            assertThat(response[6], is("イカ"));
-        }
-    }
+            ProgramBoardHandler.doPost(requestMessage, responseMessage, "timeIdOfValue");
 
-    public static class sendErrorResponseメソッドのテスト {
-        private ByteArrayOutputStream outputStream;
-        private ResponseMessage responseMessage;
+            outputStream.close();
 
-        @Before
-        public void setUp() {
-            outputStream = new ByteArrayOutputStream();
-            responseMessage = new ResponseMessage(outputStream);
-        }
+            //verify
+            try (BufferedReader br1 = new BufferedReader(new FileReader(new File(responseMessagePath)));
+                 BufferedReader br2 = new BufferedReader(new FileReader(new File("./src/test/resources/response/PostDelete2ProgramBoard.txt")))) {
 
-        @Test
-        public void BadRequestテスト() {
-            ProgramBoardHandler.sendErrorResponse(responseMessage, StatusLine.BAD_REQUEST);
-            String[] response = outputStream.toString().split("\n");
-
-            assertThat(response.length, is(4));
-            assertThat(response[0], is("HTTP/1.1 400 Bad request"));
-            assertThat(response[1], is("Content-Type: text/html; charset=UTF-8"));
-            assertThat(response[2], is(""));
-            assertThat(response[3], is("<html><head><title>400 Bad request</title></head><body><h1>Bad request</h1>" +
-                    "<p>Your browser sent a request that this server could not understand.<br /></p></body></html>"));
+                String str;
+                while ((str = br1.readLine()) != null) {
+                    assertThat(str, is(br2.readLine()));
+                }
+            }
         }
 
         @Test
-        public void NotFoundテスト() {
-            ProgramBoardHandler.sendErrorResponse(responseMessage, StatusLine.NOT_FOUND);
-            String[] response = outputStream.toString().split("\n");
+        public void paramがbackの場合() throws Exception {
+            String method = "POST";
+            String uri = "/program/board/";
+            Map<String, String> headerField = new HashMap<>();
+            headerField.put("Content-Type", "application/x-www-form-urlencoded");
+            headerField.put("Content-Length", "12");
+            byte[] messageBody = "param%3dback".getBytes();
+            requestMessage = new RequestMessage(method, uri, null, headerField, messageBody);
 
-            assertThat(response.length, is(4));
-            assertThat(response[0], is("HTTP/1.1 404 Not Found"));
-            assertThat(response[1], is("Content-Type: text/html; charset=UTF-8"));
-            assertThat(response[2], is(""));
-            assertThat(response[3], is("<html><head><title>404 Not Found</title></head><body><h1>Not Found</h1>" +
-                    "<p>お探しのページは見つかりませんでした。</p></body></html>"));
+            ProgramBoardHandler.doPost(requestMessage, responseMessage, "timeIdOfValue");
+
+            outputStream.close();
+
+            //verify
+            try (BufferedReader br1 = new BufferedReader(new FileReader(new File(responseMessagePath)));
+                 BufferedReader br2 = new BufferedReader(new FileReader(new File("./src/test/resources/response/GetProgramBoard.txt")))) {
+
+                String str;
+                while ((str = br1.readLine()) != null) {
+                    assertThat(str, is(br2.readLine()));
+                }
+            }
+        }
+
+        @Test(expected = IllegalRequestException.class)
+        public void paramが予期しないものの場合() throws Exception {
+            try {
+                String method = "POST";
+                String uri = "/program/board/";
+                Map<String, String> headerField = new HashMap<>();
+                headerField.put("Content-Type", "application/x-www-form-urlencoded");
+                headerField.put("Content-Length", "12");
+                byte[] messageBody = "param%3dhoge".getBytes();
+                requestMessage = new RequestMessage(method, uri, null, headerField, messageBody);
+
+                ProgramBoardHandler.doPost(requestMessage, responseMessage, "timeIdOfValue");
+            } finally {
+                outputStream.close();
+            }
+        }
+
+        @Test(expected = IllegalRequestException.class)
+        public void paramがメッセージボディに含まれていない場合() throws Exception {
+            try {
+                String method = "POST";
+                String uri = "/program/board/";
+                Map<String, String> headerField = new HashMap<>();
+                headerField.put("Content-Type", "application/x-www-form-urlencoded");
+                headerField.put("Content-Length", "11");
+                byte[] messageBody = "hoge%3dhoge".getBytes();
+                requestMessage = new RequestMessage(method, uri, null, headerField, messageBody);
+
+                ProgramBoardHandler.doPost(requestMessage, responseMessage, "timeIdOfValue");
+            } finally {
+                outputStream.close();
+            }
+        }
+
+        @Test(expected = IllegalRequestException.class)
+        public void メッセージボディがリクエストに含まれていない場合() throws Exception {
+            try {
+                String method = "POST";
+                String uri = "/program/board/";
+                Map<String, String> headerField = new HashMap<>();
+                headerField.put("Content-Type", "application/x-www-form-urlencoded");
+                headerField.put("Content-Length", "11");
+                requestMessage = new RequestMessage(method, uri, null, headerField, null);
+
+                ProgramBoardHandler.doPost(requestMessage, responseMessage, "timeIdOfValue");
+            } finally {
+                outputStream.close();
+            }
         }
     }
 }
