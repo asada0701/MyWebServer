@@ -52,13 +52,13 @@ public class ProgramBoardHandler extends Handler {
                 CsvHelper.writeMessage(ModelController.getAllMessage());
             }
         } catch (IllegalRequestException e) {
-            sendErrorResponse(responseMessage, StatusLine.BAD_REQUEST);
+            Handler.sendErrorResponse(responseMessage, StatusLine.BAD_REQUEST);
 
         } catch (NullPointerException e) {
-            sendErrorResponse(responseMessage, StatusLine.INTERNAL_SERVER_ERROR);
+            Handler.sendErrorResponse(responseMessage, StatusLine.INTERNAL_SERVER_ERROR);
 
         } catch (CsvRuntimeException e) {
-            sendErrorResponse(responseMessage, StatusLine.INTERNAL_SERVER_ERROR);
+            Handler.sendErrorResponse(responseMessage, StatusLine.INTERNAL_SERVER_ERROR);
             e.printStackTrace();
             System.exit(1);
         }
@@ -76,7 +76,7 @@ public class ProgramBoardHandler extends Handler {
         //index.htmlをGET要求された場合の処理
         if (filePath.equals(HtmlList.INDEX_HTML.getPath())) {
             String html = HtmlEditor.editIndexHtml(ModelController.getAllMessage(), nowTimeID);
-            sendResponse(responseMessage, html);
+            Handler.sendResponse(responseMessage, html);
             return;
         }
 
@@ -85,7 +85,7 @@ public class ProgramBoardHandler extends Handler {
             String param = requestMessage.findUriQuery("param");
             if (param == null) {
                 String html = HtmlEditor.editIndexHtml(ModelController.getAllMessage(), nowTimeID);
-                sendResponse(responseMessage, html);
+                Handler.sendResponse(responseMessage, html);
                 return;
             }
 
@@ -102,13 +102,13 @@ public class ProgramBoardHandler extends Handler {
                 }
 
                 String html = HtmlEditor.editSearchHtml(messageList, nowTimeID);
-                sendResponse(responseMessage, html);
+                Handler.sendResponse(responseMessage, html);
                 return;
             }
         }
 
         if (!filePath.toFile().exists()) {
-            sendErrorResponse(responseMessage, StatusLine.NOT_FOUND);
+            Handler.sendErrorResponse(responseMessage, StatusLine.NOT_FOUND);
             return;
         }
 
@@ -166,7 +166,7 @@ public class ProgramBoardHandler extends Handler {
                     ModelController.addMessage(safe_name, safe_title, safe_text, password, timeId);
                 }
                 String html = HtmlEditor.editIndexHtml(ModelController.getAllMessage(), nowTimeID);
-                sendResponse(responseMessage, html);
+                Handler.sendResponse(responseMessage, html);
                 return;
             }
 
@@ -183,7 +183,7 @@ public class ProgramBoardHandler extends Handler {
                 }
 
                 String html = HtmlEditor.editDeleteHtml(message);
-                sendResponse(responseMessage, html);
+                Handler.sendResponse(responseMessage, html);
                 return;
             }
 
@@ -198,7 +198,7 @@ public class ProgramBoardHandler extends Handler {
 
                 if (ModelController.deleteMessage(Integer.parseInt(number), password)) {
                     //パスワードがあっていて、削除できた時の処理
-                    sendResponse(responseMessage, HtmlEditor.getResultHtml());
+                    Handler.sendResponse(responseMessage, HtmlEditor.getResultHtml());
                     return;
 
                 } else {
@@ -206,7 +206,7 @@ public class ProgramBoardHandler extends Handler {
                     Message message = ModelController.findMessageByID(Integer.parseInt(number));
 
                     if (message != null) {
-                        sendResponse(responseMessage, HtmlEditor.editDeleteHtml(message));
+                        Handler.sendResponse(responseMessage, HtmlEditor.editDeleteHtml(message));
                         return;
 
                     } else {
@@ -218,7 +218,7 @@ public class ProgramBoardHandler extends Handler {
             //ページに配置した戻るボタンを押した時の処理
             case "back": {
                 String html = HtmlEditor.editIndexHtml(ModelController.getAllMessage(), nowTimeID);
-                sendResponse(responseMessage, html);
+                Handler.sendResponse(responseMessage, html);
                 return;
             }
 

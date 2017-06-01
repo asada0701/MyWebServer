@@ -31,9 +31,9 @@ public class StaticHandler extends Handler {
         Path filePath = Handler.getFilePath(requestMessage.getUri());
 
         if (filePath.toFile().exists()) {
-            sendResponse(responseMessage, filePath);
+            Handler.sendResponse(responseMessage, filePath);
         } else {
-            sendErrorResponse(responseMessage, StatusLine.NOT_FOUND);
+            Handler.sendErrorResponse(responseMessage, StatusLine.NOT_FOUND);
         }
     }
 
