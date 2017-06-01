@@ -7,9 +7,7 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 
 import java.io.*;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.core.IsNull.nullValue;
@@ -115,7 +113,7 @@ public class StaticHandlerTest {
             staticHandler.sendResponse(StatusLine.OK, Paths.get("./src/test/resources/html/index.html"));
 
             try (BufferedReader responseMessage = new BufferedReader(new FileReader(new File("./src/test/resources/responseMessage.txt")));
-                 BufferedReader testData = new BufferedReader(new FileReader(new File("./src/test/resources/Response/getIndexHtml.txt")))) {
+                 BufferedReader testData = new BufferedReader(new FileReader(new File("./src/test/resources/response/getIndexHtml.txt")))) {
 
                 String str;
                 while ((str = responseMessage.readLine()) != null) {

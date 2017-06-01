@@ -20,7 +20,7 @@ public class StatusLineTest {
     @Test
     public void ステータス400テスト() {
         assertThat(StatusLine.BAD_REQUEST.getStatusCode(), is(400));
-        assertThat(StatusLine.BAD_REQUEST.getReasonPhrase(), is("Bad Request"));
+        assertThat(StatusLine.BAD_REQUEST.getReasonPhrase(), is("Bad request"));
     }
 
     @Test

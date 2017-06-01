@@ -3,8 +3,10 @@ package jp.co.topgate.asada.web;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.*;
-import java.util.*;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * レスポンスメッセージクラス
@@ -140,8 +142,8 @@ public class ResponseMessage {
         }
         switch (statusLine) {
             case BAD_REQUEST:
-                return "<html><head><title>400 Bad Request</title></head>" +
-                        "<body><h1>Bad Request</h1>" +
+                return "<html><head><title>400 Bad request</title></head>" +
+                        "<body><h1>Bad request</h1>" +
                         "<p>Your browser sent a request that this server could not understand.<br /></p></body></html>";
 
             case NOT_FOUND:

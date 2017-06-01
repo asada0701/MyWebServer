@@ -185,7 +185,7 @@ public class ProgramBoardHandlerTest {
 
             //Verify
             try (BufferedReader br1 = new BufferedReader(new FileReader(new File("./src/test/resources/responseMessage.txt")));
-                 BufferedReader br2 = new BufferedReader(new FileReader(new File("./src/test/resources/Response/GetProgramBoard.txt")))) {
+                 BufferedReader br2 = new BufferedReader(new FileReader(new File("./src/test/resources/response/GetProgramBoard.txt")))) {
 
                 String str;
                 while ((str = br1.readLine()) != null) {
@@ -209,7 +209,7 @@ public class ProgramBoardHandlerTest {
 
             //Verify
             try (BufferedReader br1 = new BufferedReader(new FileReader(new File("./src/test/resources/responseMessage.txt")));
-                 BufferedReader br2 = new BufferedReader(new FileReader(new File("./src/test/resources/Response/GetSearchProgramBoard.txt")))) {
+                 BufferedReader br2 = new BufferedReader(new FileReader(new File("./src/test/resources/response/GetSearchProgramBoard.txt")))) {
 
                 String str;
                 while ((str = br1.readLine()) != null) {
@@ -330,10 +330,10 @@ public class ProgramBoardHandlerTest {
             String[] response = outputStream.toString().split("\n");
 
             assertThat(response.length, is(4));
-            assertThat(response[0], is("HTTP/1.1 400 Bad Request"));
+            assertThat(response[0], is("HTTP/1.1 400 Bad request"));
             assertThat(response[1], is("Content-Type: text/html; charset=UTF-8"));
             assertThat(response[2], is(""));
-            assertThat(response[3], is("<html><head><title>400 Bad Request</title></head><body><h1>Bad Request</h1>" +
+            assertThat(response[3], is("<html><head><title>400 Bad request</title></head><body><h1>Bad request</h1>" +
                     "<p>Your browser sent a request that this server could not understand.<br /></p></body></html>"));
         }
 

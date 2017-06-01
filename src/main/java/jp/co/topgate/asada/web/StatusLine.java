@@ -18,7 +18,7 @@ public enum StatusLine {
      * HTTPステータスコード:400
      * リクエストが不正な場合
      */
-    BAD_REQUEST(400, "Bad Request"),
+    BAD_REQUEST(400, "Bad request"),
 
     /**
      * HTTPステータスコード:404
