@@ -35,9 +35,9 @@ class HtmlEditor {
     /**
      * index.htmlのページを編集するメソッド
      *
-     * @param messageList 投稿されたメッセージのリスト
+     * @param messageList 投稿されたメッセージのリストを渡す
      * @param timeID      Messageがもつユニークな値。二重リクエストを防ぐためのもの
-     * @return 編集後のHTML文章
+     * @return 編集後のHTML文章を返す
      */
     static String editIndexHtml(List<Message> messageList, String timeID) {
         StringBuilder builder = new StringBuilder();
@@ -115,9 +115,9 @@ class HtmlEditor {
     /**
      * search.htmlのページを編集するメソッド
      *
-     * @param messageList 投稿されたメッセージのリスト
+     * @param messageList 投稿されたメッセージのリストを渡す
      * @param timeID      Messageがもつユニークな値。二重リクエストを防ぐためのもの
-     * @return 編集後のHTML文章
+     * @return 編集後のHTML文章を返す
      */
     static String editSearchHtml(List<Message> messageList, String timeID) {
         StringBuilder builder = new StringBuilder();
@@ -199,8 +199,8 @@ class HtmlEditor {
     /**
      * delete.htmlのページを編集するメソッド
      *
-     * @param message メッセージのオブジェクト
-     * @return 編集後のHTML文章
+     * @param message メッセージのオブジェクトを渡す
+     * @return 編集後のHTML文章を返す
      */
     static String editDeleteHtml(Message message) {
         return "<!DOCTYPE html>\n" +
@@ -265,9 +265,9 @@ class HtmlEditor {
     /**
      * Messageのオブジェクトを受け取り、各HTMLに沿ったHTML文章に整形する
      *
-     * @param htmlList 編集したいHTMLのEnum
-     * @param message  書き込みたいMessageのオブジェクト
-     * @return HTML文章
+     * @param htmlList 編集したいHTMLのEnumを渡す
+     * @param message  書き込みたいMessageのオブジェクトを渡す
+     * @return HTML文章を返す
      */
     static String changeMessageToHtml(HtmlList htmlList, Message message) {
         switch (htmlList) {
@@ -338,6 +338,11 @@ class HtmlEditor {
         return str;
     }
 
+    /**
+     * 投稿したメッセージの削除に成功した場合。結果をユーザーに知らせる結果画面を取得するメソッド
+     *
+     * @return HTML文章を返す
+     */
     static String getResultHtml() {
         return "<!DOCTYPE html>\n" +
                 "<html>\n" +

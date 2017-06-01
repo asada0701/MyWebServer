@@ -229,36 +229,6 @@ public class ProgramBoardHandlerTest {
         }
 
         @Test
-        public void paramがwriteの場合() throws Exception {
-            String method = "POST";
-            String uri = "/program/board/";
-            Map<String, String> headerField = new HashMap<>();
-            headerField.put("Content-Type", "application/x-www-form-urlencoded");
-            headerField.put("Content-Length", "132");
-            byte[] messageBody = "name%3dasada%26title%3dtest%26text%3d%e3%81%93%e3%82%93%e3%81%ab%e3%81%a1%e3%81%af%26password%3dtest%26param%3dwrite%26timeID%3dtest".getBytes();
-            requestMessage = new RequestMessage(method, uri, null, headerField, messageBody);
-
-            ProgramBoardHandler.doPost(requestMessage, responseMessage, "timeIdOfValue");
-
-            outputStream.close();
-
-            //verify
-            try (BufferedReader br1 = new BufferedReader(new FileReader(new File(responseMessagePath)));
-                 BufferedReader br2 = new BufferedReader(new FileReader(new File("./src/test/resources/response/PostWriteProgramBoard.txt")))) {
-
-                String str;
-                while ((str = br1.readLine()) != null) {
-                    assertThat(str, is(br2.readLine()));
-
-                    //TODO これ以降の部分では現在時刻を使用する
-                    if (str.equals("                <td align=\"center\" style=\"word-wrap:break-word;\">asada</td>")) {
-                        break;
-                    }
-                }
-            }
-        }
-
-        @Test
         public void paramがdelete_step_1の場合() throws Exception {
             String method = "POST";
             String uri = "/program/board/";

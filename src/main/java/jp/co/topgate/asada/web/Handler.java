@@ -62,7 +62,8 @@ public abstract class Handler {
     }
 
     /**
-     * バイナリデータやハンドラー内で編集しなかった場合のメソッド
+     * レスポンスを送信するメソッド
+     * バイナリデータやハンドラー内で編集しなかった場合に使用する
      *
      * @param responseMessage レスポンスメッセージを渡す
      * @param filePath        レスポンスしたいリソースファイルを渡す
@@ -85,6 +86,22 @@ public abstract class Handler {
     }
 
     /**
+     * レスポンスを送信するメソッド
+     * メッセージボディに書き込みた文字列がある場合に使用する
+     *
+     * @param responseMessage レスポンスメッセージを渡す
+     * @param str             レスポンスしたい文字列を渡す
+     */
+    protected static void sendResponse(ResponseMessage responseMessage, String str) {
+        responseMessage.addHeaderWithContentType(ContentType.getHtmlType());
+        responseMessage.addHeaderWithContentLength(String.valueOf(str.getBytes().length));
+
+        PrintWriter printWriter = responseMessage.getPrintWriter(StatusLine.OK);
+        printWriter.write(str);
+        printWriter.flush();
+    }
+
+    /**
      * エラーレスポンスを送信するメソッド
      *
      * @param responseMessage レスポンスメッセージを渡す
@@ -95,21 +112,6 @@ public abstract class Handler {
 
         PrintWriter printWriter = responseMessage.getPrintWriter(statusLine);
         printWriter.write(ResponseMessage.getErrorMessageBody(statusLine));
-        printWriter.flush();
-    }
-
-    /**
-     * HTMLを編集した場合にレスポンスを送信するメソッド
-     *
-     * @param responseMessage レスポンスメッセージを渡す
-     * @param html            編集したHTMLの文字列を渡す
-     */
-    protected static void sendResponse(ResponseMessage responseMessage, String html) {
-        responseMessage.addHeaderWithContentType(ContentType.getHtmlType());
-        responseMessage.addHeaderWithContentLength(String.valueOf(html.getBytes().length));
-
-        PrintWriter printWriter = responseMessage.getPrintWriter(StatusLine.OK);
-        printWriter.write(html);
         printWriter.flush();
     }
 }
