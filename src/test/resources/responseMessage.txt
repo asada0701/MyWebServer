@@ -1,6 +1,6 @@
 HTTP/1.1 200 OK
 Content-Type: text/html; charset=UTF-8
-Content-Length: 5774
+Content-Length: 3072
 
 <!DOCTYPE html>
 <html>
@@ -39,7 +39,7 @@ Content-Length: 5774
         </form>
     </div>
     <div id="log">
-        <table border="1" style="table-layout:fixed;width:100%;">
+        <table border="1" style="table-layout:fixed;width:90%;">
             <colgroup>
                 <col style="width:5%;">
                 <col style="width:10%;">
@@ -47,7 +47,6 @@ Content-Length: 5774
                 <col style="width:10%;">
                 <col style="width:15%;">
                 <col style="width:20%;">
-                <col style="width:10%;">
             </colgroup>
             <tbody>
             <tr>
@@ -57,49 +56,6 @@ Content-Length: 5774
                 <th>ユーザー名</th>
                 <th>日付</th>
                 <th></th>
-                <th></th>
-            </tr>
-            <tr id="No.3">
-                <td align="center" style="word-wrap:break-word;">No.3</td>
-                <td align="center" style="word-wrap:break-word;">test</td>
-                <td align="center" style="word-wrap:break-word;">こんにちは</td>
-                <td align="center" style="word-wrap:break-word;">asada</td>
-                <td align="center" style="word-wrap:break-word;">2017/6/1 15:52</td>
-                <td align="center">
-                    <form action="/program/board/search.html" method="get">
-                        <input type="hidden" name="param" value="search">
-                        <input type="hidden" name="name" value="asada">
-                        <input type="submit" value="この人の他のコメントも見てみる">
-                    </form>
-                </td>
-                <td align="center">
-                    <form action="/program/board/" method="post">
-                        <input type="hidden" name="param" value="delete_step_1">
-                        <input type="hidden" name="number" value="3">
-                        <input type="submit" value="削除する">
-                    </form>
-                </td>
-            </tr>
-            <tr id="No.2">
-                <td align="center" style="word-wrap:break-word;">No.2</td>
-                <td align="center" style="word-wrap:break-word;">t</td>
-                <td align="center" style="word-wrap:break-word;">こんにちは</td>
-                <td align="center" style="word-wrap:break-word;">asada</td>
-                <td align="center" style="word-wrap:break-word;">2017/5/11 11:57</td>
-                <td align="center">
-                    <form action="/program/board/search.html" method="get">
-                        <input type="hidden" name="param" value="search">
-                        <input type="hidden" name="name" value="asada">
-                        <input type="submit" value="この人の他のコメントも見てみる">
-                    </form>
-                </td>
-                <td align="center">
-                    <form action="/program/board/" method="post">
-                        <input type="hidden" name="param" value="delete_step_1">
-                        <input type="hidden" name="number" value="2">
-                        <input type="submit" value="削除する">
-                    </form>
-                </td>
             </tr>
             <tr id="No.1">
                 <td align="center" style="word-wrap:break-word;">No.1</td>
@@ -107,13 +63,6 @@ Content-Length: 5774
                 <td align="center" style="word-wrap:break-word;">こんにちは</td>
                 <td align="center" style="word-wrap:break-word;">管理者</td>
                 <td align="center" style="word-wrap:break-word;">2017/5/11 11:56</td>
-                <td align="center">
-                    <form action="/program/board/search.html" method="get">
-                        <input type="hidden" name="param" value="search">
-                        <input type="hidden" name="name" value="管理者">
-                        <input type="submit" value="この人の他のコメントも見てみる">
-                    </form>
-                </td>
                 <td align="center">
                     <form action="/program/board/" method="post">
                         <input type="hidden" name="param" value="delete_step_1">
@@ -124,6 +73,12 @@ Content-Length: 5774
             </tr>
             </tbody>
         </table>
+    </div>
+    <div id="back">
+        <form action="/program/board/" method="post">
+            <input type="hidden" name="param" value="back">
+            <input type="submit" value="topへ戻る">
+        </form>
     </div>
 </center>
 </body>

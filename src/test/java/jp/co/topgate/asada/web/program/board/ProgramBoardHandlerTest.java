@@ -240,8 +240,6 @@ public class ProgramBoardHandlerTest {
 
             ProgramBoardHandler.doPost(requestMessage, responseMessage, "timeIdOfValue");
 
-            outputStream.close();
-
             //verify
             //メッセージの投稿は、現在時刻を取り扱うため、テストは途中までとする。
             try (BufferedReader br = new BufferedReader(new FileReader(new File(responseMessagePath)))) {
@@ -312,6 +310,8 @@ public class ProgramBoardHandlerTest {
                 assertThat(br.readLine(), is("                <td align=\"center\" style=\"word-wrap:break-word;\">こんにちは</td>"));
                 assertThat(br.readLine(), is("                <td align=\"center\" style=\"word-wrap:break-word;\">asada</td>"));
             }
+
+            outputStream.close();
         }
 
         @Test
