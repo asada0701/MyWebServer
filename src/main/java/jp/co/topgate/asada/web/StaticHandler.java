@@ -1,6 +1,7 @@
 package jp.co.topgate.asada.web;
 
-import java.io.File;
+import java.io.*;
+import java.nio.file.Path;
 
 /**
  * 静的なコンテンツの配信を行うハンドラー
@@ -9,87 +10,86 @@ import java.io.File;
  */
 public class StaticHandler extends Handler {
 
-    /**
-     * HTTPリクエストのプロトコルバージョン
-     */
-    private static final String PROTOCOL_VERSION = "HTTP/1.1";
-
-    /**
-     * HTTPリクエストのメソッド
-     */
-    private static final String METHOD = "GET";
-
     private RequestMessage requestMessage;
+    private ResponseMessage responseMessage;
 
     /**
      * コンストラクタ
      *
-     * @param requestMessage リクエストメッセージのオブジェクト
+     * @param requestMessage  リクエストメッセージのオブジェクト
+     * @param responseMessage レスポンスメッセージのオブジェクト
      */
-    StaticHandler(RequestMessage requestMessage) {
+    StaticHandler(RequestMessage requestMessage, ResponseMessage responseMessage) {
         this.requestMessage = requestMessage;
+        this.responseMessage = responseMessage;
     }
 
     /**
      * {@link Handler#handleRequest()}を参照
-     *
-     * @return ResponseMessageのオブジェクトを生成して返す。
      */
     @Override
-    public ResponseMessage handleRequest() {
-        String method = requestMessage.getMethod();
-        String uri = requestMessage.getUri();
-        String protocolVersion = requestMessage.getProtocolVersion();
+    public void handleRequest() {
+        Path filePath = Handler.getFilePath(requestMessage.getUri());
 
-        StatusLine statusLine = StaticHandler.decideStatusLine(method, uri, protocolVersion);
-
-        ResponseMessage responseMessage;
-
-        if (statusLine.equals(StatusLine.OK)) {
-            String path = Handler.FILE_PATH + requestMessage.getUri();
-
-            responseMessage = new ResponseMessage(statusLine, path);
-
-            ContentType contentType = new ContentType(path);
-            responseMessage.addHeaderWithContentType(contentType.getContentType());
-            responseMessage.addHeader("Content-Length", String.valueOf(new File(path).length()));
-
+        StatusLine statusLine;
+        if (filePath.toFile().exists()) {
+            statusLine = StatusLine.OK;
         } else {
-            responseMessage = new ResponseMessage(statusLine);
-            responseMessage.addHeaderWithContentType(ContentType.ERROR_RESPONSE);
+            statusLine = StatusLine.NOT_FOUND;
         }
-
-        return responseMessage;
+        sendResponse(statusLine, filePath);
     }
 
     /**
-     * リクエストメッセージのmethod,uri,protocolVersionから、レスポンスのステータスコードを決定するメソッド
-     * 1.プロトコルバージョンがHTTP/1.1以外の場合は505:HTTP Version Not Supported
-     * 2.GET,POST以外のメソッドの場合は501:Not Implemented
-     * 3.URIで指定されたファイルがリソースフォルダにない、もしくはディレクトリの場合は404:Not Found
-     * 4.1,2,3でチェックして問題がなければ200:OK
-     *
-     * @param method          リクエストメッセージのメソッドを渡す
-     * @param uri             URIを渡す
-     * @param protocolVersion プロトコルバージョンを渡す
-     * @return レスポンスメッセージの状態行(StatusLine)を返す
+     * {@link Handler#checkMethod(String)}を参照
      */
-    static StatusLine decideStatusLine(String method, String uri, String protocolVersion) {
-        if (!StaticHandler.PROTOCOL_VERSION.equals(protocolVersion)) {
-            return StatusLine.HTTP_VERSION_NOT_SUPPORTED;
+    @Override
+    public boolean checkMethod(String method) {
+        return method.equals("GET");
+    }
+
+    /**
+     * バイナリデータと文字データをレスポンスメッセージボディに書き込み、送信するメソッド
+     *
+     * @param statusLine ステータスラインを渡す
+     * @param filePath   リソースファイルのパス
+     */
+    void sendResponse(StatusLine statusLine, Path filePath) {
+
+        if (statusLine.equals(StatusLine.OK)) {
+            //レスポンスメッセージにヘッダーフィールドを追加
+            String contentType = ContentType.getContentType(filePath.toString());
+            responseMessage.addHeaderWithContentType(contentType);
+
+            long contentLength = filePath.toFile().length();
+            responseMessage.addHeaderWithContentLength(String.valueOf(contentLength));
+
+            //メッセージボディを書き込む
+            OutputStream outputStream = responseMessage.getOutputStream(statusLine);
+            try (InputStream in = new FileInputStream(filePath.toFile())) {
+                int num;
+                while ((num = in.read()) != -1) {
+                    outputStream.write(num);
+                }
+            } catch (IOException e) {
+
+            }
+
+        } else {
+            responseMessage.addHeaderWithContentType(ContentType.getHtmlType());
+
+            PrintWriter pw = responseMessage.getPrintWriter(statusLine);
+            pw.write(ResponseMessage.getErrorMessageBody(statusLine));
+            pw.flush();
         }
-        if (!StaticHandler.METHOD.equals(method)) {
-            return StatusLine.NOT_IMPLEMENTED;
-        }
-        File file = new File(Handler.FILE_PATH + uri);
-        if (!file.exists() || !file.isFile()) {
-            return StatusLine.NOT_FOUND;
-        }
-        return StatusLine.OK;
     }
 
     //テスト用
     RequestMessage getRequestMessage() {
-        return this.requestMessage;
+        return requestMessage;
+    }
+
+    ResponseMessage getResponseMessage() {
+        return responseMessage;
     }
 }

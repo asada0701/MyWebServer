@@ -5,7 +5,7 @@ package jp.co.topgate.asada.web.exception;
  *
  * @author asada
  */
-public class CsvRuntimeException extends RuntimeException {
+public class CsvRuntimeException extends Exception {
     public CsvRuntimeException(String message) {
         super(message);
     }

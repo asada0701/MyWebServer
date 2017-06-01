@@ -1,8 +1,8 @@
-package jp.co.topgate.asada.web.util;
+package jp.co.topgate.asada.web.program.board;
 
 import com.google.common.base.Strings;
 import jp.co.topgate.asada.web.exception.CsvRuntimeException;
-import jp.co.topgate.asada.web.model.Message;
+import jp.co.topgate.asada.web.program.board.model.Message;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -13,12 +13,12 @@ import java.util.List;
  *
  * @author asada
  */
-public class CsvHelper {
+class CsvHelper {
 
     /**
      * CSVのファイルパス
      */
-    private static final String CSV_FILE_PATH = "./src/main/resources/data/message.csv";
+    private static final String CSV_FILE_PATH = "./csv/message.csv";
 
     /**
      * CSVファイルの項目を分割する
@@ -36,28 +36,28 @@ public class CsvHelper {
      * @return 過去に投稿された文をメッセージクラスのListに格納して返す
      * @throws CsvRuntimeException CSVファイルの中身が規定の形になっていないもしくはファイル読み込みに失敗した
      */
-    public static List<Message> readMessage() throws CsvRuntimeException {
+    static List<Message> readMessage() throws CsvRuntimeException {
         List<Message> messageList = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(new File(CSV_FILE_PATH)))) {
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(CSV_FILE_PATH)))) {
             String line;
-            while (!Strings.isNullOrEmpty(line = br.readLine())) {
+            while (!Strings.isNullOrEmpty(line = bufferedReader.readLine())) {
 
                 String[] s = line.split(CSV_SEPARATOR);
-                if (s.length == MESSAGE_NUM_ITEMS) {
-                    Message m = new Message();
-                    int i = 0;
-                    m.setMessageID(Integer.parseInt(s[i++]));
-                    m.setPassword(s[i++]);
-                    m.setName(s[i++]);
-                    m.setTitle(s[i++]);
-                    m.setText(s[i++]);
-                    m.setDate(s[i++]);
-                    m.setTimeID(s[i]);
 
-                    messageList.add(m);
-                } else {
+                if (s.length != MESSAGE_NUM_ITEMS) {
                     throw new CsvRuntimeException("指定されたCSVが規定の形にそっていないため読み込めません。");
                 }
+
+                Message m = new Message();
+                m.setMessageID(Integer.parseInt(s[0]));
+                m.setPassword(s[1]);
+                m.setName(s[2]);
+                m.setTitle(s[3]);
+                m.setText(s[4]);
+                m.setDate(s[5]);
+                m.setTimeID(s[6]);
+
+                messageList.add(m);
             }
         } catch (IOException e) {
             throw new CsvRuntimeException(e.getMessage(), e.getCause());
@@ -71,7 +71,7 @@ public class CsvHelper {
      * @param messageList CSVに書き込みたいListを渡す
      * @throws CsvRuntimeException CSVファイルの書き込み中に失敗したもしくは書き込みに失敗した
      */
-    public static void writeMessage(List<Message> messageList) throws CsvRuntimeException {
+    static void writeMessage(List<Message> messageList) throws CsvRuntimeException {
         try (OutputStream outputStream = new FileOutputStream(new File(CSV_FILE_PATH))) {
             for (Message m : messageList) {
                 String messageID = String.valueOf(m.getMessageID());

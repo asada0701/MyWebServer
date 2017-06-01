@@ -1,5 +1,7 @@
 package jp.co.topgate.asada.web;
 
+import jp.co.topgate.asada.web.exception.RequestParseException;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -15,82 +17,99 @@ import static org.junit.Assert.assertThat;
  * @author asada
  */
 public class RequestMessageTest {
-    @Test
-    public void getMessageBodyメソッドのテスト() {
-        //SetUp
+    private RequestMessage sut;
+
+    @Before
+    public void setUp() {
         String method = "GET";
-        String uri = "/";
-        String protocolVersion = "HTTP/1.1";
-        Map<String, String> headerField = new HashMap<>();
-        headerField.put("hoge", "hogehoge");
-        headerField.put("Content-Type", "application/x-www-form-urlencoded");
 
-        //Exercise
-        RequestMessage sut = new RequestMessage(method, uri, protocolVersion);
-        sut.setHeaderField(headerField);
-        sut.setMessageBody("name%3dasada%26title%3dtest%26text%3d%e3%81%93%e3%82%93%e3%81%ab%e3%81%a1%e3%81%af%26password%3dtest%26param%3dcontribution".getBytes());
+        String uri = "/index.html";
 
-        //Verify
-        assertThat(sut.getMethod(), is("GET"));
-        assertThat(sut.getUri(), is("/"));
-        assertThat(sut.getProtocolVersion(), is("HTTP/1.1"));
-        assertThat(sut.findHeaderByName("hoge"), is("hogehoge"));
-        assertThat(sut.findHeaderByName("Content-Type"), is("application/x-www-form-urlencoded"));
-        assertThat(sut.getMessageBody(), is("name%3dasada%26title%3dtest%26text%3d%e3%81%93%e3%82%93%e3%81%ab%e3%81%a1%e3%81%af%26password%3dtest%26param%3dcontribution".getBytes()));
-    }
-
-    @Test
-    public void uriQueryのテスト() {
         Map<String, String> uriQuery = new HashMap<>();
         uriQuery.put("name", "asada");
-        uriQuery.put("from", "japan");
+        uriQuery.put("like", "cat");
 
-        String method = "GET";
-        String uri = "/";
-        String protocolVersion = "HTTP/1.1";
         Map<String, String> headerField = new HashMap<>();
         headerField.put("Content-Type", "application/x-www-form-urlencoded");
-        RequestMessage sut = new RequestMessage(method, uri, protocolVersion);
-        sut.setHeaderField(headerField);
 
-        sut.setUriQuery(uriQuery);
+        //name=asada&title=test&text=こんにちは&password=test&param=contribution
+        String messageBody = "name%3dasada%26title%3dtest%26text%3d%e3%81%93%e3%82%93%e3%81%ab%e3%81%a1%e3%81%af%26password%3dtest%26param%3dcontribution";
+
+        sut = new RequestMessage(method, uri, uriQuery, headerField, messageBody.getBytes());
+    }
+
+    @Test
+    public void メソッド一覧() {
+        assertThat(sut.getMethod(), is("GET"));
+
+        assertThat(sut.getUri(), is("/index.html"));
 
         assertThat(sut.findUriQuery("name"), is("asada"));
-        assertThat(sut.findUriQuery("from"), is("japan"));
+        assertThat(sut.findUriQuery("like"), is("cat"));
+
+        assertThat(sut.findHeaderByName("Content-Type"), is("application/x-www-form-urlencoded"));
+
+        Map<String, String> messageBody = sut.parseMessageBodyToMap();
+        assertThat(messageBody.get("name"), is("asada"));
+        assertThat(messageBody.get("title"), is("test"));
+        assertThat(messageBody.get("text"), is("こんにちは"));
+        assertThat(messageBody.get("password"), is("test"));
+        assertThat(messageBody.get("param"), is("contribution"));
+    }
+
+    @Test
+    public void findUriQueryメソッドのテスト() {
+        assertThat(sut.findUriQuery("name"), is("asada"));
+        assertThat(sut.findUriQuery("like"), is("cat"));
         assertThat(sut.findUriQuery("hoge"), is(nullValue()));
+        assertThat(sut.findUriQuery(null), is(nullValue()));
     }
 
     @Test
-    public void コンストラクタにnullを渡す() {
-        RequestMessage sut = new RequestMessage(null, null, null);
-
-        //Verify
-        assertThat(sut.getMethod(), is(nullValue()));
-        assertThat(sut.getUri(), is(nullValue()));
-        assertThat(sut.getProtocolVersion(), is(nullValue()));
+    public void findHeaderByNameメソッドのテスト() {
+        assertThat(sut.findHeaderByName("Content-Type"), is("application/x-www-form-urlencoded"));
+        assertThat(sut.findHeaderByName("nothing"), is(nullValue()));
+        assertThat(sut.findHeaderByName(null), is(nullValue()));
     }
 
-    @Test(expected = NullPointerException.class)
-    public void headerFieldをセットする前にfindHeaderByNameを呼び出す() {
-        RequestMessage sut = new RequestMessage(null, null, null);
-        assertThat(sut.findHeaderByName("name"), is(nullValue()));
+    public void setMessageBodyAndHeader(Map<String, String> headerField, byte[] messageBody) {
+        sut = new RequestMessage(null, null, null, headerField, messageBody);
     }
 
     @Test
-    public void messageBodyをセットする前にゲッターを呼び出す() {
-        RequestMessage sut = new RequestMessage(null, null, null);
-        assertThat(sut.getMessageBody(), is(nullValue()));
+    public void parseMessageBodyToMapメソッドのテスト() {
+        Map<String, String> headerField = new HashMap<>();
+        headerField.put("Content-Type", "multipart/form-data");
+        byte[] messageBody = "".getBytes();
+        setMessageBodyAndHeader(headerField, messageBody);
+        assertThat(sut.parseMessageBodyToMap(), is(nullValue()));
+
+        headerField = new HashMap<>();
+        headerField.put("Content-Type", "application/x-www-form-urlencoded");
+
+        messageBody = "name%3dasada%26title%3dtest%26text%3d%e3%81%93%e3%82%93%e3%81%ab%e3%81%a1%e3%81%af%26password%3dtest%26param".getBytes();
+        setMessageBodyAndHeader(headerField, messageBody);
     }
 
-    @Test(expected = NullPointerException.class)
-    public void uriQueryをセットする前にゲッターを呼び出す() {
-        RequestMessage sut = new RequestMessage(null, null, null);
-        sut.findUriQuery("hoge");
+    @Test(expected = RequestParseException.class)
+    public void 不正な文字列としてイコールがないものを渡す() {
+        Map<String, String> headerField = new HashMap<>();
+        headerField.put("Content-Type", "application/x-www-form-urlencoded");
+
+        byte[] messageBody = "name%3dasada%26title%3dtest%26text%3d%e3%81%93%e3%82%93%e3%81%ab%e3%81%a1%e3%81%af%26password%3dtest%26param".getBytes();
+        setMessageBodyAndHeader(headerField, messageBody);
+
+        sut.parseMessageBodyToMap();
     }
 
-    @Test
-    public void messageBodyをセットする前にゲッターを呼ぶ() {
-        RequestMessage sut = new RequestMessage(null, null, null);
-        assertThat(sut.getMessageBody(), is(nullValue()));
+    @Test(expected = RequestParseException.class)
+    public void 不正な文字列としてアンパサンドがないものを渡す() {
+        Map<String, String> headerField = new HashMap<>();
+        headerField.put("Content-Type", "application/x-www-form-urlencoded");
+
+        byte[] messageBody = "name%3Dasadatitle%3Dtest%26text%3D%82%B1%82%F1%82%C9%82%BF%82%CD%26password%3Dtest%26param%3Dcontribution".getBytes();
+        setMessageBodyAndHeader(headerField, messageBody);
+
+        sut.parseMessageBodyToMap();
     }
 }

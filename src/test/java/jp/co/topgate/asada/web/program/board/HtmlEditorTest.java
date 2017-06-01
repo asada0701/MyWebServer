@@ -1,9 +1,12 @@
 package jp.co.topgate.asada.web.program.board;
 
-import jp.co.topgate.asada.web.model.Message;
-import org.junit.*;
+import jp.co.topgate.asada.web.program.board.model.Message;
+import org.junit.Before;
+import org.junit.Test;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,12 +20,9 @@ import static org.junit.Assert.assertThat;
  */
 public class HtmlEditorTest {
     private List<Message> messageList = new ArrayList<>();
-    private HtmlEditor htmlEditor;
 
     @Before
     public void setUp() {
-        htmlEditor = new HtmlEditor();
-
         Message m;
         m = new Message();
         m.setMessageID(1);
@@ -62,22 +62,23 @@ public class HtmlEditorTest {
     }
 
     @Test
-    public void editIndexOrSearchHtmlメソッドのテスト() throws Exception {
-        HtmlEditor sut = new HtmlEditor();
-        ProgramBoardHtmlList indexEnum = ProgramBoardHtmlList.INDEX_HTML;
-        ProgramBoardHtmlList searchEnum = ProgramBoardHtmlList.SEARCH_HTML;
-
-        String resultIndex = sut.editIndexOrSearchHtml(indexEnum, messageList, "index4message");
-        String resultSearch = sut.editIndexOrSearchHtml(searchEnum, messageList, "search4message");
+    public void editIndexメソッドのテスト() throws Exception {
+        String resultIndex = HtmlEditor.editIndexHtml(messageList, "index4message");
 
         String[] index = resultIndex.split("\n");
-        String[] search = resultSearch.split("\n");
 
         try (BufferedReader br = new BufferedReader(new FileReader(new File("./src/test/resources/html/index4message.html")))) {
             for (String s : index) {
                 assertThat(s, is(br.readLine()));
             }
         }
+    }
+
+    @Test
+    public void editSearchメソッドのテスト() throws Exception {
+        String resultSearch = HtmlEditor.editSearchHtml(messageList, "search4message");
+
+        String[] search = resultSearch.split("\n");
 
         try (BufferedReader br = new BufferedReader(new FileReader(new File("./src/test/resources/html/search4message.html")))) {
             for (String s : search) {
@@ -88,7 +89,6 @@ public class HtmlEditorTest {
 
     @Test
     public void editDeleteメソッドのテスト() throws Exception {
-        HtmlEditor sut = new HtmlEditor();
         Message m;
         m = new Message();
         m.setMessageID(1);
@@ -98,7 +98,7 @@ public class HtmlEditorTest {
         m.setText("こんにちは");
         m.setDate("2017/5/11 11:56");
 
-        String resultHtml = sut.editDeleteHtml(m);
+        String resultHtml = HtmlEditor.editDeleteHtml(m);
 
         String[] delete = resultHtml.split("\n");
 
@@ -119,31 +119,31 @@ public class HtmlEditorTest {
         m.setTitle("test");
         m.setText("こんにちは");
         m.setDate("2017/5/11 11:56");
-        String index = HtmlEditor.changeMessageToHtml(ProgramBoardHtmlList.INDEX_HTML, m);
-        String search = HtmlEditor.changeMessageToHtml(ProgramBoardHtmlList.SEARCH_HTML, m);
-        String delete = HtmlEditor.changeMessageToHtml(ProgramBoardHtmlList.DELETE_HTML, m);
+        String index = HtmlEditor.changeMessageToHtml(HtmlList.INDEX_HTML, m);
+        String search = HtmlEditor.changeMessageToHtml(HtmlList.SEARCH_HTML, m);
+        String delete = HtmlEditor.changeMessageToHtml(HtmlList.DELETE_HTML, m);
 
         assert index != null;
         String[] result = index.split("\n");
         int i = 0;
         assertThat(result[i++], is("            <tr id=\"No.1\">"));
-        assertThat(result[i++], is("                <td>No.1</td>"));
-        assertThat(result[i++], is("                <td>test</td>"));
-        assertThat(result[i++], is("                <td>こんにちは</td>"));
-        assertThat(result[i++], is("                <td>管理者</td>"));
-        assertThat(result[i++], is("                <td>2017/5/11 11:56</td>"));
-        assertThat(result[i++], is("                <td>"));
-        assertThat(result[i++], is("                    <form action=\"/program/board/\" method=\"post\">"));
+        assertThat(result[i++], is("                <td align=\"center\" style=\"word-wrap:break-word;\">No.1</td>"));
+        assertThat(result[i++], is("                <td align=\"center\" style=\"word-wrap:break-word;\">test</td>"));
+        assertThat(result[i++], is("                <td align=\"center\" style=\"word-wrap:break-word;\">こんにちは</td>"));
+        assertThat(result[i++], is("                <td align=\"center\" style=\"word-wrap:break-word;\">管理者</td>"));
+        assertThat(result[i++], is("                <td align=\"center\" style=\"word-wrap:break-word;\">2017/5/11 11:56</td>"));
+        assertThat(result[i++], is("                <td align=\"center\">"));
+        assertThat(result[i++], is("                    <form action=\"/program/board/search.html\" method=\"get\">"));
         assertThat(result[i++], is("                        <input type=\"hidden\" name=\"param\" value=\"search\">"));
-        assertThat(result[i++], is("                        <input type=\"hidden\" name=\"number\" value=\"1\">"));
-        assertThat(result[i++], is("                        <input type=\"submit\" value=\"このコメントを投稿した人の他のコメントを見てみる\">"));
+        assertThat(result[i++], is("                        <input type=\"hidden\" name=\"name\" value=\"管理者\">"));
+        assertThat(result[i++], is("                        <input type=\"submit\" value=\"この人の他のコメントも見てみる\">"));
         assertThat(result[i++], is("                    </form>"));
         assertThat(result[i++], is("                </td>"));
-        assertThat(result[i++], is("                <td>"));
+        assertThat(result[i++], is("                <td align=\"center\">"));
         assertThat(result[i++], is("                    <form action=\"/program/board/\" method=\"post\">"));
         assertThat(result[i++], is("                        <input type=\"hidden\" name=\"param\" value=\"delete_step_1\">"));
         assertThat(result[i++], is("                        <input type=\"hidden\" name=\"number\" value=\"1\">"));
-        assertThat(result[i++], is("                        <input type=\"submit\" value=\"このコメントを削除する\">"));
+        assertThat(result[i++], is("                        <input type=\"submit\" value=\"削除する\">"));
         assertThat(result[i++], is("                    </form>"));
         assertThat(result[i], is("                </td>"));
 
@@ -151,16 +151,16 @@ public class HtmlEditorTest {
         result = search.split("\n");
         i = 0;
         assertThat(result[i++], is("            <tr id=\"No.1\">"));
-        assertThat(result[i++], is("                <td>No.1</td>"));
-        assertThat(result[i++], is("                <td>test</td>"));
-        assertThat(result[i++], is("                <td>こんにちは</td>"));
-        assertThat(result[i++], is("                <td>管理者</td>"));
-        assertThat(result[i++], is("                <td>2017/5/11 11:56</td>"));
-        assertThat(result[i++], is("                <td>"));
+        assertThat(result[i++], is("                <td align=\"center\" style=\"word-wrap:break-word;\">No.1</td>"));
+        assertThat(result[i++], is("                <td align=\"center\" style=\"word-wrap:break-word;\">test</td>"));
+        assertThat(result[i++], is("                <td align=\"center\" style=\"word-wrap:break-word;\">こんにちは</td>"));
+        assertThat(result[i++], is("                <td align=\"center\" style=\"word-wrap:break-word;\">管理者</td>"));
+        assertThat(result[i++], is("                <td align=\"center\" style=\"word-wrap:break-word;\">2017/5/11 11:56</td>"));
+        assertThat(result[i++], is("                <td align=\"center\">"));
         assertThat(result[i++], is("                    <form action=\"/program/board/\" method=\"post\">"));
         assertThat(result[i++], is("                        <input type=\"hidden\" name=\"param\" value=\"delete_step_1\">"));
         assertThat(result[i++], is("                        <input type=\"hidden\" name=\"number\" value=\"1\">"));
-        assertThat(result[i++], is("                        <input type=\"submit\" value=\"このコメントを削除する\">"));
+        assertThat(result[i++], is("                        <input type=\"submit\" value=\"削除する\">"));
         assertThat(result[i++], is("                    </form>"));
         assertThat(result[i], is("                </td>"));
 
@@ -168,11 +168,11 @@ public class HtmlEditorTest {
         result = delete.split("\n");
         i = 0;
         assertThat(result[i++], is("            <tr id=\"No.1\">"));
-        assertThat(result[i++], is("                <td>No.1</td>"));
-        assertThat(result[i++], is("                <td>test</td>"));
-        assertThat(result[i++], is("                <td>こんにちは</td>"));
-        assertThat(result[i++], is("                <td>管理者</td>"));
-        assertThat(result[i], is("                <td>2017/5/11 11:56</td>"));
+        assertThat(result[i++], is("                <td align=\"center\" style=\"word-wrap:break-word;\">No.1</td>"));
+        assertThat(result[i++], is("                <td align=\"center\" style=\"word-wrap:break-word;\">test</td>"));
+        assertThat(result[i++], is("                <td align=\"center\" style=\"word-wrap:break-word;\">こんにちは</td>"));
+        assertThat(result[i++], is("                <td align=\"center\" style=\"word-wrap:break-word;\">管理者</td>"));
+        assertThat(result[i], is("                <td align=\"center\" style=\"word-wrap:break-word;\">2017/5/11 11:56</td>"));
     }
 
     @Test
@@ -195,21 +195,13 @@ public class HtmlEditorTest {
     }
 
     @Test
-    public void writeHtmlメソッドのテスト() throws Exception {
-        HtmlEditor he = new HtmlEditor();
+    public void getResultHtmlメソッドのテスト() throws Exception {
+        String[] sut = HtmlEditor.getResultHtml().split("\n");
 
-        he.writeHtml(ProgramBoardHtmlList.INDEX_HTML, "test");
-
-        String path = "./src/main/resources/2/index.html";
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(new File(path))))) {
-            assertThat(br.readLine(), is("test"));
+        try (BufferedReader br = new BufferedReader(new FileReader(new File("./src/test/resources/html/result.html")))) {
+            for (String str : sut) {
+                assertThat(str, is(br.readLine()));
+            }
         }
-
-        he.resetAllFiles();
-    }
-
-    @After
-    public void tearDown() {
-        htmlEditor.resetAllFiles();
     }
 }

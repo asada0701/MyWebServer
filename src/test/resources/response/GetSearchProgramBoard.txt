@@ -1,3 +1,7 @@
+HTTP/1.1 200 OK
+Content-Type: text/html; charset=UTF-8
+Content-Length: 3072
+
 <!DOCTYPE html>
 <html>
 
@@ -30,20 +34,44 @@
                 <br>(投稿した文を削除するときに使います。)
             </p>
             <input type="hidden" name="param" value="write">
-            <input type="hidden" name="timeID" value="">
+            <input type="hidden" name="timeID" value="timeIdOfValue">
             <input type="submit" value="投稿">
         </form>
     </div>
     <div id="log">
-        <table border="1">
+        <table border="1" style="table-layout:fixed;width:90%;">
+            <colgroup>
+                <col style="width:5%;">
+                <col style="width:10%;">
+                <col style="width:30%;">
+                <col style="width:10%;">
+                <col style="width:15%;">
+                <col style="width:20%;">
+            </colgroup>
+            <tbody>
             <tr>
-                <th>ナンバー</th>
+                <th>No</th>
                 <th>タイトル</th>
                 <th>本文</th>
                 <th>ユーザー名</th>
                 <th>日付</th>
                 <th></th>
             </tr>
+            <tr id="No.1">
+                <td align="center" style="word-wrap:break-word;">No.1</td>
+                <td align="center" style="word-wrap:break-word;">test</td>
+                <td align="center" style="word-wrap:break-word;">こんにちは</td>
+                <td align="center" style="word-wrap:break-word;">管理者</td>
+                <td align="center" style="word-wrap:break-word;">2017/5/11 11:56</td>
+                <td align="center">
+                    <form action="/program/board/" method="post">
+                        <input type="hidden" name="param" value="delete_step_1">
+                        <input type="hidden" name="number" value="1">
+                        <input type="submit" value="削除する">
+                    </form>
+                </td>
+            </tr>
+            </tbody>
         </table>
     </div>
     <div id="back">

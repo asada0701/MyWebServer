@@ -11,7 +11,7 @@ public class RequestParseException extends RuntimeException {
         super(msg);
     }
 
-    public RequestParseException(Throwable cause) {
-        super(cause);
+    public RequestParseException(String msg, Throwable cause) {
+        super(msg, cause);
     }
 }

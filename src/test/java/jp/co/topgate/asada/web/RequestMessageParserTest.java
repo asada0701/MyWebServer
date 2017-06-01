@@ -5,9 +5,7 @@ import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
+import java.io.*;
 import java.util.Map;
 
 import static org.hamcrest.Matchers.is;
@@ -22,17 +20,9 @@ public class RequestMessageParserTest {
     public static class parseメソッドのテスト {
         RequestMessage sut;
 
-        @Test
-        public void nullチェック() throws Exception {
-            sut = new RequestMessage(null, null, null);
-            assertThat(sut.getMethod(), is(nullValue()));
-            assertThat(sut.getUri(), is(nullValue()));
-            assertThat(sut.getProtocolVersion(), is(nullValue()));
-        }
-
         @Test(expected = RequestParseException.class)
         public void 空チェック() throws Exception {
-            String path = "./src/test/resources/emptyRequestMessage.txt";
+            String path = "./src/test/resources/request/emptyRequestMessage.txt";
             try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(path)))) {
                 sut = RequestMessageParser.parse(bis);
             }
@@ -40,12 +30,11 @@ public class RequestMessageParserTest {
 
         @Test
         public void GETの場合正しく動作するか() throws Exception {
-            String path = "./src/test/resources/GetRequestMessage.txt";
+            String path = "./src/test/resources/request/GetRequestMessage.txt";
             try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(path)))) {
                 sut = RequestMessageParser.parse(bis);
                 assertThat(sut.getMethod(), is("GET"));
                 assertThat(sut.getUri(), is("/index.html"));
-                assertThat(sut.getProtocolVersion(), is("HTTP/1.1"));
 
                 assertThat(sut.findUriQuery("name"), is("asada"));
                 assertThat(sut.findUriQuery("like"), is("cat"));
@@ -71,12 +60,11 @@ public class RequestMessageParserTest {
 
         @Test
         public void POSTの場合正しく動作するか() throws Exception {
-            String path = "./src/test/resources/PostRequestMessage.txt";
+            String path = "./src/test/resources/request/PostRequestMessage.txt";
             try (FileInputStream fis = new FileInputStream(new File(path))) {
                 sut = RequestMessageParser.parse(fis);
                 assertThat(sut.getMethod(), is("POST"));
                 assertThat(sut.getUri(), is("/program/board/index.html"));
-                assertThat(sut.getProtocolVersion(), is("HTTP/1.1"));
 
                 assertThat(sut.findHeaderByName("Host"), is("localhost:8080"));
                 assertThat(sut.findHeaderByName("Connection"), is("keep-alive"));
@@ -90,7 +78,7 @@ public class RequestMessageParserTest {
                 assertThat(sut.findHeaderByName("Content-Type"), is("application/x-www-form-urlencoded"));
                 assertThat(sut.findHeaderByName("Content-Length"), is("123"));
 
-                Map<String, String> messageBody = RequestMessageBodyParser.parseToMapString(sut.getMessageBody());
+                Map<String, String> messageBody = sut.parseMessageBodyToMap();
                 assertThat(messageBody.get("name"), is("asada"));
                 assertThat(messageBody.get("title"), is("test"));
                 assertThat(messageBody.get("text"), is("こんにちは"));
@@ -100,87 +88,30 @@ public class RequestMessageParserTest {
         }
     }
 
-    public static class readRequestLineAndHeaderFieldメソッドのテスト {
-
+    public static class changeUriToWelcomePageのテスト {
         @Test(expected = NullPointerException.class)
         public void nullチェック() throws Exception {
-            RequestMessageParser.readRequestLineAndHeaderField(null);
+            RequestMessageParser.changeUriToWelcomePage(null);
         }
 
         @Test
         public void 正しく動作するか() throws Exception {
-            String path = "./src/test/resources/GetRequestMessage.txt";
-            try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(path)))) {
+            assertThat(RequestMessageParser.changeUriToWelcomePage("/"), is("/index.html"));
 
-                String[] sut = RequestMessageParser.readRequestLineAndHeaderField(bis);
-                assertThat(sut.length, is(2));
-                assertThat(sut[0], is("GET /index.html?name=asada&like=cat HTTP/1.1"));
-                assertThat(sut[1], is("Host: localhost:8080\n" +
-                        "Connection: keep-alive\n" +
-                        "Pragma: no-cache\n" +
-                        "Cache-Control: no-cache\n" +
-                        "Upgrade-Insecure-Requests: 1\n" +
-                        "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36\n" +
-                        "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\n" +
-                        "Accept-Encoding: gzip, deflate, sdch, br\n" +
-                        "Accept-Language: ja,en-US;q=0.8,en;q=0.6\n" +
-                        "Foo: Bar:Fizz:Buzz\n"));
-            }
-        }
-    }
+            assertThat(RequestMessageParser.changeUriToWelcomePage("///////"), is("///////index.html"));
 
-    public static class readMessageBodyメソッドのテスト {
-        @Test(expected = NullPointerException.class)
-        public void nullチェック() throws Exception {
-            RequestMessageParser.readMessageBody(null, 0);
+            assertThat(RequestMessageParser.changeUriToWelcomePage("/hoge//"), is("/hoge//index.html"));
         }
 
         @Test
-        public void 正しく動作するか() throws Exception {
-            String path = "./src/test/resources/PostRequestMessage.txt";
-            try (FileInputStream fis = new FileInputStream(new File(path))) {
-                RequestMessage sut = RequestMessageParser.parse(fis);
+        public void 引数にスラッシュが含まれない場合() throws Exception {
+            assertThat(RequestMessageParser.changeUriToWelcomePage(""), is(""));
 
-                Map<String, String> messageBody = RequestMessageBodyParser.parseToMapString(sut.getMessageBody());
-                assertThat(messageBody.get("name"), is("asada"));
-                assertThat(messageBody.get("title"), is("test"));
-                assertThat(messageBody.get("text"), is("こんにちは"));
-                assertThat(messageBody.get("password"), is("test"));
-                assertThat(messageBody.get("param"), is("contribution"));
-            }
-        }
-    }
-
-    public static class splitUriメソッドのテスト {
-        @Test(expected = NullPointerException.class)
-        public void nullチェック() {
-            RequestMessageParser.splitUri(null);
-        }
-
-        @Test
-        public void 空チェック() throws Exception {
-            String[] sut = RequestMessageParser.splitUri("");
-            assertThat(sut.length, is(2));
-            assertThat(sut[0], is(""));
-            assertThat(sut[1], is(nullValue()));
-        }
-
-        @Test(expected = RequestParseException.class)
-        public void URIシンタックス例外のテスト() throws Exception {
-            RequestMessageParser.splitUri("{hello world!}");
-        }
-
-        @Test
-        public void 正しく動作するか() throws Exception {
-            String[] sut = RequestMessageParser.splitUri("/index.html?name=%e6%9c%9d%e7%94%b0&like=cat");
-            assertThat(sut.length, is(2));
-            assertThat(sut[0], is("/index.html"));
-            assertThat(sut[1], is("name=朝田&like=cat"));
+            assertThat(RequestMessageParser.changeUriToWelcomePage("hoge"), is("hoge"));
         }
     }
 
     public static class parseUriQueryメソッドのテスト {
-
         @Test(expected = NullPointerException.class)
         public void nullチェック() throws Exception {
             RequestMessageParser.parseUriQuery(null);
@@ -199,37 +130,90 @@ public class RequestMessageParserTest {
         }
     }
 
-    public static class parseHeaderFieldメソッドのテスト {
+    public static class readRequestLineメソッドのテスト {
+        @Test
+        public void 正しく動作するか() throws Exception {
+            try (InputStream inputStream = new ByteArrayInputStream("GET / HTTP/1.1".getBytes("UTF-8"))) {
+                String[] requestLine = RequestMessageParser.readRequestLine(inputStream);
+                assertThat(requestLine[0], is("GET"));
+                assertThat(requestLine[1], is("/"));
+                assertThat(requestLine[2], is("HTTP/1.1"));
+            }
+        }
+    }
 
+    public static class readHeaderFieldメソッドのテスト {
+        @Test
+        public void 正しく動作するか() throws Exception {
+            String path = "./src/test/resources/request/GetRequestMessage.txt";
+            try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(path)))) {
+
+                Map<String, String> headerField = RequestMessageParser.readHeaderField(bis);
+                assertThat(headerField.get("Host"), is("localhost:8080"));
+                assertThat(headerField.get("Connection"), is("keep-alive"));
+                assertThat(headerField.get("Pragma"), is("no-cache"));
+                assertThat(headerField.get("Cache-Control"), is("no-cache"));
+                assertThat(headerField.get("Upgrade-Insecure-Requests"), is("1"));
+                assertThat(headerField.get("User-Agent"), is("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36"));
+                assertThat(headerField.get("Accept"), is("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"));
+                assertThat(headerField.get("Accept-Encoding"), is("gzip, deflate, sdch, br"));
+                assertThat(headerField.get("Accept-Language"), is("ja,en-US;q=0.8,en;q=0.6"));
+
+            }
+        }
+    }
+
+    public static class countRequestLineAndHeaderLengthメソッドのテスト {
         @Test(expected = NullPointerException.class)
-        public void nullチッェク() throws Exception {
-            RequestMessageParser.parseHeaderField(null);
+        public void nullチェック() throws Exception {
+            RequestMessageParser.countRequestLineAndHeaderLength(null);
         }
 
-        @Test(expected = RequestParseException.class)
-        public void 空チェック() throws Exception {
-            Map<String, String> sut = RequestMessageParser.parseHeaderField("");
-            assertThat(sut.size(), is(1));
+        @Test
+        public void GETリクエストの場合正しく動作するか() throws Exception {
+            String path = "./src/test/resources/request/GetRequestMessage.txt";
+            try (InputStream inputStream = new FileInputStream(new File(path))) {
+                int num = RequestMessageParser.countRequestLineAndHeaderLength(inputStream);
+                assertThat(num, is((int) new File(path).length() + 2));
+            }
+        }
+
+        @Test
+        public void POSTリクエストの場合正しく動作するか() throws Exception {
+            String path = "./src/test/resources/request/PostRequestMessage.txt";
+            try (InputStream inputStream = new FileInputStream(new File(path))) {
+                int num = RequestMessageParser.countRequestLineAndHeaderLength(inputStream);
+
+                //ヘッダーフィールドとメッセージボディの間に入る改行文字の分の4をプラスする
+                num += 4;
+
+                //メッセージボディの分の123をプラスする
+                num += 123;
+
+                assertThat(num, is((int) new File(path).length() + 2));
+            }
+        }
+    }
+
+    public static class readMessageBodyメソッドのテスト {
+        @Test(expected = NullPointerException.class)
+        public void nullチェック() throws Exception {
+            RequestMessageParser.readMessageBody(null, 0, 0);
         }
 
         @Test
         public void 正しく動作するか() throws Exception {
-            Map<String, String> sut = RequestMessageParser.parseHeaderField(
-                    "Host: localhost:8080\n" +
-                            "Connection: keep-alive\n" +
-                            "Pragma: no-cache\n" +
-                            "Cache-Control: no-cache\n" +
-                            "Upgrade-Insecure-Requests: 1\n" +
-                            "User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36\n" +
-                            "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\n" +
-                            "Accept-Encoding: gzip, deflate, sdch, br\n" +
-                            "Accept-Language: ja,en-US;q=0.8,en;q=0.6\n" +
-                            "Foo: Bar:Fizz:Buzz\n");
-            assertThat(sut.size(), is(10));
-            assertThat(sut.get("Host"), is("localhost:8080"));
-            assertThat(sut.get("Connection"), is("keep-alive"));
+            String path = "./src/test/resources/request/PostRequestMessage.txt";
+            try (FileInputStream fis = new FileInputStream(new File(path))) {
+                RequestMessage requestMessage = RequestMessageParser.parse(fis);
+                Map<String, String> messageBody = requestMessage.parseMessageBodyToMap();
 
-            assertThat(sut.get("hoge"), is(nullValue()));
+                assertThat(messageBody.get("name"), is("asada"));
+                assertThat(messageBody.get("title"), is("test"));
+                assertThat(messageBody.get("text"), is("こんにちは"));
+                assertThat(messageBody.get("password"), is("test"));
+                assertThat(messageBody.get("param"), is("contribution"));
+            }
         }
     }
 }

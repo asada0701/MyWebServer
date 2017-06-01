@@ -1,4 +1,4 @@
-package jp.co.topgate.asada.web.model;
+package jp.co.topgate.asada.web.program.board.model;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;

@@ -47,9 +47,9 @@ dependencies {
     testCompile 'org.hamcrest:hamcrest-all:1.3'
 }
 
-run {
-    standardInput = System.in
-}
+//run {
+//    standardInput = System.in
+//}
 
 // Define the main class for the application
 mainClassName = 'jp.co.topgate.asada.web.Main'

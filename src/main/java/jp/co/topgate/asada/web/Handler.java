@@ -1,8 +1,9 @@
 package jp.co.topgate.asada.web;
 
-import jp.co.topgate.asada.web.exception.HtmlInitializeException;
-import jp.co.topgate.asada.web.program.board.HtmlEditor;
 import jp.co.topgate.asada.web.program.board.ProgramBoardHandler;
+
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * ハンドラー抽象クラス
@@ -14,41 +15,48 @@ public abstract class Handler {
     /**
      * リソースファイルのパス
      */
-    static final String FILE_PATH = "./src/main/resources";
+    private static final String FILE_PATH = "./src/main/resources/";
+
+    private static final String PROGRAM_BOARD_URI = "/program/board";
 
     /**
      * ハンドラーのファクトリーメソッド
      * 注意点
-     * URLパターンとの比較の際にStringのstartsWithメソッドを使用しています。
-     * /program/board/と/program/といった始まりが同じURLには注意してください。
+     * URLパターンとの比較の際にStringのstartsWithメソッドを使用しています
+     * /program/board/と/program/といった始まりが同じURLには注意してください
      *
      * @param requestMessage リクエストメッセージのオブジェクトを渡す
      * @return 今回の接続を担当するハンドラーのオブジェクトを返す
-     * @throws HtmlInitializeException {@link HtmlEditor#HtmlEditor()}を参照
      */
-    static Handler getHandler(RequestMessage requestMessage) throws HtmlInitializeException {
+    static Handler getHandler(RequestMessage requestMessage, ResponseMessage responseMessage) {
         String uri = requestMessage.getUri();
-
-        Handler handler = new StaticHandler(requestMessage);
-
-        if (uri.startsWith(UrlPattern.PROGRAM_BOARD.getUrlPattern())) {
-            handler = new ProgramBoardHandler(requestMessage);
+        if (uri.startsWith(PROGRAM_BOARD_URI)) {
+            return new ProgramBoardHandler(requestMessage, responseMessage);
         }
-        return handler;
+        return new StaticHandler(requestMessage, responseMessage);
     }
 
     /**
      * URIを元に、実際のファイルパスを返すメソッド
      */
-    public static String getFilePath(UrlPattern urlPattern, String uri) {
-        return FILE_PATH + uri.replace(urlPattern.getUrlPattern(), urlPattern.getFilePath());
+    public static Path getFilePath(String uri) {
+        return Paths.get(FILE_PATH, uri);
     }
 
     /**
-     * リクエストを適切に処理し、ResponseMessageのオブジェクトを生成してServerクラスに返す。
+     * リクエストを適切に処理し、ResponseMessageのオブジェクトを生成してServerクラスに返す
      * レスポンスメッセージを実際に書き込むのはServerが行う。
-     *
-     * @return ResponseMessageのオブジェクトを生成して返す。
      */
-    public abstract ResponseMessage handleRequest();
+    public abstract void handleRequest();
+
+    /**
+     * リクエストのメソッドが担当するハンドラーが処理できるものか判定する。デフォルトでは、GETとPOSTは対応することになる。
+     * falseの場合はServerクラス内で実装されていないメソッドである旨をレスポンスする。
+     *
+     * @param method リクエストメッセージのメソッドを渡す
+     * @return trueの場合はハンドラーが処理できるメソッドである。falseの場合はハンドラーが処理しないメソッドである
+     */
+    public boolean checkMethod(String method) {
+        return method.equals("GET") || method.equals("POST");
+    }
 }

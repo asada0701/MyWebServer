@@ -1,3 +1,7 @@
+HTTP/1.1 200 OK
+Content-Type: text/html; charset=UTF-8
+Content-Length: 4554
+
 <!DOCTYPE html>
 <html>
 
@@ -30,7 +34,7 @@
                 <br>(投稿した文を削除するときに使います。)
             </p>
             <input type="hidden" name="param" value="write">
-            <input type="hidden" name="timeID" value="index4message">
+            <input type="hidden" name="timeID" value="timeIdOfValue">
             <input type="submit" value="投稿">
         </form>
     </div>
@@ -54,48 +58,6 @@
                 <th>日付</th>
                 <th></th>
                 <th></th>
-            </tr>
-            <tr id="No.4">
-                <td align="center" style="word-wrap:break-word;">No.4</td>
-                <td align="center" style="word-wrap:break-word;">t</td>
-                <td align="center" style="word-wrap:break-word;">そうですね</td>
-                <td align="center" style="word-wrap:break-word;">管理者</td>
-                <td align="center" style="word-wrap:break-word;">2017/5/11 11:57</td>
-                <td align="center">
-                    <form action="/program/board/search.html" method="get">
-                        <input type="hidden" name="param" value="search">
-                        <input type="hidden" name="name" value="管理者">
-                        <input type="submit" value="この人の他のコメントも見てみる">
-                    </form>
-                </td>
-                <td align="center">
-                    <form action="/program/board/" method="post">
-                        <input type="hidden" name="param" value="delete_step_1">
-                        <input type="hidden" name="number" value="4">
-                        <input type="submit" value="削除する">
-                    </form>
-                </td>
-            </tr>
-            <tr id="No.3">
-                <td align="center" style="word-wrap:break-word;">No.3</td>
-                <td align="center" style="word-wrap:break-word;">t</td>
-                <td align="center" style="word-wrap:break-word;">今日は天気がいいですね</td>
-                <td align="center" style="word-wrap:break-word;">asada</td>
-                <td align="center" style="word-wrap:break-word;">2017/5/11 11:57</td>
-                <td align="center">
-                    <form action="/program/board/search.html" method="get">
-                        <input type="hidden" name="param" value="search">
-                        <input type="hidden" name="name" value="asada">
-                        <input type="submit" value="この人の他のコメントも見てみる">
-                    </form>
-                </td>
-                <td align="center">
-                    <form action="/program/board/" method="post">
-                        <input type="hidden" name="param" value="delete_step_1">
-                        <input type="hidden" name="number" value="3">
-                        <input type="submit" value="削除する">
-                    </form>
-                </td>
             </tr>
             <tr id="No.2">
                 <td align="center" style="word-wrap:break-word;">No.2</td>
