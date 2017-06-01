@@ -55,6 +55,18 @@ public class RequestMessage {
         this.messageBody = messageBody;
     }
 
+    /**
+     * コンストラクタ
+     * ヘッダーフィールドが空の場合はこちらを使用する
+     *
+     * @param method   リクエストのメソッド
+     * @param uri      URI
+     * @param uriQuery URIのクエリー
+     */
+    public RequestMessage(String method, String uri, Map<String, String> uriQuery) {
+        this(method, uri, uriQuery, null, null);
+    }
+
     public String getMethod() {
         return method;
     }

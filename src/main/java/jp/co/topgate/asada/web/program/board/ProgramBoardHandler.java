@@ -1,7 +1,6 @@
 package jp.co.topgate.asada.web.program.board;
 
 import jp.co.topgate.asada.web.*;
-import jp.co.topgate.asada.web.Handler;
 import jp.co.topgate.asada.web.exception.CsvRuntimeException;
 import jp.co.topgate.asada.web.exception.IllegalRequestException;
 import jp.co.topgate.asada.web.program.board.model.Message;
@@ -57,7 +56,7 @@ public class ProgramBoardHandler extends Handler {
             e.printStackTrace();
             sendErrorResponse(responseMessage, StatusLine.BAD_REQUEST);
 
-        } catch (IOException e) {
+        } catch (IOException | NullPointerException e) {
             e.printStackTrace();
             sendErrorResponse(responseMessage, StatusLine.INTERNAL_SERVER_ERROR);
 
@@ -78,23 +77,22 @@ public class ProgramBoardHandler extends Handler {
     static void doGet(RequestMessage requestMessage, ResponseMessage responseMessage, String nowTimeID) throws IOException {
         Path filePath = Handler.getFilePath(requestMessage.getUri());
 
-        if (!filePath.toFile().exists()) {
-            sendErrorResponse(responseMessage, StatusLine.NOT_FOUND);
-            return;
-        }
-
-        //index.htmlをGET要求された場合は編集が入る
-        if (filePath.equals(ProgramBoardHtmlList.INDEX_HTML.getPath())) {
-            String html = HtmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.INDEX_HTML, ModelController.getAllMessage(), nowTimeID);
+        //index.htmlをGET要求された場合の処理
+        if (filePath.equals(HtmlList.INDEX_HTML.getPath())) {
+            //String html = HtmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.INDEX_HTML, ModelController.getAllMessage(), nowTimeID);
+            String html = HtmlEditor.editIndexHtml(ModelController.getAllMessage(), nowTimeID);
             sendResponse(responseMessage, html);
             return;
         }
 
-        if (filePath.equals(ProgramBoardHtmlList.SEARCH_HTML.getPath())) {
+        //search.htmlをGETリクエストされた場合の処理
+        if (filePath.equals(HtmlList.SEARCH_HTML.getPath())) {
             //リクエストのヘッダーフィールドにparamがあるか、メッセージボディは問題ないか確認。
             String param = requestMessage.findUriQuery("param");
             if (param == null) {
-                throw new IllegalRequestException("paramがnullである。");
+                String html = HtmlEditor.editIndexHtml(ModelController.getAllMessage(), nowTimeID);
+                sendResponse(responseMessage, html);
+                return;
             }
 
             //特定のユーザーの書き込んだ内容を表示する処理
@@ -109,10 +107,15 @@ public class ProgramBoardHandler extends Handler {
                     throw new IllegalRequestException(param + "で 検索結果が 0 でした。");
                 }
 
-                String html = HtmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.SEARCH_HTML, messageList, nowTimeID);
+                String html = HtmlEditor.editSearchHtml(messageList, nowTimeID);
                 sendResponse(responseMessage, html);
                 return;
             }
+        }
+
+        if (!filePath.toFile().exists()) {
+            sendErrorResponse(responseMessage, StatusLine.NOT_FOUND);
+            return;
         }
 
         sendResponse(responseMessage, filePath.toFile());
@@ -125,8 +128,14 @@ public class ProgramBoardHandler extends Handler {
      * @param responseMessage ResponseMessageのオブジェクト
      * @throws IOException             HTMLファイルに書き込み中に例外発生
      * @throws IllegalRequestException リクエストメッセージに問題があった
+     * @throws NullPointerException    引数がnullの場合
      */
-    static void doPost(RequestMessage requestMessage, ResponseMessage responseMessage, String nowTimeID) throws IOException, IllegalRequestException {
+    static void doPost(RequestMessage requestMessage, ResponseMessage responseMessage, String nowTimeID) throws IOException, IllegalRequestException, NullPointerException {
+
+        //このメソッドの責務は重く、副作用が大きいため、特別にnullチェックを行う。
+        if (requestMessage == null || responseMessage == null || nowTimeID == null) {
+            throw new NullPointerException();
+        }
 
         //リクエストのヘッダーフィールドにparamがあるか、メッセージボディは問題ないか確認。
         Map<String, String> messageBody = requestMessage.parseMessageBodyToMap();
@@ -163,7 +172,7 @@ public class ProgramBoardHandler extends Handler {
                 if (!ModelController.isExist(timeId)) {
                     ModelController.addMessage(safe_name, safe_title, safe_text, password, timeId);
                 }
-                String html = HtmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.INDEX_HTML, ModelController.getAllMessage(), nowTimeID);
+                String html = HtmlEditor.editIndexHtml(ModelController.getAllMessage(), nowTimeID);
                 sendResponse(responseMessage, html);
                 return;
             }
@@ -196,7 +205,7 @@ public class ProgramBoardHandler extends Handler {
 
                 if (ModelController.deleteMessage(Integer.parseInt(number), password)) {
                     //パスワードがあっていて、削除できた時の処理
-                    sendResponse(responseMessage, ProgramBoardHtmlList.RESULT_HTML.getPath().toFile());
+                    sendResponse(responseMessage, HtmlEditor.getResultHtml());
                     return;
 
                 } else {
@@ -215,7 +224,7 @@ public class ProgramBoardHandler extends Handler {
 
             //ページに配置した戻るボタンを押した時の処理
             case "back": {
-                String html = HtmlEditor.editIndexOrSearchHtml(ProgramBoardHtmlList.INDEX_HTML, ModelController.getAllMessage(), nowTimeID);
+                String html = HtmlEditor.editIndexHtml(ModelController.getAllMessage(), nowTimeID);
                 sendResponse(responseMessage, html);
                 return;
             }
@@ -281,7 +290,7 @@ public class ProgramBoardHandler extends Handler {
 
     /**
      * HTMLページに書き込むID（二重リクエスト防ぐためのもの）を発行するメソッド
-     * TODO HTMLのソースコードを見られてもいいようにする。問題は、リクエストメッセージパースクラスのメソッドで、URF-8でエンコードするので、例外が発生するものがある。
+     * TODO HTMLのソースコードを見られてもいいようにする。問題は、リクエストメッセージパースクラスのメソッド内で、URF-8でエンコードした時に例外が発生したこと。
      *
      * @return エンコードされて発行する
      */

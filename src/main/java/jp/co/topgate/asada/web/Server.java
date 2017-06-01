@@ -3,8 +3,10 @@ package jp.co.topgate.asada.web;
 import jp.co.topgate.asada.web.exception.HttpVersionException;
 import jp.co.topgate.asada.web.exception.RequestParseException;
 
-import java.io.*;
-import java.net.*;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.net.ServerSocket;
+import java.net.Socket;
 
 /**
  * サーバークラス
@@ -38,11 +40,9 @@ class Server {
                 }
 
             } catch (RequestParseException e) {                 //リクエストメッセージに問題があった場合の例外処理
-                e.printStackTrace();
                 statusLineOfException = StatusLine.BAD_REQUEST;
 
             } catch (HttpVersionException e) {                  //リクエストメッセージのプロトコルバージョンが想定外のものである
-                e.printStackTrace();
                 statusLineOfException = StatusLine.HTTP_VERSION_NOT_SUPPORTED;
 
             } finally {

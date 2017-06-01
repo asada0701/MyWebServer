@@ -17,7 +17,7 @@ import java.util.Map;
  *
  * @author asada
  */
-public final class RequestMessageParser {
+class RequestMessageParser {
     /**
      * リクエストラインを分割する
      */
@@ -29,7 +29,12 @@ public final class RequestMessageParser {
     private static final int REQUEST_LINE_NUM_ITEMS = 3;
 
     /**
-     * URIのクエリーをクエリー毎に分割する
+     * request target absolute-path [ "?" query ]
+     */
+    private static final String URI_QUERY_SEPARATOR = "\\?";
+
+    /**
+     * 複数のクエリーをクエリー毎に分割する
      */
     private static final String URI_EACH_QUERY_SEPARATOR = "&";
 
@@ -69,7 +74,7 @@ public final class RequestMessageParser {
      * @throws RequestParseException リクエストメッセージに問題があった場合に発生する
      * @throws HttpVersionException  リクエストメッセージのプロトコルバージョンがHTTP/1.1以外の場合発生する
      */
-    public static RequestMessage parse(InputStream inputStream) throws RequestParseException, HttpVersionException {
+    static RequestMessage parse(InputStream inputStream) throws RequestParseException, HttpVersionException {
         String method;
         String uri;
         Map<String, String> uriQuery = null;
@@ -82,48 +87,46 @@ public final class RequestMessageParser {
 
             //リクエストラインの処理
             String[] requestLine = readRequestLine(bis);
-            bis.reset();
-
             method = requestLine[0];
             uri = changeUriToWelcomePage(requestLine[1]);
 
-            //ヘッダーフィールドの処理
-            headerField = readHeaderField(bis);
-            bis.reset();
-
-            //URIクエリーの処理
-            //TODO ? 文字がメソッドによって、扱いが異なる。
-            if (requestLine[1].contains("?")) {
-                String[] uriAndUriQuery = requestLine[1].split("\\?", URI_QUERY_NUM_ITEMS);
+            //URIのクエリーの処理
+            String[] uriAndUriQuery = requestLine[1].split(URI_QUERY_SEPARATOR, URI_QUERY_NUM_ITEMS);
+            if (uriAndUriQuery.length == URI_QUERY_NUM_ITEMS) {
                 uri = uriAndUriQuery[0];
                 uriQuery = parseUriQuery(uriAndUriQuery[1]);
             }
 
-            //メッセージボディの処理
-            if (headerField != null) {
-                String sContentLength = headerField.get("Content-Length");
-                if (sContentLength != null && NumberUtils.isNumber(sContentLength)) {
-                    int contentLength;
-                    try {
-                        contentLength = Integer.parseInt(sContentLength);
-                    } catch (NumberFormatException e) {
-                        //TODO ヘッダーフィールドのContent-Length が int の最大値を越えた場合の処理
-                        //ここの、NumberFormatExceptionは int の最大値である2147483647を超えた場合に発生する。
-                        //サイズが大きいファイルはメモリに用意するとリソースを消費するので、inputStreamのまま処理するのが正解だと思われる。
-                        throw new RequestParseException("POSTで送られきたContent-Length が int の最大値である2147483647を越えた");
-                    }
-                    int requestLineAndHeaderLength = countRequestLineAndHeaderLength(bis);
-                    bis.reset();
-
-                    messageBody = readMessageBody(bis, requestLineAndHeaderLength, contentLength);
-                }
+            //ヘッダーフィールドの処理
+            bis.reset();
+            headerField = readHeaderField(bis);
+            if (headerField == null) {
+                return new RequestMessage(method, uri, uriQuery);
             }
+
+            //メッセージボディの処理
+            String sContentLength = headerField.get("Content-Length");
+            if (sContentLength != null && NumberUtils.isNumber(sContentLength)) {
+                int contentLength;
+                try {
+                    contentLength = Integer.parseInt(sContentLength);
+                } catch (NumberFormatException e) {
+                    //TODO ヘッダーフィールドのContent-Length が int の最大値を越えた場合の処理
+                    //ここの、NumberFormatExceptionは int の最大値である2147483647を超えた場合に発生する。
+                    //サイズが大きいファイルはメモリを消費するので、inputStreamのまま処理するのが正解だと思われる。
+                    throw new RequestParseException("POSTで送られきたContent-Length が int の最大値である2147483647を越えた");
+                }
+                bis.reset();
+                int requestLineAndHeaderLength = countRequestLineAndHeaderLength(bis);
+
+                bis.reset();
+                messageBody = readMessageBody(bis, requestLineAndHeaderLength, contentLength);
+            }
+            return new RequestMessage(method, uri, uriQuery, headerField, messageBody);
 
         } catch (IOException e) {
             throw new RequestParseException(e.getMessage(), e.getCause());
         }
-
-        return new RequestMessage(method, uri, uriQuery, headerField, messageBody);
     }
 
     /**

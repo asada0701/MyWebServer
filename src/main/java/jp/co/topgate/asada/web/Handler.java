@@ -2,7 +2,6 @@ package jp.co.topgate.asada.web;
 
 import jp.co.topgate.asada.web.program.board.ProgramBoardHandler;
 
-import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -18,6 +17,8 @@ public abstract class Handler {
      */
     private static final String FILE_PATH = "./src/main/resources/";
 
+    private static final String PROGRAM_BOARD_URI = "/program/board";
+
     /**
      * ハンドラーのファクトリーメソッド
      * 注意点
@@ -29,7 +30,7 @@ public abstract class Handler {
      */
     static Handler getHandler(RequestMessage requestMessage, ResponseMessage responseMessage) {
         String uri = requestMessage.getUri();
-        if (uri.startsWith("/program/board/")) {
+        if (uri.startsWith(PROGRAM_BOARD_URI)) {
             return new ProgramBoardHandler(requestMessage, responseMessage);
         }
         return new StaticHandler(requestMessage, responseMessage);
@@ -39,7 +40,7 @@ public abstract class Handler {
      * URIを元に、実際のファイルパスを返すメソッド
      */
     public static Path getFilePath(String uri) {
-        return Paths.get(FILE_PATH + uri);
+        return Paths.get(FILE_PATH, uri);
     }
 
     /**

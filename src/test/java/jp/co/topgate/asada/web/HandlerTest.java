@@ -62,6 +62,11 @@ public class HandlerTest {
     public static class getFilePathメソッドのテスト {
         private Path path;
 
+        @Test(expected = NullPointerException.class)
+        public void nullチェック() {
+            path = Handler.getFilePath(null);
+        }
+
         @Test
         public void 想定している引数() {
             path = Handler.getFilePath("index.html");
@@ -75,9 +80,6 @@ public class HandlerTest {
         public void 想定していない引数() {
             path = Handler.getFilePath("");
             assertThat(path.toString(), is("./src/main/resources"));
-
-            path = Handler.getFilePath(null);
-            assertThat(path.toString(), is("./src/main/resources/null"));
 
             path = Handler.getFilePath("//////////////hoge////////////");
             assertThat(path.toString(), is("./src/main/resources/hoge"));

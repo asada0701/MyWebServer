@@ -1,9 +1,13 @@
 package jp.co.topgate.asada.web.program.board;
 
-import jp.co.topgate.asada.web.*;
+import jp.co.topgate.asada.web.RequestMessage;
+import jp.co.topgate.asada.web.ResponseMessage;
+import jp.co.topgate.asada.web.StatusLine;
 import jp.co.topgate.asada.web.program.board.model.Message;
 import jp.co.topgate.asada.web.program.board.model.ModelController;
-import org.junit.*;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -255,9 +259,14 @@ public class ProgramBoardHandlerTest {
             ModelController.setMessageList(messageList);
         }
 
-        @Test
-        public void paramがwriteの場合() throws Exception {
+        @Test(expected = NullPointerException.class)
+        public void nullチェック() throws Exception {
+            ProgramBoardHandler.doPost(null, null, null);
+        }
 
+        @Test(expected = NullPointerException.class)
+        public void nullチェック2() throws Exception {
+            ProgramBoardHandler.doPost(new RequestMessage(null, null, null), null, "timeID");
         }
     }
 
@@ -269,6 +278,11 @@ public class ProgramBoardHandlerTest {
         public void setUp() {
             outputStream = new ByteArrayOutputStream();
             responseMessage = new ResponseMessage(outputStream);
+        }
+
+        @Test(expected = NullPointerException.class)
+        public void nullチェック() {
+            ProgramBoardHandler.sendResponse(null, "hoge");
         }
 
         @Test
