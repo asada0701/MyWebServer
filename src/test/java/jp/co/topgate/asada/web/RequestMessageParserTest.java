@@ -64,7 +64,7 @@ public class RequestMessageParserTest {
             try (FileInputStream fis = new FileInputStream(new File(path))) {
                 sut = RequestMessageParser.parse(fis);
                 assertThat(sut.getMethod(), is("POST"));
-                assertThat(sut.getUri(), is("/program/board/index.html"));
+                assertThat(sut.getUri(), is("/program/board/"));
 
                 assertThat(sut.findHeaderByName("Host"), is("localhost:8080"));
                 assertThat(sut.findHeaderByName("Connection"), is("keep-alive"));
@@ -85,29 +85,6 @@ public class RequestMessageParserTest {
                 assertThat(messageBody.get("password"), is("test"));
                 assertThat(messageBody.get("param"), is("contribution"));
             }
-        }
-    }
-
-    public static class changeUriToWelcomePageのテスト {
-        @Test(expected = NullPointerException.class)
-        public void nullチェック() throws Exception {
-            RequestMessageParser.changeUriToWelcomePage(null);
-        }
-
-        @Test
-        public void 正しく動作するか() throws Exception {
-            assertThat(RequestMessageParser.changeUriToWelcomePage("/"), is("/index.html"));
-
-            assertThat(RequestMessageParser.changeUriToWelcomePage("///////"), is("///////index.html"));
-
-            assertThat(RequestMessageParser.changeUriToWelcomePage("/hoge//"), is("/hoge//index.html"));
-        }
-
-        @Test
-        public void 引数にスラッシュが含まれない場合() throws Exception {
-            assertThat(RequestMessageParser.changeUriToWelcomePage(""), is(""));
-
-            assertThat(RequestMessageParser.changeUriToWelcomePage("hoge"), is("hoge"));
         }
     }
 

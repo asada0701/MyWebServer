@@ -28,7 +28,8 @@ public class StaticHandler extends Handler {
      */
     @Override
     public void handleRequest() {
-        Path filePath = Handler.getFilePath(requestMessage.getUri());
+        String uri = changeUriToWelcomePage(requestMessage.getUri());
+        Path filePath = Handler.getFilePath(uri);
 
         if (filePath.toFile().exists()) {
             sendResponse(responseMessage, filePath);

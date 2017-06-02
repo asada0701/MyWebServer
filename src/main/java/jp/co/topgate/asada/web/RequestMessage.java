@@ -107,7 +107,8 @@ public class RequestMessage {
     /**
      * メッセージボディをパースするメソッド
      * 注意点
-     * コンテンツタイプがapplication/x-www-form-urlencodedではない場合(コンテンツタイプがnullの場合も)、nullを返す
+     * リクエストにヘッダーフィールドかメッセージボディが含まれていない場合はnullを返す
+     * コンテンツタイプがapplication/x-www-form-urlencodedではない場合もnullを返す
      *
      * @return パースした結果をMapで返す
      * @throws RequestParseException パースした結果不正なリクエストだった

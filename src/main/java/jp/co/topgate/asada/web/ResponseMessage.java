@@ -10,11 +10,12 @@ import java.util.List;
 
 /**
  * レスポンスメッセージクラス
- * 注意点
- * ヘッダーフィールドを追加するタイミングについて
- * getOutputStreamメソッドかgetPrintWriterメソッドを呼び出す前には、
- * addHeaderメソッドを使用し、ヘッダーフィールドを追加してください。
- * getした出力ストリームに書き込めるのはメッセージボディのみです。
+ * （使用例）
+ * handleRequest(RequestMessage request, ResponseMessage response){
+ *      response.setHeader("hoge", "hogehoge");
+ *      response.writeResponseLienAndHeader(StatusLine.OK);
+ *      OutputStream os = response.getOutputStream();
+ * }
  *
  * @author asada
  */
@@ -31,8 +32,11 @@ public class ResponseMessage {
     private static final String HEADER_FIELD_NAME_VALUE_SEPARATOR = ": ";
 
     /**
-     * ヘッダーフィールド
+     * writeResponseLineメソッドがまだ呼ばれていない場合はfalse
+     * すでに一度呼ばれている場合はtrueになる
      */
+    private boolean isUsed = false;
+
     private List<String> headerField = new ArrayList<>();
 
     private OutputStream outputStream;
@@ -47,53 +51,51 @@ public class ResponseMessage {
     }
 
     /**
-     * レスポンスにバイナリデータを出力する際に使用する outputStreamのオブジェクトを返す
-     * StatusLineに定義されていないHTTPステータスコードを使用したい場合に使用する
+     * リクエストラインとヘッダーフィールドを、インスタンスがもつ出力ストリームに書き込むメソッド
+     * すでに、このメソッドか引数が異なるwriteResponseLineAndHeaderメソッドを呼び出していた場合は
+     * このメソッドの処理は実行されません。
      *
      * @param statusCode   ステータスコードを渡す
      * @param reasonPhrase ステータスコードのテキスト記述
-     * @return outputStreamのオブジェクトを返す
      */
-    public OutputStream getOutputStream(int statusCode, String reasonPhrase) {
+    void writeResponseLineAndHeader(int statusCode, String reasonPhrase) {
+        if (isUsed) {
+            return;
+        }
+        isUsed = true;
+
         PrintWriter printWriter = new PrintWriter(outputStream);
         printWriter.write(createResponseLine(statusCode, reasonPhrase));
-        if (headerField.size() > 0) {
-            printWriter.write(createHeader(headerField));
-        } else {
-            printWriter.write("\n");
-        }
+        printWriter.write(createHeader(headerField));
         printWriter.flush();
+    }
+
+    /**
+     * リクエストラインとヘッダーフィールドを、インスタンスがもつ出力ストリームに書き込むメソッド
+     * すでに、このメソッドか引数が異なるwriteResponseLineAndHeaderメソッドを呼び出していた場合は、
+     * このメソッドの処理は実行されません。
+     *
+     * @param statusLine ステータスラインを渡す
+     */
+    void writeResponseLineAndHeader(StatusLine statusLine) {
+        if (isUsed) {
+            return;
+        }
+        isUsed = true;
+
+        PrintWriter printWriter = new PrintWriter(outputStream);
+        printWriter.write(createResponseLine(statusLine.getStatusCode(), statusLine.getReasonPhrase()));
+        printWriter.write(createHeader(headerField));
+        printWriter.flush();
+    }
+
+    /**
+     * ソケットの出力ストリームを返すメソッド
+     *
+     * @return 出力ストリームを返す
+     */
+    public OutputStream getOutputStream() {
         return outputStream;
-    }
-
-    /**
-     * レスポンスにバイナリデータを出力する際に使用する outputStreamのオブジェクトを返す
-     *
-     * @param statusLine ステータスラインを渡す
-     * @return outputStreamのオブジェクトを返す
-     */
-    public OutputStream getOutputStream(StatusLine statusLine) {
-        return getOutputStream(statusLine.getStatusCode(), statusLine.getReasonPhrase());
-    }
-
-    /**
-     * レスポンスに文字データを出力する際に使用する printWriterのオブジェクトを返す
-     * StatusLineに定義されていないHTTPステータスコードを使用したい場合に使用する
-     *
-     * @return printWriterのオブジェクトを返す
-     */
-    public PrintWriter getPrintWriter(int statusCode, String reasonPhrase) {
-        return new PrintWriter(getOutputStream(statusCode, reasonPhrase));
-    }
-
-    /**
-     * レスポンスに文字データを出力する際に使用する printWriterのオブジェクトを返す
-     *
-     * @param statusLine ステータスラインを渡す
-     * @return printWriterのオブジェクトを返す
-     */
-    public PrintWriter getPrintWriter(StatusLine statusLine) {
-        return new PrintWriter(getOutputStream(statusLine.getStatusCode(), statusLine.getReasonPhrase()));
     }
 
     /**

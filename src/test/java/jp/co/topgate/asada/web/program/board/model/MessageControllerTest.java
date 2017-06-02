@@ -16,15 +16,15 @@ import static org.junit.Assert.assertThat;
  *
  * @author asada
  */
-public class ModelControllerTest {
+public class MessageControllerTest {
     @Before
     public void setUp() {
-        ModelController.setMessageList(new ArrayList<>());
-        ModelController.resetNextMessageID();
-        ModelController.addMessage("name1", "title1", "text1", "password1", "timeID1");
-        ModelController.addMessage("name2", "title2", "text2", "password2", "timeID2");
-        ModelController.addMessage("name2", "title3", "text3", "password3", "timeID3");
-        ModelController.addMessage("name4", "title4", "text4", "password4", "timeID4");
+        MessageController.setMessageList(new ArrayList<>());
+        MessageController.resetNextMessageID();
+        MessageController.addMessage("name1", "title1", "text1", "password1", "timeID1");
+        MessageController.addMessage("name2", "title2", "text2", "password2", "timeID2");
+        MessageController.addMessage("name2", "title3", "text3", "password3", "timeID3");
+        MessageController.addMessage("name4", "title4", "text4", "password4", "timeID4");
     }
 
     @Test
@@ -38,16 +38,16 @@ public class ModelControllerTest {
         m.setText("text1");
         m.setDate("2017/5/9 16:34");
         list.add(m);
-        ModelController.setMessageList(list);
+        MessageController.setMessageList(list);
 
-        assertThat(ModelController.size(), is(1));
+        assertThat(MessageController.size(), is(1));
     }
 
     @Test
     public void addMessageメソッドのテスト() {
-        ModelController.addMessage("name5", "title5", "text5", "password5", "timeID5");
+        MessageController.addMessage("name5", "title5", "text5", "password5", "timeID5");
 
-        assertThat(ModelController.size(), is(5));
+        assertThat(MessageController.size(), is(5));
     }
 
     @Test
@@ -56,12 +56,12 @@ public class ModelControllerTest {
         String now = String.valueOf(ldt.getYear()) + "/" + ldt.getMonthValue() + "/" + ldt.getDayOfMonth() +
                 " " + ldt.getHour() + ":" + ldt.getMinute();
 
-        assertThat(ModelController.getNowDate(), is(now));
+        assertThat(MessageController.getNowDate(), is(now));
     }
 
     @Test
     public void getAllMessageメソッドのテスト() {
-        List<Message> sut = ModelController.getAllMessage();
+        List<Message> sut = MessageController.getAllMessage();
 
         assertThat(sut.size(), is(4));
         assertThat(sut.get(0).getName(), is("name1"));
@@ -72,33 +72,33 @@ public class ModelControllerTest {
 
     @Test
     public void findSameNameMessageメソッドのテスト() {
-        List<Message> list = ModelController.findMessageByName("name2");
+        List<Message> list = MessageController.findMessageByName("name2");
 
         assertThat(list.size(), is(2));
     }
 
     @Test
     public void deleteMessageメソッドのテスト() {
-        assertThat(ModelController.deleteMessage(2, "password2"), is(true));
-        assertThat(ModelController.size(), is(3));
-        assertThat(ModelController.getNextMessageID(), is(5));
+        assertThat(MessageController.deleteMessage(2, "password2"), is(true));
+        assertThat(MessageController.size(), is(3));
+        assertThat(MessageController.getNextMessageID(), is(5));
     }
 
     @Test
     public void 未登録状態でgetNameメソッドを呼び出す() {
-        ModelController.setMessageList(new ArrayList<>());
-        ModelController.resetNextMessageID();
+        MessageController.setMessageList(new ArrayList<>());
+        MessageController.resetNextMessageID();
 
-        List<Message> messageList = ModelController.getAllMessage();
+        List<Message> messageList = MessageController.getAllMessage();
         assertThat(messageList.size(), is(0));
 
-        assertThat(ModelController.getName(0), is(nullValue()));
+        assertThat(MessageController.getName(0), is(nullValue()));
 
-        assertThat(ModelController.getNextMessageID(), is(1));
+        assertThat(MessageController.getNextMessageID(), is(1));
     }
 
     @Test(expected = NullPointerException.class)
     public void setMessageListメソッドにnullを渡す() {
-        ModelController.setMessageList(null);
+        MessageController.setMessageList(null);
     }
 }
