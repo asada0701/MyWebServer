@@ -39,7 +39,6 @@ public class ProgramBoardHandler extends Handler {
     @Override
     public void handleRequest() {
         try {
-            MessageController.setMessageList(CsvHelper.readMessage());
             String method = requestMessage.getMethod();
 
             if (method.equals("GET")) {
@@ -47,8 +46,6 @@ public class ProgramBoardHandler extends Handler {
 
             } else if (method.equals("POST")) {
                 doPost(requestMessage, responseMessage, issueTimeId());
-
-                CsvHelper.writeMessage(MessageController.getAllMessage());
             }
 
         } catch (CsvRuntimeException e) {
@@ -64,7 +61,7 @@ public class ProgramBoardHandler extends Handler {
      * @param requestMessage  RequestMessageのオブジェクト
      * @param responseMessage ResponseMessageのオブジェクト
      */
-    void doGet(RequestMessage requestMessage, ResponseMessage responseMessage, String nowTimeID) {
+    void doGet(RequestMessage requestMessage, ResponseMessage responseMessage, String nowTimeID) throws CsvRuntimeException {
         String uri = changeUriToWelcomePage(requestMessage.getUri());
         Path filePath = getFilePath(uri);
 
@@ -114,7 +111,7 @@ public class ProgramBoardHandler extends Handler {
      * @param requestMessage  RequestMessageのオブジェクト
      * @param responseMessage ResponseMessageのオブジェクト
      */
-    void doPost(RequestMessage requestMessage, ResponseMessage responseMessage, String nowTimeID) {
+    void doPost(RequestMessage requestMessage, ResponseMessage responseMessage, String nowTimeID) throws CsvRuntimeException {
 
         if (requestMessage == null || responseMessage == null || nowTimeID == null) {
             sendErrorResponse(responseMessage, StatusLine.INTERNAL_SERVER_ERROR);

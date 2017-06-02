@@ -1,6 +1,6 @@
 package jp.co.topgate.asada.web.program.board.model;
 
-import org.jetbrains.annotations.Contract;
+import jp.co.topgate.asada.web.exception.CsvRuntimeException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -16,15 +16,7 @@ import java.util.List;
  */
 public final class MessageController {
 
-    /**
-     * 書き込まれたメッセージのリスト
-     */
-    private static List<Message> messageList = new ArrayList<>();
-
-    /**
-     * 次にaddMessageメソッドが呼ばれたときのメッセージID
-     */
-    private static int nextMessageID = 1;
+    private static final int INITIAL_MESSAGE_ID = 1;
 
     /**
      * コンストラクタ
@@ -33,23 +25,20 @@ public final class MessageController {
     private MessageController() {
     }
 
-    /**
-     * messageListに初期値を与える
-     *
-     * @param messageList CSVファイルから読み込んだデータ
-     */
-    public static void setMessageList(List<Message> messageList) {
-        MessageController.messageList = messageList;
-
-        if (messageList.size() > 0) {
-            nextMessageID = messageList.get(messageList.size() - 1).getMessageID() + 1;
-        }
+    public static List<Message> getAllMessage() throws CsvRuntimeException {
+        return CsvHelper.readMessage();
     }
 
     /**
      * messageListにメッセージクラスを追加する
      */
-    public static void addMessage(String name, String title, String text, String password, String timeID) {
+    public static void addMessage(String name, String title, String text, String password, String timeID) throws CsvRuntimeException {
+        List<Message> messageList = CsvHelper.readMessage();
+        int nextMessageID = INITIAL_MESSAGE_ID;
+        if (messageList.size() > 0) {
+            nextMessageID = messageList.get(messageList.size() - 1).getMessageID() + 1;
+        }
+
         Message message = new Message();
         message.setMessageID(nextMessageID);
         message.setName(name);
@@ -60,16 +49,7 @@ public final class MessageController {
         message.setTimeID(timeID);
         messageList.add(message);
 
-        nextMessageID++;
-    }
-
-    /**
-     * 全てのメッセージを返すメソッド
-     *
-     * @return このクラスがもつ、メッセージリストを返す
-     */
-    public static List<Message> getAllMessage() {
-        return messageList;
+        CsvHelper.writeMessage(messageList);
     }
 
     /**
@@ -78,7 +58,8 @@ public final class MessageController {
      * @param messageID 探したいメッセージのIDを渡す
      * @return ターゲットのメッセージを返す
      */
-    public static Message findMessageByID(int messageID) {
+    public static Message findMessageByID(int messageID) throws CsvRuntimeException {
+        List<Message> messageList = CsvHelper.readMessage();
         for (Message message : messageList) {
             if (message.getMessageID() == messageID) {
                 return message;
@@ -93,7 +74,8 @@ public final class MessageController {
      * @param name 探したい投稿者の名前を渡す
      * @return メッセージのリストを返す。見つからない場合はListを空で返す
      */
-    public static List<Message> findMessageByName(String name) {
+    public static List<Message> findMessageByName(String name) throws CsvRuntimeException {
+        List<Message> messageList = CsvHelper.readMessage();
         List<Message> result = new ArrayList<>();
         for (Message message : messageList) {
             if (message.getName().equals(name)) {
@@ -110,11 +92,15 @@ public final class MessageController {
      * @param password  削除したいメッセージのPW
      * @return 削除に成功するとtrueを返す
      */
-    public static boolean deleteMessage(int messageID, String password) {
+    public static boolean deleteMessage(int messageID, String password) throws CsvRuntimeException {
+        List<Message> messageList = CsvHelper.readMessage();
+
         for (Message message : messageList) {
             BCryptPasswordEncoder bcrypt = new BCryptPasswordEncoder();
             if (messageID == message.getMessageID() && bcrypt.matches(password, message.getPassword())) {
                 messageList.remove(message);
+
+                CsvHelper.writeMessage(messageList);
                 return true;
             }
         }
@@ -128,7 +114,9 @@ public final class MessageController {
      * @return 投稿した人の名前
      */
     @Nullable
-    public static String getName(int messageID) {
+    public static String getName(int messageID) throws CsvRuntimeException {
+        List<Message> messageList = CsvHelper.readMessage();
+
         for (Message message : messageList) {
             if (messageID == message.getMessageID()) {
                 return message.getName();
@@ -144,7 +132,9 @@ public final class MessageController {
      * @param timeID 比較したい文字列
      * @return trueの場合は存在する。falseの場合は存在しない。
      */
-    public static boolean isExist(String timeID) {
+    public static boolean isExist(String timeID) throws CsvRuntimeException {
+        List<Message> messageList = CsvHelper.readMessage();
+
         for (Message message : messageList) {
             if (message.getTimeID().equals(timeID)) {
                 return true;
@@ -163,19 +153,5 @@ public final class MessageController {
         LocalDateTime ldt = LocalDateTime.now();
         return String.valueOf(ldt.getYear()) + "/" + ldt.getMonthValue() + "/" + ldt.getDayOfMonth() +
                 " " + ldt.getHour() + ":" + ldt.getMinute();
-    }
-
-    //テスト用
-    static void resetNextMessageID() {
-        nextMessageID = 1;
-    }
-
-    @Contract(pure = true)
-    static int getNextMessageID() {
-        return nextMessageID;
-    }
-
-    static int size() {
-        return messageList.size();
     }
 }

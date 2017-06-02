@@ -1,8 +1,7 @@
-package jp.co.topgate.asada.web.program.board;
+package jp.co.topgate.asada.web.program.board.model;
 
 import com.google.common.base.Strings;
 import jp.co.topgate.asada.web.exception.CsvRuntimeException;
-import jp.co.topgate.asada.web.program.board.model.Message;
 
 import java.io.*;
 import java.util.ArrayList;
