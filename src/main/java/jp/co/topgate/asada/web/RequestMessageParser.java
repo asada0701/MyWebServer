@@ -88,7 +88,7 @@ class RequestMessageParser {
             //リクエストラインの処理
             String[] requestLine = readRequestLine(bis);
             method = requestLine[0];
-            uri = changeUriToWelcomePage(requestLine[1]);
+            uri = requestLine[1];
 
             //URIのクエリーの処理
             String[] uriAndUriQuery = requestLine[1].split(URI_QUERY_SEPARATOR, URI_QUERY_NUM_ITEMS);
@@ -127,19 +127,6 @@ class RequestMessageParser {
         } catch (IOException e) {
             throw new RequestParseException(e.getMessage(), e.getCause());
         }
-    }
-
-    /**
-     * リクエストのURIが"/"で終わっている場合はwelcome pageを表示する
-     *
-     * @param uri URIを渡す
-     * @return "/"で終わっている場合は{@link Main}のwelcome pageを連結して返す
-     */
-    static String changeUriToWelcomePage(String uri) {
-        if (!uri.endsWith("/")) {
-            return uri;
-        }
-        return uri + Main.WELCOME_PAGE_NAME;
     }
 
     /**

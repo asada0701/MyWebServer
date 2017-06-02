@@ -48,7 +48,10 @@ class Server {
             } finally {
                 if (statusLineOfException != null) {
                     responseMessage.addHeaderWithContentType(ContentType.getHtmlType());
-                    PrintWriter printWriter = responseMessage.getPrintWriter(statusLineOfException);
+
+                    responseMessage.writeResponseLineAndHeader(statusLineOfException);
+
+                    PrintWriter printWriter = new PrintWriter(responseMessage.getOutputStream());
                     printWriter.write(ResponseMessage.getErrorMessageBody(statusLineOfException));
                     printWriter.flush();
                 }

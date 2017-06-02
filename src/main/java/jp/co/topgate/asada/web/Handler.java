@@ -18,6 +18,12 @@ public abstract class Handler {
      */
     private static final String FILE_PATH = "./src/main/resources/";
 
+    /**
+     * sendResponseかsendErrorResponseメソッドがまだ呼ばれていない場合はfalse
+     * すでにレスポンスが送信済みの場合はtrueになる
+     */
+    private boolean isSent = false;
+
     private static final String PROGRAM_BOARD_URI = "/program/board";
 
     /**
@@ -45,6 +51,21 @@ public abstract class Handler {
     }
 
     /**
+     * リクエストのURIが"/"で終わっている場合はwelcome pageを表示したい時に、使用するメソッド
+     * （使用例）
+     * String uri = changeUriToWelcomePage(requestMessage.getUri());
+     *
+     * @param uri URIを渡す
+     * @return "/"で終わっている場合は{@link Main}のwelcome pageを連結して返す
+     */
+    public static String changeUriToWelcomePage(String uri) {
+        if (!uri.endsWith("/")) {
+            return uri;
+        }
+        return uri + Main.WELCOME_PAGE_NAME;
+    }
+
+    /**
      * リクエストを適切に処理し、ResponseMessageのオブジェクトを生成してServerクラスに返す
      * レスポンスメッセージを実際に書き込むのはServerが行う。
      */
@@ -63,16 +84,25 @@ public abstract class Handler {
 
     /**
      * レスポンスを送信するメソッド
-     * バイナリデータやハンドラー内で編集しなかった場合に使用する
+     * リソースファイルを送信する場合に使用する
+     * すでに、このメソッドか引数が異なるsendResponse、sendErrorResponseメソッドを呼び出していた場合は
+     * このメソッドの処理は実行されません。
      *
      * @param responseMessage レスポンスメッセージを渡す
      * @param filePath        レスポンスしたいリソースファイルを渡す
      */
-    protected static void sendResponse(ResponseMessage responseMessage, Path filePath) {
+    protected void sendResponse(ResponseMessage responseMessage, Path filePath) {
+        if (isSent) {
+            return;
+        }
+        isSent = true;
+
         responseMessage.addHeaderWithContentType(ContentType.getContentType(filePath));
         responseMessage.addHeaderWithContentLength(String.valueOf(filePath.toFile().length()));
 
-        OutputStream outputStream = responseMessage.getOutputStream(StatusLine.OK);
+        responseMessage.writeResponseLineAndHeader(StatusLine.OK);
+
+        OutputStream outputStream = responseMessage.getOutputStream();
         try (InputStream inputStream = new FileInputStream(filePath.toFile())) {
             int tmp;
             while ((tmp = inputStream.read()) != -1) {
@@ -88,29 +118,47 @@ public abstract class Handler {
     /**
      * レスポンスを送信するメソッド
      * メッセージボディに書き込みた文字列がある場合に使用する
+     * すでに、このメソッドか引数が異なるsendResponse、sendErrorResponseメソッドを呼び出していた場合は
+     * このメソッドの処理は実行されません。
      *
      * @param responseMessage レスポンスメッセージを渡す
      * @param str             レスポンスしたい文字列を渡す
      */
-    protected static void sendResponse(ResponseMessage responseMessage, String str) {
+    protected void sendResponse(ResponseMessage responseMessage, String str) {
+        if (isSent) {
+            return;
+        }
+        isSent = true;
+
         responseMessage.addHeaderWithContentType(ContentType.getHtmlType());
         responseMessage.addHeaderWithContentLength(String.valueOf(str.getBytes().length));
 
-        PrintWriter printWriter = responseMessage.getPrintWriter(StatusLine.OK);
+        responseMessage.writeResponseLineAndHeader(StatusLine.OK);
+
+        PrintWriter printWriter = new PrintWriter(responseMessage.getOutputStream());
         printWriter.write(str);
         printWriter.flush();
     }
 
     /**
      * エラーレスポンスを送信するメソッド
+     * すでに、このメソッドか引数が異なるsendResponse、sendErrorResponseメソッドを呼び出していた場合は
+     * このメソッドの処理は実行されません。
      *
      * @param responseMessage レスポンスメッセージを渡す
      * @param statusLine      ステータスラインを渡す
      */
-    protected static void sendErrorResponse(ResponseMessage responseMessage, StatusLine statusLine) {
+    protected void sendErrorResponse(ResponseMessage responseMessage, StatusLine statusLine) {
+        if (isSent) {
+            return;
+        }
+        isSent = true;
+
         responseMessage.addHeaderWithContentType(ContentType.getHtmlType());
 
-        PrintWriter printWriter = responseMessage.getPrintWriter(statusLine);
+        responseMessage.writeResponseLineAndHeader(statusLine);
+
+        PrintWriter printWriter = new PrintWriter(responseMessage.getOutputStream());
         printWriter.write(ResponseMessage.getErrorMessageBody(statusLine));
         printWriter.flush();
     }

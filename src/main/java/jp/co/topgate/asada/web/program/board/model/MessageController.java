@@ -14,7 +14,7 @@ import java.util.List;
  *
  * @author asada
  */
-public final class ModelController {
+public final class MessageController {
 
     /**
      * 書き込まれたメッセージのリスト
@@ -30,7 +30,7 @@ public final class ModelController {
      * コンストラクタ
      * インスタンス化禁止
      */
-    private ModelController() {
+    private MessageController() {
     }
 
     /**
@@ -39,7 +39,7 @@ public final class ModelController {
      * @param messageList CSVファイルから読み込んだデータ
      */
     public static void setMessageList(List<Message> messageList) {
-        ModelController.messageList = messageList;
+        MessageController.messageList = messageList;
 
         if (messageList.size() > 0) {
             nextMessageID = messageList.get(messageList.size() - 1).getMessageID() + 1;

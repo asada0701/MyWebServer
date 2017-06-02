@@ -2,9 +2,8 @@ package jp.co.topgate.asada.web.program.board;
 
 import jp.co.topgate.asada.web.RequestMessage;
 import jp.co.topgate.asada.web.ResponseMessage;
-import jp.co.topgate.asada.web.exception.IllegalRequestException;
 import jp.co.topgate.asada.web.program.board.model.Message;
-import jp.co.topgate.asada.web.program.board.model.ModelController;
+import jp.co.topgate.asada.web.program.board.model.MessageController;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -56,11 +55,13 @@ public class ProgramBoardHandlerTest {
         private RequestMessage requestMessage;
         private FileOutputStream outputStream = null;
         private ResponseMessage responseMessage;
+        private ProgramBoardHandler programBoardHandler;
 
         @Before
         public void setUp() throws Exception {
             outputStream = new FileOutputStream(new File(responseMessagePath));
             responseMessage = new ResponseMessage(outputStream);
+            programBoardHandler = new ProgramBoardHandler(requestMessage, responseMessage);
 
             List<Message> messageList = new ArrayList<>();
             Message m;
@@ -82,7 +83,7 @@ public class ProgramBoardHandlerTest {
             m.setDate("2017/5/11 11:57");
             messageList.add(m);
 
-            ModelController.setMessageList(messageList);
+            MessageController.setMessageList(messageList);
         }
 
         @Test
@@ -93,7 +94,7 @@ public class ProgramBoardHandlerTest {
             headerField.put("hoge", "hogehoge");
             requestMessage = new RequestMessage(method, uri, null, headerField, null);
 
-            ProgramBoardHandler.doGet(requestMessage, responseMessage, "timeIdOfValue");
+            programBoardHandler.doGet(requestMessage, responseMessage, "timeIdOfValue");
 
             outputStream.close();
 
@@ -117,7 +118,7 @@ public class ProgramBoardHandlerTest {
             uriQuery.put("name", "管理者");
             requestMessage = new RequestMessage(method, uri, uriQuery);
 
-            ProgramBoardHandler.doGet(requestMessage, responseMessage, "timeIdOfValue");
+            programBoardHandler.doGet(requestMessage, responseMessage, "timeIdOfValue");
 
             outputStream.close();
 
@@ -138,7 +139,7 @@ public class ProgramBoardHandlerTest {
             String uri = "/program/board/css/style.css";
             requestMessage = new RequestMessage(method, uri, null);
 
-            ProgramBoardHandler.doGet(requestMessage, responseMessage, "timeIdOfValue");
+            programBoardHandler.doGet(requestMessage, responseMessage, "timeIdOfValue");
 
             outputStream.close();
 
@@ -159,7 +160,7 @@ public class ProgramBoardHandlerTest {
             String uri = "/program/board/hoge.txt";
             requestMessage = new RequestMessage(method, uri, null);
 
-            ProgramBoardHandler.doGet(requestMessage, responseMessage, "timeIdOfValue");
+            programBoardHandler.doGet(requestMessage, responseMessage, "timeIdOfValue");
 
             outputStream.close();
 
@@ -184,14 +185,17 @@ public class ProgramBoardHandlerTest {
 
     public static class doPostメソッドのテスト {
         private static final String responseMessagePath = "./src/test/resources/responseMessage.txt";
+        private static final String badRequestPath = "./src/test/resources/response/BadRequest.txt";
         private RequestMessage requestMessage;
         private FileOutputStream outputStream = null;
         private ResponseMessage responseMessage;
+        private ProgramBoardHandler programBoardHandler;
 
         @Before
         public void setUp() throws Exception {
             outputStream = new FileOutputStream(new File(responseMessagePath));
             responseMessage = new ResponseMessage(outputStream);
+            programBoardHandler = new ProgramBoardHandler(requestMessage, responseMessage);
 
             List<Message> messageList = new ArrayList<>();
             Message m;
@@ -215,17 +219,17 @@ public class ProgramBoardHandlerTest {
             m.setTimeID("timeID2");
             messageList.add(m);
 
-            ModelController.setMessageList(messageList);
+            MessageController.setMessageList(messageList);
         }
 
         @Test(expected = NullPointerException.class)
         public void nullチェック() throws Exception {
-            ProgramBoardHandler.doPost(null, null, null);
+            programBoardHandler.doPost(null, null, null);
         }
 
         @Test(expected = NullPointerException.class)
         public void nullチェック2() throws Exception {
-            ProgramBoardHandler.doPost(new RequestMessage(null, null, null), null, "timeID");
+            programBoardHandler.doPost(new RequestMessage(null, null, null), null, "timeID");
         }
 
         @Test
@@ -238,7 +242,7 @@ public class ProgramBoardHandlerTest {
             byte[] messageBody = "param%3ddelete_step_1%26number%3d1".getBytes();
             requestMessage = new RequestMessage(method, uri, null, headerField, messageBody);
 
-            ProgramBoardHandler.doPost(requestMessage, responseMessage, "timeIdOfValue");
+            programBoardHandler.doPost(requestMessage, responseMessage, "timeIdOfValue");
 
             outputStream.close();
 
@@ -263,7 +267,7 @@ public class ProgramBoardHandlerTest {
             byte[] messageBody = "password%3dtest%26number%3d1%26param%3ddelete_step_2".getBytes();
             requestMessage = new RequestMessage(method, uri, null, headerField, messageBody);
 
-            ProgramBoardHandler.doPost(requestMessage, responseMessage, "timeIdOfValue");
+            programBoardHandler.doPost(requestMessage, responseMessage, "timeIdOfValue");
 
             outputStream.close();
 
@@ -288,7 +292,7 @@ public class ProgramBoardHandlerTest {
             byte[] messageBody = "param%3dback".getBytes();
             requestMessage = new RequestMessage(method, uri, null, headerField, messageBody);
 
-            ProgramBoardHandler.doPost(requestMessage, responseMessage, "timeIdOfValue");
+            programBoardHandler.doPost(requestMessage, responseMessage, "timeIdOfValue");
 
             outputStream.close();
 
@@ -303,7 +307,7 @@ public class ProgramBoardHandlerTest {
             }
         }
 
-        @Test(expected = IllegalRequestException.class)
+        @Test
         public void paramが予期しないものの場合() throws Exception {
             try {
                 String method = "POST";
@@ -314,13 +318,22 @@ public class ProgramBoardHandlerTest {
                 byte[] messageBody = "param%3dhoge".getBytes();
                 requestMessage = new RequestMessage(method, uri, null, headerField, messageBody);
 
-                ProgramBoardHandler.doPost(requestMessage, responseMessage, "timeIdOfValue");
+                programBoardHandler.doPost(requestMessage, responseMessage, "timeIdOfValue");
             } finally {
                 outputStream.close();
             }
+
+            try (BufferedReader responseMessage = new BufferedReader(new FileReader(new File(responseMessagePath)));
+                 BufferedReader testData = new BufferedReader(new FileReader(new File("./src/test/resources/response/InternalServerError.txt")))) {
+
+                String str;
+                while ((str = responseMessage.readLine()) != null) {
+                    assertThat(str, is(testData.readLine()));
+                }
+            }
         }
 
-        @Test(expected = IllegalRequestException.class)
+        @Test
         public void paramがメッセージボディに含まれていない場合() throws Exception {
             try {
                 String method = "POST";
@@ -331,13 +344,22 @@ public class ProgramBoardHandlerTest {
                 byte[] messageBody = "hoge%3dhoge".getBytes();
                 requestMessage = new RequestMessage(method, uri, null, headerField, messageBody);
 
-                ProgramBoardHandler.doPost(requestMessage, responseMessage, "timeIdOfValue");
+                programBoardHandler.doPost(requestMessage, responseMessage, "timeIdOfValue");
             } finally {
                 outputStream.close();
             }
+
+            try (BufferedReader responseMessage = new BufferedReader(new FileReader(new File(responseMessagePath)));
+                 BufferedReader testData = new BufferedReader(new FileReader(new File(badRequestPath)))) {
+
+                String str;
+                while ((str = responseMessage.readLine()) != null) {
+                    assertThat(str, is(testData.readLine()));
+                }
+            }
         }
 
-        @Test(expected = IllegalRequestException.class)
+        @Test
         public void メッセージボディがリクエストに含まれていない場合() throws Exception {
             try {
                 String method = "POST";
@@ -347,9 +369,18 @@ public class ProgramBoardHandlerTest {
                 headerField.put("Content-Length", "11");
                 requestMessage = new RequestMessage(method, uri, null, headerField, null);
 
-                ProgramBoardHandler.doPost(requestMessage, responseMessage, "timeIdOfValue");
+                programBoardHandler.doPost(requestMessage, responseMessage, "timeIdOfValue");
             } finally {
                 outputStream.close();
+            }
+
+            try (BufferedReader responseMessage = new BufferedReader(new FileReader(new File(responseMessagePath)));
+                 BufferedReader testData = new BufferedReader(new FileReader(new File(badRequestPath)))) {
+
+                String str;
+                while ((str = responseMessage.readLine()) != null) {
+                    assertThat(str, is(testData.readLine()));
+                }
             }
         }
     }

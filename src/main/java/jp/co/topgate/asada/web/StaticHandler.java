@@ -28,12 +28,13 @@ public class StaticHandler extends Handler {
      */
     @Override
     public void handleRequest() {
-        Path filePath = Handler.getFilePath(requestMessage.getUri());
+        String uri = changeUriToWelcomePage(requestMessage.getUri());
+        Path filePath = Handler.getFilePath(uri);
 
         if (filePath.toFile().exists()) {
-            Handler.sendResponse(responseMessage, filePath);
+            sendResponse(responseMessage, filePath);
         } else {
-            Handler.sendErrorResponse(responseMessage, StatusLine.NOT_FOUND);
+            sendErrorResponse(responseMessage, StatusLine.NOT_FOUND);
         }
     }
 

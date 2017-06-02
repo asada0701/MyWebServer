@@ -98,9 +98,31 @@ class HtmlEditor {
         builder.append("                <th></th>\n");
         builder.append("                <th></th>\n");
         builder.append("            </tr>\n");
+
         for (int i = messageList.size() - 1; i >= 0; i--) {
-            builder.append(changeMessageToHtml(HtmlList.INDEX_HTML, messageList.get(i)));
+            builder.append("            <tr id=\"No.").append(messageList.get(i).getMessageID()).append("\">\n");
+            builder.append("                <td align=\"center\" style=\"word-wrap:break-word;\">No.").append(messageList.get(i).getMessageID()).append("</td>\n");
+            builder.append("                <td align=\"center\" style=\"word-wrap:break-word;\">").append(messageList.get(i).getTitle()).append("</td>\n");
+            builder.append("                <td align=\"center\" style=\"word-wrap:break-word;\">").append(messageList.get(i).getText()).append("</td>\n");
+            builder.append("                <td align=\"center\" style=\"word-wrap:break-word;\">").append(messageList.get(i).getName()).append("</td>\n");
+            builder.append("                <td align=\"center\" style=\"word-wrap:break-word;\">").append(messageList.get(i).getDate()).append("</td>\n");
+            builder.append("                <td align=\"center\">\n");
+            builder.append("                    <form action=\"/program/board/search.html\" method=\"get\">\n");
+            builder.append("                        <input type=\"hidden\" name=\"param\" value=\"search\">\n");
+            builder.append("                        <input type=\"hidden\" name=\"name\" value=\"").append(messageList.get(i).getName()).append("\">\n");
+            builder.append("                        <input type=\"submit\" value=\"この人の他のコメントも見てみる\">\n");
+            builder.append("                    </form>\n");
+            builder.append("                </td>\n");
+            builder.append("                <td align=\"center\">\n");
+            builder.append("                    <form action=\"/program/board/\" method=\"post\">\n");
+            builder.append("                        <input type=\"hidden\" name=\"param\" value=\"delete_step_1\">\n");
+            builder.append("                        <input type=\"hidden\" name=\"number\" value=\"").append(messageList.get(i).getMessageID()).append("\">\n");
+            builder.append("                        <input type=\"submit\" value=\"削除する\">\n");
+            builder.append("                    </form>\n");
+            builder.append("                </td>\n");
+            builder.append("            </tr>\n");
         }
+
         builder.append("            </tbody>\n");
         builder.append("        </table>\n");
         builder.append("    </div>\n");
@@ -176,9 +198,24 @@ class HtmlEditor {
         builder.append("                <th>日付</th>\n");
         builder.append("                <th></th>\n");
         builder.append("            </tr>\n");
+
         for (int i = messageList.size() - 1; i >= 0; i--) {
-            builder.append(changeMessageToHtml(HtmlList.SEARCH_HTML, messageList.get(i)));
+            builder.append("            <tr id=\"No.").append(messageList.get(i).getMessageID()).append("\">\n");
+            builder.append("                <td align=\"center\" style=\"word-wrap:break-word;\">No.").append(messageList.get(i).getMessageID()).append("</td>\n");
+            builder.append("                <td align=\"center\" style=\"word-wrap:break-word;\">").append(messageList.get(i).getTitle()).append("</td>\n");
+            builder.append("                <td align=\"center\" style=\"word-wrap:break-word;\">").append(messageList.get(i).getText()).append("</td>\n");
+            builder.append("                <td align=\"center\" style=\"word-wrap:break-word;\">").append(messageList.get(i).getName()).append("</td>\n");
+            builder.append("                <td align=\"center\" style=\"word-wrap:break-word;\">").append(messageList.get(i).getDate()).append("</td>\n");
+            builder.append("                <td align=\"center\">\n");
+            builder.append("                    <form action=\"/program/board/\" method=\"post\">\n");
+            builder.append("                        <input type=\"hidden\" name=\"param\" value=\"delete_step_1\">\n");
+            builder.append("                        <input type=\"hidden\" name=\"number\" value=\"").append(messageList.get(i).getMessageID()).append("\">\n");
+            builder.append("                        <input type=\"submit\" value=\"削除する\">\n");
+            builder.append("                    </form>\n");
+            builder.append("                </td>\n");
+            builder.append("            </tr>\n");
         }
+
         builder.append("            </tbody>\n");
         builder.append("        </table>\n");
         builder.append("    </div>\n");
@@ -235,7 +272,13 @@ class HtmlEditor {
                 "                <th>ユーザー名</th>\n" +
                 "                <th>日付</th>\n" +
                 "            </tr>\n" +
-                changeMessageToHtml(HtmlList.DELETE_HTML, message) +
+                "            <tr id=\"No." + message.getMessageID() + "\">\n" +
+                "                <td align=\"center\" style=\"word-wrap:break-word;\">No." + message.getMessageID() + "</td>\n" +
+                "                <td align=\"center\" style=\"word-wrap:break-word;\">" + message.getTitle() + "</td>\n" +
+                "                <td align=\"center\" style=\"word-wrap:break-word;\">" + message.getText() + "</td>\n" +
+                "                <td align=\"center\" style=\"word-wrap:break-word;\">" + message.getName() + "</td>\n" +
+                "                <td align=\"center\" style=\"word-wrap:break-word;\">" + message.getDate() + "</td>\n" +
+                "            </tr>\n" +
                 "            </tbody>\n" +
                 "        </table>\n" +
                 "    </div>\n" +
@@ -260,82 +303,6 @@ class HtmlEditor {
                 "</body>\n" +
                 "\n" +
                 "</html>\n";
-    }
-
-    /**
-     * Messageのオブジェクトを受け取り、各HTMLに沿ったHTML文章に整形する
-     *
-     * @param htmlList 編集したいHTMLのEnumを渡す
-     * @param message  書き込みたいMessageのオブジェクトを渡す
-     * @return HTML文章を返す
-     */
-    static String changeMessageToHtml(HtmlList htmlList, Message message) {
-        switch (htmlList) {
-            case INDEX_HTML:
-                return "            <tr id=\"No." + message.getMessageID() + "\">" + "\n" +
-                        "                <td align=\"center\" style=\"word-wrap:break-word;\">No." + message.getMessageID() + "</td>" + "\n" +
-                        "                <td align=\"center\" style=\"word-wrap:break-word;\">" + message.getTitle() + "</td>" + "\n" +
-                        "                <td align=\"center\" style=\"word-wrap:break-word;\">" + message.getText() + "</td>" + "\n" +
-                        "                <td align=\"center\" style=\"word-wrap:break-word;\">" + message.getName() + "</td>" + "\n" +
-                        "                <td align=\"center\" style=\"word-wrap:break-word;\">" + message.getDate() + "</td>" + "\n" +
-                        "                <td align=\"center\">\n" +
-                        "                    <form action=\"/program/board/search.html\" method=\"get\">\n" +
-                        "                        <input type=\"hidden\" name=\"param\" value=\"search\">\n" +
-                        "                        <input type=\"hidden\" name=\"name\" value=\"" + message.getName() + "\">\n" +
-                        "                        <input type=\"submit\" value=\"この人の他のコメントも見てみる\">\n" +
-                        "                    </form>\n" +
-                        "                </td>\n" +
-                        "                <td align=\"center\">" + "\n" +
-                        "                    <form action=\"/program/board/\" method=\"post\">" + "\n" +
-                        "                        <input type=\"hidden\" name=\"param\" value=\"delete_step_1\">" + "\n" +
-                        "                        <input type=\"hidden\" name=\"number\" value=\"" + message.getMessageID() + "\">" + "\n" +
-                        "                        <input type=\"submit\" value=\"削除する\">" + "\n" +
-                        "                    </form>" + "\n" +
-                        "                </td>" + "\n" +
-                        "            </tr>" + "\n";
-
-            case SEARCH_HTML:
-                return "            <tr id=\"No." + message.getMessageID() + "\">" + "\n" +
-                        "                <td align=\"center\" style=\"word-wrap:break-word;\">No." + message.getMessageID() + "</td>" + "\n" +
-                        "                <td align=\"center\" style=\"word-wrap:break-word;\">" + message.getTitle() + "</td>" + "\n" +
-                        "                <td align=\"center\" style=\"word-wrap:break-word;\">" + message.getText() + "</td>" + "\n" +
-                        "                <td align=\"center\" style=\"word-wrap:break-word;\">" + message.getName() + "</td>" + "\n" +
-                        "                <td align=\"center\" style=\"word-wrap:break-word;\">" + message.getDate() + "</td>" + "\n" +
-                        "                <td align=\"center\">" + "\n" +
-                        "                    <form action=\"/program/board/\" method=\"post\">" + "\n" +
-                        "                        <input type=\"hidden\" name=\"param\" value=\"delete_step_1\">" + "\n" +
-                        "                        <input type=\"hidden\" name=\"number\" value=\"" + message.getMessageID() + "\">" + "\n" +
-                        "                        <input type=\"submit\" value=\"削除する\">" + "\n" +
-                        "                    </form>" + "\n" +
-                        "                </td>" + "\n" +
-                        "            </tr>" + "\n";
-
-            case DELETE_HTML:
-                return "            <tr id=\"No." + message.getMessageID() + "\">" + "\n" +
-                        "                <td align=\"center\" style=\"word-wrap:break-word;\">No." + message.getMessageID() + "</td>" + "\n" +
-                        "                <td align=\"center\" style=\"word-wrap:break-word;\">" + message.getTitle() + "</td>" + "\n" +
-                        "                <td align=\"center\" style=\"word-wrap:break-word;\">" + message.getText() + "</td>" + "\n" +
-                        "                <td align=\"center\" style=\"word-wrap:break-word;\">" + message.getName() + "</td>" + "\n" +
-                        "                <td align=\"center\" style=\"word-wrap:break-word;\">" + message.getDate() + "</td>" + "\n" +
-                        "            </tr>" + "\n";
-
-            default:
-                return null;
-        }
-    }
-
-    /**
-     * 改行コードをHTMLのbrタグに変更するメソッド
-     * 改行文字を<br>タグに変更しないと、CSVファイル内で改行が発生してしまう
-     *
-     * @param str HTMLに書き込みたい文章を渡す
-     * @return 改行コードを全てbrタグに修正して返す
-     */
-    static String changeLineFeedToBrTag(String str) {
-        for (String lineFeed : lineFeedPattern) {
-            str = str.replaceAll(lineFeed, LINE_FEED_HTML);
-        }
-        return str;
     }
 
     /**
@@ -372,5 +339,19 @@ class HtmlEditor {
                 "</body>\n" +
                 "\n" +
                 "</html>";
+    }
+
+    /**
+     * 改行コードをHTMLのbrタグに変更するメソッド
+     * 改行文字を<br>タグに変更しないと、CSVファイル内で改行が発生してしまう
+     *
+     * @param str HTMLに書き込みたい文章を渡す
+     * @return 改行コードを全てbrタグに修正して返す
+     */
+    static String changeLineFeedToBrTag(String str) {
+        for (String lineFeed : lineFeedPattern) {
+            str = str.replaceAll(lineFeed, LINE_FEED_HTML);
+        }
+        return str;
     }
 }

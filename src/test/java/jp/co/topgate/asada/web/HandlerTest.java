@@ -95,24 +95,54 @@ public class HandlerTest {
         }
     }
 
+    public static class changeUriToWelcomePageのテスト {
+        @Test(expected = NullPointerException.class)
+        public void nullチェック() throws Exception {
+            Handler.changeUriToWelcomePage(null);
+        }
+
+        @Test
+        public void 正しく動作するか() throws Exception {
+            assertThat(Handler.changeUriToWelcomePage("/"), is("/index.html"));
+
+            assertThat(Handler.changeUriToWelcomePage("///////"), is("///////index.html"));
+
+            assertThat(Handler.changeUriToWelcomePage("/hoge//"), is("/hoge//index.html"));
+        }
+
+        @Test
+        public void 引数にスラッシュが含まれない場合() throws Exception {
+            assertThat(Handler.changeUriToWelcomePage(""), is(""));
+
+            assertThat(Handler.changeUriToWelcomePage("hoge"), is("hoge"));
+        }
+    }
+
     public static class sendResponseメソッドのテスト {
         private ByteArrayOutputStream outputStream;
         private ResponseMessage responseMessage;
+        private Handler handler;
 
         @Before
         public void setUp() {
             outputStream = new ByteArrayOutputStream();
             responseMessage = new ResponseMessage(outputStream);
+            handler = new Handler() {
+                @Override
+                public void handleRequest() {
+
+                }
+            };
         }
 
         @Test(expected = NullPointerException.class)
         public void nullチェック() {
-            ProgramBoardHandler.sendResponse(null, "hoge");
+            handler.sendResponse(null, "hoge");
         }
 
         @Test
         public void 引数に文字列を渡す() {
-            ProgramBoardHandler.sendResponse(responseMessage, "hoge");
+            handler.sendResponse(responseMessage, "hoge");
             String[] response = outputStream.toString().split("\n");
 
             assertThat(response.length, is(5));
@@ -125,7 +155,7 @@ public class HandlerTest {
 
         @Test
         public void 引数にファイルを渡す() {
-            ProgramBoardHandler.sendResponse(responseMessage, Paths.get("./src/test/resources/漢字テスト/寿司.txt"));
+            handler.sendResponse(responseMessage, Paths.get("./src/test/resources/漢字テスト/寿司.txt"));
             String[] response = outputStream.toString().split("\n");
 
             assertThat(response.length, is(7));
@@ -142,16 +172,23 @@ public class HandlerTest {
     public static class sendErrorResponseメソッドのテスト {
         private ByteArrayOutputStream outputStream;
         private ResponseMessage responseMessage;
+        private Handler handler;
 
         @Before
         public void setUp() {
             outputStream = new ByteArrayOutputStream();
             responseMessage = new ResponseMessage(outputStream);
+            handler = new Handler() {
+                @Override
+                public void handleRequest() {
+
+                }
+            };
         }
 
         @Test
         public void BadRequestテスト() {
-            ProgramBoardHandler.sendErrorResponse(responseMessage, StatusLine.BAD_REQUEST);
+            handler.sendErrorResponse(responseMessage, StatusLine.BAD_REQUEST);
             String[] response = outputStream.toString().split("\n");
 
             assertThat(response.length, is(4));
@@ -164,7 +201,7 @@ public class HandlerTest {
 
         @Test
         public void NotFoundテスト() {
-            ProgramBoardHandler.sendErrorResponse(responseMessage, StatusLine.NOT_FOUND);
+            handler.sendErrorResponse(responseMessage, StatusLine.NOT_FOUND);
             String[] response = outputStream.toString().split("\n");
 
             assertThat(response.length, is(4));

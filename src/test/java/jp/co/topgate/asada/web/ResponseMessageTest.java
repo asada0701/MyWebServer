@@ -8,12 +8,9 @@ import org.junit.runner.RunWith;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -28,86 +25,43 @@ public class ResponseMessageTest {
         @Test(expected = NullPointerException.class)
         public void nullチェック() {
             ResponseMessage responseMessage = new ResponseMessage(null);
-            responseMessage.getOutputStream(StatusLine.OK);
+            responseMessage.writeResponseLineAndHeader(StatusLine.OK);
         }
 
         @Test
         public void 正しく動作するか() throws Exception {
             try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
                 ResponseMessage responseMessage = new ResponseMessage(outputStream);
-                assertThat(responseMessage.getOutputStream(StatusLine.OK), is(outputStream));
+                assertThat(responseMessage.getOutputStream(), is(outputStream));
             }
         }
     }
 
-    public static class getOutputStreamメソッドのテスト {
-        private ByteArrayOutputStream outputStream = null;
-        private ResponseMessage sut;
-
-        @Before
-        public void setUp() {
-            outputStream = new ByteArrayOutputStream();
-            sut = new ResponseMessage(outputStream);
-        }
-
+    public static class writeResponseLineAndHeaderメソッドのテスト {
         @Test
-        public void 引数がStatusLineの場合() throws Exception {
-            assertThat(sut.getOutputStream(StatusLine.OK), is(instanceOf(OutputStream.class)));
-            assertThat(outputStream.toString(), is("HTTP/1.1 200 OK\n\n"));
-        }
+        public void 正しく動作するか() throws Exception {
+            try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+                ResponseMessage responseMessage = new ResponseMessage(outputStream);
 
-        @Test
-        public void 引数がintとStringの場合() throws Exception {
-            assertThat(sut.getOutputStream(999, "ニコニコ"), is(instanceOf(OutputStream.class)));
-            assertThat(outputStream.toString(), is("HTTP/1.1 999 ニコニコ\n\n"));
-        }
+                responseMessage.writeResponseLineAndHeader(StatusLine.OK);
 
-        @Test
-        public void intにマイナスを入れた場合() throws Exception {
-            assertThat(sut.getOutputStream(-200, "マイナス"), is(instanceOf(OutputStream.class)));
-            assertThat(outputStream.toString(), is("HTTP/1.1 -200 マイナス\n\n"));
-        }
-
-        @After
-        public void tearDown() throws IOException {
-            if (outputStream != null) {
-                outputStream.close();
+                assertThat(outputStream.toByteArray(), is("HTTP/1.1 200 OK\n\n".getBytes()));
             }
         }
-    }
-
-    public static class getPrintWriterメソッドのテスト {
-        private ByteArrayOutputStream outputStream = null;
-        private ResponseMessage sut;
-
-        @Before
-        public void setUp() {
-            outputStream = new ByteArrayOutputStream();
-            sut = new ResponseMessage(outputStream);
-        }
 
         @Test
-        public void 引数がStatusLineの場合() throws Exception {
-            assertThat(sut.getPrintWriter(StatusLine.OK), is(instanceOf(PrintWriter.class)));
-            assertThat(outputStream.toString(), is("HTTP/1.1 200 OK\n\n"));
-        }
+        public void 複数回呼び出してみる() throws Exception {
+            try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream()) {
+                ResponseMessage responseMessage = new ResponseMessage(outputStream);
 
-        @Test
-        public void 引数がintとStringの場合() throws Exception {
-            assertThat(sut.getPrintWriter(999, "ニコニコ"), is(instanceOf(PrintWriter.class)));
-            assertThat(outputStream.toString(), is("HTTP/1.1 999 ニコニコ\n\n"));
-        }
+                //メソッドが実行される
+                responseMessage.writeResponseLineAndHeader(StatusLine.OK);
 
-        @Test
-        public void intにマイナスを入れた場合() throws Exception {
-            assertThat(sut.getPrintWriter(-200, "マイナス"), is(instanceOf(PrintWriter.class)));
-            assertThat(outputStream.toString(), is("HTTP/1.1 -200 マイナス\n\n"));
-        }
+                //実行されない
+                responseMessage.writeResponseLineAndHeader(StatusLine.BAD_REQUEST);
+                responseMessage.writeResponseLineAndHeader(StatusLine.NOT_FOUND);
 
-        @After
-        public void tearDown() throws IOException {
-            if (outputStream != null) {
-                outputStream.close();
+                assertThat(outputStream.toByteArray(), is("HTTP/1.1 200 OK\n\n".getBytes()));
             }
         }
     }
@@ -244,27 +198,27 @@ public class ResponseMessageTest {
             sut = new ResponseMessage(outputStream);
             sut.addHeader("name", "value");
             sut.addHeader("name2", "value2");
-            sut.getOutputStream(999, "hoge");
+            sut.writeResponseLineAndHeader(StatusLine.OK);
 
-            assertThat(outputStream.toString(), is("HTTP/1.1 999 hoge\nname: value\nname2: value2\n\n"));
+            assertThat(outputStream.toString(), is("HTTP/1.1 200 OK\nname: value\nname2: value2\n\n"));
         }
 
         @Test
         public void addHeaderWithContentTypeのテスト() throws Exception {
             sut = new ResponseMessage(outputStream);
             sut.addHeaderWithContentType("value");
-            sut.getOutputStream(-200, "hoge");
+            sut.writeResponseLineAndHeader(StatusLine.OK);
 
-            assertThat(outputStream.toString(), is("HTTP/1.1 -200 hoge\nContent-Type: value\n\n"));
+            assertThat(outputStream.toString(), is("HTTP/1.1 200 OK\nContent-Type: value\n\n"));
         }
 
         @Test
         public void addHeaderWithContentLengthのテスト() throws Exception {
             sut = new ResponseMessage(outputStream);
             sut.addHeaderWithContentLength("value");
-            sut.getOutputStream(200, "hoge");
+            sut.writeResponseLineAndHeader(StatusLine.OK);
 
-            assertThat(outputStream.toString(), is("HTTP/1.1 200 hoge\nContent-Length: value\n\n"));
+            assertThat(outputStream.toString(), is("HTTP/1.1 200 OK\nContent-Length: value\n\n"));
         }
 
         @After
