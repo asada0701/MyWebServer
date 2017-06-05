@@ -107,7 +107,7 @@ class HtmlEditor {
             builder.append("                <td align=\"center\" style=\"word-wrap:break-word;\">").append(messageList.get(i).getName()).append("</td>\n");
             builder.append("                <td align=\"center\" style=\"word-wrap:break-word;\">").append(messageList.get(i).getDate()).append("</td>\n");
             builder.append("                <td align=\"center\">\n");
-            builder.append("                    <a href=\"./search?param=search&name=").append(messageList.get(i).getName()).append("\">この人の他のコメントも見てみる</a>");
+            builder.append("                    <a href=\"./search?param=search&name=").append(messageList.get(i).getName()).append("\">この人の他のコメントも見てみる</a>\n");
             builder.append("                </td>\n");
             builder.append("                <td align=\"center\">\n");
             builder.append("                    <form action=\"/program/board/\" method=\"post\">\n");
