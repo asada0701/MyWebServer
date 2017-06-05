@@ -4,4 +4,3 @@
 /.idea/
 #buildは要らない子
 /build/
-/csv/message.csv
