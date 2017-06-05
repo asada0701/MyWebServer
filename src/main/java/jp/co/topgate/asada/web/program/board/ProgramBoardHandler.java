@@ -2,6 +2,7 @@ package jp.co.topgate.asada.web.program.board;
 
 import jp.co.topgate.asada.web.*;
 import jp.co.topgate.asada.web.exception.CsvRuntimeException;
+import jp.co.topgate.asada.web.exception.FileForbiddenException;
 import jp.co.topgate.asada.web.exception.IllegalRequestException;
 import jp.co.topgate.asada.web.program.board.model.Message;
 import jp.co.topgate.asada.web.program.board.model.MessageController;
@@ -60,13 +61,16 @@ public class ProgramBoardHandler extends Handler {
      *
      * @param requestMessage  RequestMessageのオブジェクト
      * @param responseMessage ResponseMessageのオブジェクト
+     * @param nowTimeID       ユニークなID。二重リクエスト対策。
+     * @throws CsvRuntimeException {@link jp.co.topgate.asada.web.program.board.model.CsvHelper}を参照
      */
     void doGet(RequestMessage requestMessage, ResponseMessage responseMessage, String nowTimeID) throws CsvRuntimeException {
-        String uri = changeUriToWelcomePage(requestMessage.getUri());
-        Path filePath = getFilePath(uri);
+        Path filePath;
+        try {
+            String uri = changeUriToWelcomePage(requestMessage.getUri());
+            filePath = getFilePath(uri);
 
-        //ファイルパスが不正なものの場合はnullが返ってくる
-        if (filePath == null) {
+        } catch (FileForbiddenException e) {
             sendErrorResponse(responseMessage, StatusLine.FORBIDDEN);
             return;
         }
@@ -98,7 +102,7 @@ public class ProgramBoardHandler extends Handler {
      *
      * @param param     URIクエリーのparamを渡す
      * @param nowTimeID ユニークなID。二重リクエスト対策。
-     * @throws CsvRuntimeException
+     * @throws CsvRuntimeException {@link jp.co.topgate.asada.web.program.board.model.CsvHelper}を参照
      */
     void doSearch(String param, String nowTimeID) throws CsvRuntimeException {
         if (param == null) {
@@ -130,6 +134,8 @@ public class ProgramBoardHandler extends Handler {
      *
      * @param requestMessage  RequestMessageのオブジェクト
      * @param responseMessage ResponseMessageのオブジェクト
+     * @param nowTimeID       ユニークなID。二重リクエスト対策。
+     * @throws CsvRuntimeException {@link jp.co.topgate.asada.web.program.board.model.CsvHelper}を参照
      */
     void doPost(RequestMessage requestMessage, ResponseMessage responseMessage, String nowTimeID) throws CsvRuntimeException {
 
@@ -154,25 +160,25 @@ public class ProgramBoardHandler extends Handler {
 
             //ユーザーがメッセージを投稿する処理
             case "write": {
-                String unsafe_name = messageBody.get("name");
-                String unsafe_title = messageBody.get("title");
-                String unsafe_text = messageBody.get("text");
+                String unsafeName = messageBody.get("name");
+                String unsafeTitle = messageBody.get("title");
+                String unsafeText = messageBody.get("text");
                 String password = messageBody.get("password");
                 String timeId = messageBody.get("timeID");
 
-                if (unsafe_name == null || unsafe_title == null || unsafe_text == null || password == null || timeId == null) {
+                if (unsafeName == null || unsafeTitle == null || unsafeText == null || password == null || timeId == null) {
                     sendErrorResponse(responseMessage, StatusLine.BAD_REQUEST);
                     return;
                 }
 
-                String safe_name = UnsafeChar.replace(unsafe_name);
-                String safe_title = UnsafeChar.replace(unsafe_title);
-                String safe_text = UnsafeChar.replace(unsafe_text);
+                String safeName = UnsafeChar.replace(unsafeName);
+                String safeTitle = UnsafeChar.replace(unsafeTitle);
+                String safeText = UnsafeChar.replace(unsafeText);
 
-                safe_text = HtmlEditor.changeLineFeedToBrTag(safe_text);
+                safeText = HtmlEditor.changeLineFeedToBrTag(safeText);
 
                 if (!MessageController.isExist(timeId)) {
-                    MessageController.addMessage(safe_name, safe_title, safe_text, password, timeId);
+                    MessageController.addMessage(safeName, safeTitle, safeText, password, timeId);
 
                 } else {
                     //同一timeIDでPOSTした時のレスポンス

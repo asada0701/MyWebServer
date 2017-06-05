@@ -56,12 +56,12 @@ public class HandlerTest {
         private Path path;
 
         @Test(expected = NullPointerException.class)
-        public void nullチェック() {
+        public void nullチェック() throws Exception {
             path = Handler.getFilePath(null);
         }
 
         @Test
-        public void 想定している引数() {
+        public void 想定している引数() throws Exception {
             path = Handler.getFilePath("index.html");
             assertThat(path.toString(), is("src/main/resources/index.html"));
 
@@ -70,7 +70,7 @@ public class HandlerTest {
         }
 
         @Test
-        public void 想定していない引数() {
+        public void 想定していない引数() throws Exception {
             path = Handler.getFilePath("");
             assertThat(path.toString(), is("src/main/resources"));
 

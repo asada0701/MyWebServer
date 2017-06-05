@@ -1,5 +1,7 @@
 package jp.co.topgate.asada.web;
 
+import jp.co.topgate.asada.web.exception.FileForbiddenException;
+
 import java.nio.file.Path;
 
 /**
@@ -28,13 +30,17 @@ public class StaticHandler extends Handler {
      */
     @Override
     public void handleRequest() {
-        String uri = changeUriToWelcomePage(requestMessage.getUri());
-        Path filePath = Handler.getFilePath(uri);
+        Path filePath;
+        try {
+            String uri = changeUriToWelcomePage(requestMessage.getUri());
+            filePath = Handler.getFilePath(uri);
 
-        if (filePath == null) {
+        } catch (FileForbiddenException e) {
             sendErrorResponse(responseMessage, StatusLine.FORBIDDEN);
+            return;
+        }
 
-        } else if (filePath.toFile().exists()) {
+        if (filePath.toFile().exists()) {
             sendResponse(responseMessage, filePath);
 
         } else {

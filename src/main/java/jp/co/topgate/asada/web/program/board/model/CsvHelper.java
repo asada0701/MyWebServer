@@ -36,8 +36,17 @@ class CsvHelper {
      * @throws CsvRuntimeException CSVファイルの中身が規定の形になっていないもしくはファイル読み込みに失敗した
      */
     static List<Message> readMessage() throws CsvRuntimeException {
+
+        File file = new File(CSV_FILE_PATH);
+        try {
+            file.createNewFile();
+            
+        } catch (IOException e) {
+            throw new CsvRuntimeException(e.getMessage(), e.getCause());
+        }
+
         List<Message> messageList = new ArrayList<>();
-        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(new File(CSV_FILE_PATH)))) {
+        try (BufferedReader bufferedReader = new BufferedReader(new FileReader(file))) {
             String line;
             while (!Strings.isNullOrEmpty(line = bufferedReader.readLine())) {
 
