@@ -4,7 +4,6 @@ import jp.co.topgate.asada.web.program.board.ProgramBoardHandler;
 
 import java.io.*;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * ハンドラー抽象クラス
@@ -45,13 +44,13 @@ public abstract class Handler {
 
     /**
      * URIを元に、実際のファイルパスを返すメソッド
+     * 使用した人が例外は必ず気づける（nullよりも良い
      *
      * @return ファイルのパスを返す。resourcesフォルダ以外にアクセスした場合はnullを返す。
      */
     protected static Path getFilePath(String uri) {
-        Path unsafe_FilePath = Paths.get(FILE_PATH, uri);
-
-        Path safe_filepath = unsafe_FilePath.normalize();
+        //使用した人が例外は必ず気づける（nullよりも良い
+        Path normalized_filepath = unsafe_filePath.normalize();
 
         if (!safe_filepath.startsWith(FILE_PATH)) {
             return null;
