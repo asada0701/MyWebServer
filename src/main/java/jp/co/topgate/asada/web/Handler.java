@@ -172,8 +172,14 @@ public abstract class Handler {
         printWriter.flush();
     }
 
-    protected void sendRedirect(ResponseMessage responseMessage) {
-        responseMessage.addHeader("Location", "/program/board/");
+    /**
+     * リダイレクトをするメソッド
+     *
+     * @param responseMessage レスポンスメッセージを渡す
+     * @param uri             変移先のURIを渡す
+     */
+    protected void sendRedirect(ResponseMessage responseMessage, String uri) {
+        responseMessage.addHeader("Location", uri);
 
         responseMessage.writeResponseLineAndHeader(StatusLine.See_Other);
     }

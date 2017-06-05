@@ -96,7 +96,7 @@ public class ProgramBoardHandler extends Handler {
     void doSearch(String param, String nowTimeID) throws CsvRuntimeException {
         if (param == null) {
             //TODO リダイレクトの一貫性を考える
-            //sendRedirect(responseMessage);
+            //sendRedirect(responseMessage, "/program/board/");
             sendErrorResponse(responseMessage, StatusLine.BAD_REQUEST);
             return;
         }
