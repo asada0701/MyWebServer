@@ -7,7 +7,6 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.nio.file.Path;
@@ -25,40 +24,31 @@ import static org.junit.Assert.assertThat;
 @RunWith(Enclosed.class)
 public class HandlerTest {
     public static class getHandlerメソッドのテスト {
-        @Test
-        public void 正しいリクエストメッセージを送る() throws Exception {
-            try (InputStream is = new FileInputStream(new File("./src/test/resources/request/GetRequestMessage.txt"))) {
+        private Handler setUpHandler(Path filePath) throws Exception {
+            try (InputStream is = new FileInputStream(filePath.toFile())) {
 
                 RequestMessage requestMessage = RequestMessageParser.parse(is);
 
-                Handler sut = Handler.getHandler(requestMessage, null);
-
-                assertThat(sut, is(instanceOf(StaticHandler.class)));
+                return Handler.getHandler(requestMessage, null);
             }
+        }
+
+        @Test
+        public void 正しいリクエストメッセージを送る() throws Exception {
+            Handler sut = setUpHandler(Paths.get("./src/test/resources/request/GetRequestMessage.txt"));
+            assertThat(sut, is(instanceOf(StaticHandler.class)));
         }
 
         @Test
         public void urlPattern以外のPOSTのテスト() throws Exception {
-            try (InputStream is = new FileInputStream(new File("./src/test/resources/request/NotContainsUrlPatternTest.txt"))) {
-
-                RequestMessage requestMessage = RequestMessageParser.parse(is);
-
-                Handler sut = Handler.getHandler(requestMessage, null);
-
-                assertThat(sut, is(instanceOf(StaticHandler.class)));
-            }
+            Handler sut = setUpHandler(Paths.get("./src/test/resources/request/NotContainsUrlPatternTest.txt"));
+            assertThat(sut, is(instanceOf(StaticHandler.class)));
         }
 
         @Test
         public void ProgramBoardHandlerが返されるテスト() throws Exception {
-            try (InputStream is = new FileInputStream(new File("./src/test/resources/request/PostRequestMessage.txt"))) {
-
-                RequestMessage requestMessage = RequestMessageParser.parse(is);
-
-                Handler sut = Handler.getHandler(requestMessage, null);
-
-                assertThat(sut, is(instanceOf(ProgramBoardHandler.class)));
-            }
+            Handler sut = setUpHandler(Paths.get("./src/test/resources/request/PostRequestMessage.txt"));
+            assertThat(sut, is(instanceOf(ProgramBoardHandler.class)));
         }
     }
 
@@ -174,8 +164,7 @@ public class HandlerTest {
         private ResponseMessage responseMessage;
         private Handler handler;
 
-        @Before
-        public void setUp() {
+        public String[] setUp(StatusLine statusLine) {
             outputStream = new ByteArrayOutputStream();
             responseMessage = new ResponseMessage(outputStream);
             handler = new Handler() {
@@ -184,12 +173,13 @@ public class HandlerTest {
 
                 }
             };
+            handler.sendErrorResponse(responseMessage, statusLine);
+            return outputStream.toString().split("\n");
         }
 
         @Test
         public void BadRequestテスト() {
-            handler.sendErrorResponse(responseMessage, StatusLine.BAD_REQUEST);
-            String[] response = outputStream.toString().split("\n");
+            String[] response = setUp(StatusLine.BAD_REQUEST);
 
             assertThat(response.length, is(4));
             assertThat(response[0], is("HTTP/1.1 400 Bad request"));
@@ -201,8 +191,7 @@ public class HandlerTest {
 
         @Test
         public void NotFoundテスト() {
-            handler.sendErrorResponse(responseMessage, StatusLine.NOT_FOUND);
-            String[] response = outputStream.toString().split("\n");
+            String[] response = setUp(StatusLine.NOT_FOUND);
 
             assertThat(response.length, is(4));
             assertThat(response[0], is("HTTP/1.1 404 Not Found"));

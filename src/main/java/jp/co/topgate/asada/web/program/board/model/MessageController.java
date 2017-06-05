@@ -156,7 +156,7 @@ public final class MessageController {
      * @return （例)2017/5/5 17:20
      */
     @NotNull
-    public static String getNowDate() {
+    private static String getNowDate() {
         LocalDateTime ldt = LocalDateTime.now();
         return String.valueOf(ldt.getYear()) + "/" + ldt.getMonthValue() + "/" + ldt.getDayOfMonth() +
                 " " + ldt.getHour() + ":" + ldt.getMinute();

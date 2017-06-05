@@ -1,5 +1,6 @@
 package jp.co.topgate.asada.web;
 
+import org.jetbrains.annotations.NotNull;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -67,45 +68,45 @@ public class ResponseMessageTest {
     }
 
     public static class createResponseLineメソッドのテスト {
+
+        @NotNull
+        private String createResponseLineHelper(StatusLine statusLine) {
+            return ResponseMessage.createResponseLine(statusLine.getStatusCode(), statusLine.getReasonPhrase());
+        }
+
         @Test
         public void ステータスコード200のテスト() {
-            StatusLine statusLine = StatusLine.OK;
-            String responseLine = ResponseMessage.createResponseLine(statusLine.getStatusCode(), statusLine.getReasonPhrase());
+            String responseLine = createResponseLineHelper(StatusLine.OK);
             assertThat(responseLine, is("HTTP/1.1 200 OK\n"));
         }
 
         @Test
         public void ステータスコード400のテスト() {
-            StatusLine statusLine = StatusLine.BAD_REQUEST;
-            String responseLine = ResponseMessage.createResponseLine(statusLine.getStatusCode(), statusLine.getReasonPhrase());
+            String responseLine = createResponseLineHelper(StatusLine.BAD_REQUEST);
             assertThat(responseLine, is("HTTP/1.1 400 Bad request\n"));
         }
 
         @Test
         public void ステータスコード404のテスト() {
-            StatusLine statusLine = StatusLine.NOT_FOUND;
-            String responseLine = ResponseMessage.createResponseLine(statusLine.getStatusCode(), statusLine.getReasonPhrase());
+            String responseLine = createResponseLineHelper(StatusLine.NOT_FOUND);
             assertThat(responseLine, is("HTTP/1.1 404 Not Found\n"));
         }
 
         @Test
         public void ステータスコード500のテスト() {
-            StatusLine statusLine = StatusLine.INTERNAL_SERVER_ERROR;
-            String responseLine = ResponseMessage.createResponseLine(statusLine.getStatusCode(), statusLine.getReasonPhrase());
+            String responseLine = createResponseLineHelper(StatusLine.INTERNAL_SERVER_ERROR);
             assertThat(responseLine, is("HTTP/1.1 500 Internal Server Error\n"));
         }
 
         @Test
         public void ステータスコード501のテスト() {
-            StatusLine statusLine = StatusLine.NOT_IMPLEMENTED;
-            String responseLine = ResponseMessage.createResponseLine(statusLine.getStatusCode(), statusLine.getReasonPhrase());
+            String responseLine = createResponseLineHelper(StatusLine.NOT_IMPLEMENTED);
             assertThat(responseLine, is("HTTP/1.1 501 Not Implemented\n"));
         }
 
         @Test
         public void ステータスコード505のテスト() {
-            StatusLine statusLine = StatusLine.HTTP_VERSION_NOT_SUPPORTED;
-            String responseLine = ResponseMessage.createResponseLine(statusLine.getStatusCode(), statusLine.getReasonPhrase());
+            String responseLine = createResponseLineHelper(StatusLine.HTTP_VERSION_NOT_SUPPORTED);
             assertThat(responseLine, is("HTTP/1.1 505 HTTP Version Not Supported\n"));
         }
     }

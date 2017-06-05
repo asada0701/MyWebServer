@@ -72,43 +72,38 @@ public class RequestMessageTest {
         assertThat(sut.findHeaderByName(null), is(nullValue()));
     }
 
-    public void setMessageBodyAndHeader(Map<String, String> headerField, byte[] messageBody) {
+    private void setMessageBodyAndHeader(String contentType, byte[] messageBody) {
+        Map<String, String> headerField = new HashMap<>();
+        headerField.put("Content-Type", contentType);
+
         sut = new RequestMessage(null, null, null, headerField, messageBody);
     }
 
     @Test
     public void parseMessageBodyToMapメソッドのテスト() {
-        Map<String, String> headerField = new HashMap<>();
-        headerField.put("Content-Type", "multipart/form-data");
         byte[] messageBody = "".getBytes();
-        setMessageBodyAndHeader(headerField, messageBody);
+        setMessageBodyAndHeader("multipart/form-data", messageBody);
         assertThat(sut.parseMessageBodyToMap(), is(nullValue()));
 
-        headerField = new HashMap<>();
-        headerField.put("Content-Type", "application/x-www-form-urlencoded");
+        messageBody = "name%3dasada%26title%3dtest%26text%3d%e3%81%93%e3%82%93%e3%81%ab%e3%81%a1%e3%81%af%26password%3dtest%26param%3Dcontribution".getBytes();
+        setMessageBodyAndHeader("application/x-www-form-urlencoded", messageBody);
 
-        messageBody = "name%3dasada%26title%3dtest%26text%3d%e3%81%93%e3%82%93%e3%81%ab%e3%81%a1%e3%81%af%26password%3dtest%26param".getBytes();
-        setMessageBodyAndHeader(headerField, messageBody);
+        Map<String, String> result = sut.parseMessageBodyToMap();
+        assertThat(result.get("name"), is("asada"));
     }
 
     @Test(expected = RequestParseException.class)
     public void 不正な文字列としてイコールがないものを渡す() {
-        Map<String, String> headerField = new HashMap<>();
-        headerField.put("Content-Type", "application/x-www-form-urlencoded");
-
         byte[] messageBody = "name%3dasada%26title%3dtest%26text%3d%e3%81%93%e3%82%93%e3%81%ab%e3%81%a1%e3%81%af%26password%3dtest%26param".getBytes();
-        setMessageBodyAndHeader(headerField, messageBody);
+        setMessageBodyAndHeader("application/x-www-form-urlencoded", messageBody);
 
         sut.parseMessageBodyToMap();
     }
 
     @Test(expected = RequestParseException.class)
     public void 不正な文字列としてアンパサンドがないものを渡す() {
-        Map<String, String> headerField = new HashMap<>();
-        headerField.put("Content-Type", "application/x-www-form-urlencoded");
-
         byte[] messageBody = "name%3Dasadatitle%3Dtest%26text%3D%82%B1%82%F1%82%C9%82%BF%82%CD%26password%3Dtest%26param%3Dcontribution".getBytes();
-        setMessageBodyAndHeader(headerField, messageBody);
+        setMessageBodyAndHeader("application/x-www-form-urlencoded", messageBody);
 
         sut.parseMessageBodyToMap();
     }

@@ -220,10 +220,7 @@ class HtmlEditor {
         builder.append("        </table>\n");
         builder.append("    </div>\n");
         builder.append("    <div id=\"back\">\n");
-        builder.append("        <form action=\"/program/board/\" method=\"post\">\n");
-        builder.append("            <input type=\"hidden\" name=\"param\" value=\"back\">\n");
-        builder.append("            <input type=\"submit\" value=\"topへ戻る\">\n");
-        builder.append("        </form>\n");
+        builder.append("        <a href=\"./index.html\">topへ戻る</a>\n");
         builder.append("    </div>\n");
         builder.append("</center>\n");
         builder.append("</body>\n");
@@ -294,10 +291,7 @@ class HtmlEditor {
                 "        </form>\n" +
                 "    </div>\n" +
                 "    <div id=\"back\">\n" +
-                "        <form action=\"/program/board/\" method=\"post\">\n" +
-                "            <input type=\"hidden\" name=\"param\" value=\"back\">\n" +
-                "            <input type=\"submit\" value=\"topへ戻る\">\n" +
-                "        </form>\n" +
+                "        <a href=\"./index.html\">topへ戻る</a>\n" +
                 "    </div>\n" +
                 "</center>\n" +
                 "</body>\n" +
@@ -330,10 +324,7 @@ class HtmlEditor {
                 "        <p>削除しました。</p>\n" +
                 "    </div>\n" +
                 "    <div id=\"back\">\n" +
-                "        <form action=\"/program/board/\" method=\"post\">\n" +
-                "            <input type=\"hidden\" name=\"param\" value=\"back\">\n" +
-                "            <input type=\"submit\" value=\"topへ戻る\">\n" +
-                "        </form>\n" +
+                "        <a href=\"./index.html\">topへ戻る</a>\n" +
                 "    </div>\n" +
                 "</center>\n" +
                 "</body>\n" +
