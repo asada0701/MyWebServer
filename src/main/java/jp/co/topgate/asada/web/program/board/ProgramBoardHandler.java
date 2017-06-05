@@ -93,6 +93,13 @@ public class ProgramBoardHandler extends Handler {
         sendResponse(responseMessage, filePath);
     }
 
+    /**
+     * GETでSearchにリクエストがきた場合の処理
+     *
+     * @param param     URIクエリーのparamを渡す
+     * @param nowTimeID ユニークなID。二重リクエスト対策。
+     * @throws CsvRuntimeException
+     */
     void doSearch(String param, String nowTimeID) throws CsvRuntimeException {
         if (param == null) {
             //TODO リダイレクトの一貫性を考える
@@ -177,7 +184,7 @@ public class ProgramBoardHandler extends Handler {
             }
 
             //ユーザーがindexのページで書き込んだ内容を削除する処理
-            case "delete_step_1": {
+            case "deleteStep1": {
                 String number = messageBody.get("number");
                 if (number == null || !NumberUtils.isNumber(number)) {
                     sendErrorResponse(responseMessage, StatusLine.BAD_REQUEST);
@@ -196,7 +203,7 @@ public class ProgramBoardHandler extends Handler {
             }
 
             //step1でdeleteページを表示し、ユーザーが削除ボタンを押した時の処理
-            case "delete_step_2": {
+            case "deleteStep2": {
                 String number = messageBody.get("number");
                 String password = messageBody.get("password");
 

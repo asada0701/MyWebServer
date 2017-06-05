@@ -107,15 +107,11 @@ class HtmlEditor {
             builder.append("                <td align=\"center\" style=\"word-wrap:break-word;\">").append(messageList.get(i).getName()).append("</td>\n");
             builder.append("                <td align=\"center\" style=\"word-wrap:break-word;\">").append(messageList.get(i).getDate()).append("</td>\n");
             builder.append("                <td align=\"center\">\n");
-            builder.append("                    <form action=\"/program/board/search\" method=\"get\">\n");
-            builder.append("                        <input type=\"hidden\" name=\"param\" value=\"search\">\n");
-            builder.append("                        <input type=\"hidden\" name=\"name\" value=\"").append(messageList.get(i).getName()).append("\">\n");
-            builder.append("                        <input type=\"submit\" value=\"この人の他のコメントも見てみる\">\n");
-            builder.append("                    </form>\n");
+            builder.append("                    <a href=\"./search?param=search&name=").append(messageList.get(i).getName()).append("\">この人の他のコメントも見てみる</a>\n");
             builder.append("                </td>\n");
             builder.append("                <td align=\"center\">\n");
             builder.append("                    <form action=\"/program/board/\" method=\"post\">\n");
-            builder.append("                        <input type=\"hidden\" name=\"param\" value=\"delete_step_1\">\n");
+            builder.append("                        <input type=\"hidden\" name=\"param\" value=\"deleteStep1\">\n");
             builder.append("                        <input type=\"hidden\" name=\"number\" value=\"").append(messageList.get(i).getMessageID()).append("\">\n");
             builder.append("                        <input type=\"submit\" value=\"削除する\">\n");
             builder.append("                    </form>\n");
@@ -179,7 +175,7 @@ class HtmlEditor {
         builder.append("            <input type=\"submit\" value=\"投稿\">\n");
         builder.append("        </form>\n");
         builder.append("    </div>\n");
-        builder.append("    <div id=\"number_of_result\">\n");
+        builder.append("    <div id=\"numberOfResult\">\n");
         builder.append("        <h2>検索結果:").append(messageList.size()).append("</h2>\n");
         builder.append("    </div>\n");
         builder.append("    <div id=\"log\">\n");
@@ -211,7 +207,7 @@ class HtmlEditor {
             builder.append("                <td align=\"center\" style=\"word-wrap:break-word;\">").append(messageList.get(i).getDate()).append("</td>\n");
             builder.append("                <td align=\"center\">\n");
             builder.append("                    <form action=\"/program/board/\" method=\"post\">\n");
-            builder.append("                        <input type=\"hidden\" name=\"param\" value=\"delete_step_1\">\n");
+            builder.append("                        <input type=\"hidden\" name=\"param\" value=\"deleteStep1\">\n");
             builder.append("                        <input type=\"hidden\" name=\"number\" value=\"").append(messageList.get(i).getMessageID()).append("\">\n");
             builder.append("                        <input type=\"submit\" value=\"削除する\">\n");
             builder.append("                    </form>\n");
@@ -300,7 +296,7 @@ class HtmlEditor {
         builder.append("                パスワード<input type=\"password\" name=\"password\" size=\"10\" required>\n");
         builder.append("            </p>\n");
         builder.append("            <input type=\"hidden\" name=\"number\" value=\"").append(message.getMessageID()).append("\">\n");
-        builder.append("            <input type=\"hidden\" name=\"param\" value=\"delete_step_2\">\n");
+        builder.append("            <input type=\"hidden\" name=\"param\" value=\"deleteStep2\">\n");
         builder.append("            <input type=\"submit\" value=\"削除する\">\n");
         builder.append("        </form>\n");
         builder.append("    </div>\n");
