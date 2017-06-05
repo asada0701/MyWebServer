@@ -15,6 +15,12 @@ public enum StatusLine {
     OK(200, "OK"),
 
     /**
+     * HTTPステータスコード:303
+     * リダイレクトの処理
+     */
+    See_Other(303, "See Other"),
+
+    /**
      * HTTPステータスコード:400
      * リクエストが不正な場合
      */

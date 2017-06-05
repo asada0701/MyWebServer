@@ -171,4 +171,10 @@ public abstract class Handler {
         printWriter.write(ResponseMessage.getErrorMessageBody(statusLine));
         printWriter.flush();
     }
+
+    protected void sendRedirect(ResponseMessage responseMessage) {
+        responseMessage.addHeader("Location", "/program/board/");
+
+        responseMessage.writeResponseLineAndHeader(StatusLine.See_Other);
+    }
 }

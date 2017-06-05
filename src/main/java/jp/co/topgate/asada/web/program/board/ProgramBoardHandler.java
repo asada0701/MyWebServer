@@ -95,7 +95,8 @@ public class ProgramBoardHandler extends Handler {
 
     void doSearch(String param, String nowTimeID) throws CsvRuntimeException {
         if (param == null) {
-            //TODO バッドリクエストではなく、リダイレクトをする。(301 Moved Permanently)
+            //TODO リダイレクトの一貫性を考える
+            //sendRedirect(responseMessage);
             sendErrorResponse(responseMessage, StatusLine.BAD_REQUEST);
             return;
         }

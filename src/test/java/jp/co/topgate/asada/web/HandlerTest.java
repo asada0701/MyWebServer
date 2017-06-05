@@ -63,25 +63,25 @@ public class HandlerTest {
         @Test
         public void 想定している引数() {
             path = Handler.getFilePath("index.html");
-            assertThat(path.toString(), is("./src/main/resources/index.html"));
+            assertThat(path.toString(), is("src/main/resources/index.html"));
 
             path = Handler.getFilePath("/program/board/index.html");
-            assertThat(path.toString(), is("./src/main/resources/program/board/index.html"));
+            assertThat(path.toString(), is("src/main/resources/program/board/index.html"));
         }
 
         @Test
         public void 想定していない引数() {
             path = Handler.getFilePath("");
-            assertThat(path.toString(), is("./src/main/resources"));
+            assertThat(path.toString(), is("src/main/resources"));
 
             path = Handler.getFilePath("//////////////hoge////////////");
-            assertThat(path.toString(), is("./src/main/resources/hoge"));
+            assertThat(path.toString(), is("src/main/resources/hoge"));
 
-            path = Handler.getFilePath("./hoge/");
-            assertThat(path.toString(), is("./src/main/resources/./hoge"));
+            path = Handler.getFilePath("/hoge/");
+            assertThat(path.toString(), is("src/main/resources/hoge"));
 
-            path = Handler.getFilePath(".../hoge/./");
-            assertThat(path.toString(), is("./src/main/resources/.../hoge/."));
+            path = Handler.getFilePath(".../hoge//");
+            assertThat(path.toString(), is("src/main/resources/.../hoge"));
         }
     }
 
