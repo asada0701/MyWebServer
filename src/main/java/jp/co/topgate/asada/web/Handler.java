@@ -16,7 +16,7 @@ public abstract class Handler {
     /**
      * リソースファイルのパス
      */
-    private static final String FILE_PATH = "./src/main/resources/";
+    private static final String FILE_PATH = "src/main/resources/";
 
     /**
      * sendResponseかsendErrorResponseメソッドがまだ呼ばれていない場合はfalse
@@ -45,9 +45,18 @@ public abstract class Handler {
 
     /**
      * URIを元に、実際のファイルパスを返すメソッド
+     *
+     * @return ファイルのパスを返す。resourcesフォルダ以外にアクセスした場合はnullを返す。
      */
-    public static Path getFilePath(String uri) {
-        return Paths.get(FILE_PATH, uri);
+    protected static Path getFilePath(String uri) {
+        Path unsafe_FilePath = Paths.get(FILE_PATH, uri);
+
+        Path safe_filepath = unsafe_FilePath.normalize();
+
+        if (!safe_filepath.startsWith(FILE_PATH)) {
+            return null;
+        }
+        return safe_filepath;
     }
 
     /**
@@ -58,7 +67,7 @@ public abstract class Handler {
      * @param uri URIを渡す
      * @return "/"で終わっている場合は{@link Main}のwelcome pageを連結して返す
      */
-    public static String changeUriToWelcomePage(String uri) {
+    protected static String changeUriToWelcomePage(String uri) {
         if (!uri.endsWith("/")) {
             return uri;
         }

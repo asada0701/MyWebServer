@@ -9,9 +9,9 @@ import java.nio.file.Paths;
  * @author asada
  */
 public enum HtmlList {
-    INDEX_HTML(Paths.get("./src/main/resources/program/board/index.html")),
-    SEARCH_HTML(Paths.get("./src/main/resources/program/board/search.html")),
-    DELETE_HTML(Paths.get("./src/main/resources/program/board/delete.html"));
+    INDEX_HTML(Paths.get("src/main/resources/program/board/index.html")),
+    SEARCH_HTML(Paths.get("src/main/resources/program/board/search")),
+    DELETE_HTML(Paths.get(""));
 
     private Path path;
 
