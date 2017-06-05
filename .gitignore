@@ -4,3 +4,5 @@
 /.idea/
 #buildは要らない子
 /build/
+#csvは要らない子
+csv/
