@@ -129,8 +129,8 @@ public class HtmlEditorTest {
     }
 
     @Test
-    public void getResultHtmlメソッドのテスト() throws Exception {
-        String[] sut = HtmlEditor.getResultHtml().split("\n");
+    public void getDeleteResultHtmlメソッドのテスト() throws Exception {
+        String[] sut = HtmlEditor.getDeleteResultHtml().split("\n");
 
         try (BufferedReader br = new BufferedReader(new FileReader(new File("./src/test/resources/html/result.html")))) {
             for (String str : sut) {

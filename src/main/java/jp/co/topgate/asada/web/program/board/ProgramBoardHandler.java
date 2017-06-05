@@ -65,6 +65,12 @@ public class ProgramBoardHandler extends Handler {
         String uri = changeUriToWelcomePage(requestMessage.getUri());
         Path filePath = getFilePath(uri);
 
+        //ファイルパスが不正なものの場合はnullが返ってくる
+        if (filePath == null) {
+            sendErrorResponse(responseMessage, StatusLine.FORBIDDEN);
+            return;
+        }
+
         //index.htmlをGETリクエストされた場合の処理
         if (filePath.equals(HtmlList.INDEX_HTML.getPath())) {
             String html = HtmlEditor.editIndexHtml(MessageController.getAllMessage(), nowTimeID);
@@ -75,26 +81,8 @@ public class ProgramBoardHandler extends Handler {
         //search.htmlをGETリクエストされた場合の処理
         if (filePath.equals(HtmlList.SEARCH_HTML.getPath())) {
             String param = requestMessage.findUriQuery("param");
-            if (param == null) {
-                String html = HtmlEditor.editIndexHtml(MessageController.getAllMessage(), nowTimeID);
-                sendResponse(responseMessage, html);
-                return;
-            }
-
-            //特定のユーザーの書き込んだ内容を表示する処理
-            if (param.equals("search")) {
-                String name = requestMessage.findUriQuery("name");
-                List<Message> messageList = MessageController.findMessageByName(name);
-
-                if (name == null || messageList.size() == 0) {
-                    sendErrorResponse(responseMessage, StatusLine.BAD_REQUEST);
-                    return;
-                }
-
-                String html = HtmlEditor.editSearchHtml(messageList, nowTimeID);
-                sendResponse(responseMessage, html);
-                return;
-            }
+            doSearch(param, nowTimeID);
+            return;
         }
 
         if (!filePath.toFile().exists()) {
@@ -103,6 +91,31 @@ public class ProgramBoardHandler extends Handler {
         }
 
         sendResponse(responseMessage, filePath);
+    }
+
+    void doSearch(String param, String nowTimeID) throws CsvRuntimeException {
+        if (param == null) {
+            //TODO リダイレクトの一貫性を考える
+            //sendRedirect(responseMessage, "/program/board/");
+            sendErrorResponse(responseMessage, StatusLine.BAD_REQUEST);
+            return;
+        }
+
+        //特定のユーザーの書き込んだ内容を表示する処理
+        if (param.equals("search")) {
+            String name = requestMessage.findUriQuery("name");
+            List<Message> messageList = MessageController.findMessageByName(name);
+
+            if (name == null) {
+                sendErrorResponse(responseMessage, StatusLine.BAD_REQUEST);
+            }
+            String html = HtmlEditor.editSearchHtml(messageList, nowTimeID);
+            sendResponse(responseMessage, html);
+
+        } else {
+            //paramが予想していないものの場合
+            sendErrorResponse(responseMessage, StatusLine.BAD_REQUEST);
+        }
     }
 
     /**
@@ -153,9 +166,13 @@ public class ProgramBoardHandler extends Handler {
 
                 if (!MessageController.isExist(timeId)) {
                     MessageController.addMessage(safe_name, safe_title, safe_text, password, timeId);
+
+                } else {
+                    //同一timeIDでPOSTした時のレスポンス
+                    sendErrorResponse(responseMessage, StatusLine.BAD_REQUEST);
                 }
-                String html = HtmlEditor.editIndexHtml(MessageController.getAllMessage(), nowTimeID);
-                sendResponse(responseMessage, html);
+
+                sendResponse(responseMessage, HtmlEditor.getIndexResultHtml());
                 return;
             }
 
@@ -189,7 +206,7 @@ public class ProgramBoardHandler extends Handler {
 
                 if (MessageController.deleteMessage(Integer.parseInt(number), password)) {
                     //パスワードがあっていて、削除できた時の処理
-                    sendResponse(responseMessage, HtmlEditor.getResultHtml());
+                    sendResponse(responseMessage, HtmlEditor.getDeleteResultHtml());
                     return;
 
                 } else {
@@ -197,7 +214,8 @@ public class ProgramBoardHandler extends Handler {
                     Message message = MessageController.findMessageByID(Integer.parseInt(number));
 
                     if (message != null) {
-                        sendResponse(responseMessage, HtmlEditor.editDeleteHtml(message));
+                        String errorMessage = "パスワードが違います。";
+                        sendResponse(responseMessage, HtmlEditor.editDeleteHtml(message, errorMessage));
                         return;
 
                     } else {
@@ -205,13 +223,6 @@ public class ProgramBoardHandler extends Handler {
                         return;
                     }
                 }
-            }
-
-            //ページに配置した戻るボタンを押した時の処理
-            case "back": {
-                String html = HtmlEditor.editIndexHtml(MessageController.getAllMessage(), nowTimeID);
-                sendResponse(responseMessage, html);
-                return;
             }
 
             default:

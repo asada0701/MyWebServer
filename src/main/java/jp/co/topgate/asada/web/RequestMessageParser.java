@@ -91,10 +91,10 @@ class RequestMessageParser {
             uri = requestLine[1];
 
             //URIのクエリーの処理
-            String[] uriAndUriQuery = requestLine[1].split(URI_QUERY_SEPARATOR, URI_QUERY_NUM_ITEMS);
-            if (uriAndUriQuery.length == URI_QUERY_NUM_ITEMS) {
-                uri = uriAndUriQuery[0];
-                uriQuery = parseUriQuery(uriAndUriQuery[1]);
+            String[] uriAndQuery = requestLine[1].split(URI_QUERY_SEPARATOR, URI_QUERY_NUM_ITEMS);
+            if (uriAndQuery.length == URI_QUERY_NUM_ITEMS) {
+                uri = uriAndQuery[0];
+                uriQuery = parseUriQuery(uriAndQuery[1]);
             }
 
             //ヘッダーフィールドの処理

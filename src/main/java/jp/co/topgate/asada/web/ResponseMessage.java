@@ -12,9 +12,9 @@ import java.util.List;
  * レスポンスメッセージクラス
  * （使用例）
  * handleRequest(RequestMessage request, ResponseMessage response){
- *      response.setHeader("hoge", "hogehoge");
- *      response.writeResponseLienAndHeader(StatusLine.OK);
- *      OutputStream os = response.getOutputStream();
+ * response.setHeader("hoge", "hogehoge");
+ * response.writeResponseLienAndHeader(StatusLine.OK);
+ * OutputStream os = response.getOutputStream();
  * }
  *
  * @author asada
@@ -147,6 +147,11 @@ public class ResponseMessage {
                 return "<html><head><title>400 Bad request</title></head>" +
                         "<body><h1>Bad request</h1>" +
                         "<p>Your browser sent a request that this server could not understand.<br /></p></body></html>";
+
+            case FORBIDDEN:
+                return "<html><head><title>403 Forbidden</title></head>" +
+                        "<body><h1>Forbidden</h1>" +
+                        "<p>お探しのページは閲覧禁止となっています。</p></body></html>";
 
             case NOT_FOUND:
                 return "<html><head><title>404 Not Found</title></head>" +

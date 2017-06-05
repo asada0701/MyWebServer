@@ -31,8 +31,12 @@ public class StaticHandler extends Handler {
         String uri = changeUriToWelcomePage(requestMessage.getUri());
         Path filePath = Handler.getFilePath(uri);
 
-        if (filePath.toFile().exists()) {
+        if (filePath == null) {
+            sendErrorResponse(responseMessage, StatusLine.FORBIDDEN);
+
+        } else if (filePath.toFile().exists()) {
             sendResponse(responseMessage, filePath);
+
         } else {
             sendErrorResponse(responseMessage, StatusLine.NOT_FOUND);
         }

@@ -6,6 +6,8 @@ import org.junit.experimental.runners.Enclosed;
 import org.junit.runner.RunWith;
 
 import java.io.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 
 import static org.hamcrest.Matchers.is;
@@ -18,73 +20,73 @@ import static org.junit.Assert.assertThat;
 @RunWith(Enclosed.class)
 public class RequestMessageParserTest {
     public static class parseメソッドのテスト {
+
         RequestMessage sut;
+
+        private void setUpRequestMessage(Path filePath) throws Exception {
+            try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(filePath.toFile()))) {
+                sut = RequestMessageParser.parse(bis);
+            }
+        }
 
         @Test(expected = RequestParseException.class)
         public void 空チェック() throws Exception {
-            String path = "./src/test/resources/request/emptyRequestMessage.txt";
-            try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(path)))) {
-                sut = RequestMessageParser.parse(bis);
-            }
+            setUpRequestMessage(Paths.get("./src/test/resources/request/emptyRequestMessage.txt"));
         }
 
         @Test
         public void GETの場合正しく動作するか() throws Exception {
-            String path = "./src/test/resources/request/GetRequestMessage.txt";
-            try (BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(path)))) {
-                sut = RequestMessageParser.parse(bis);
-                assertThat(sut.getMethod(), is("GET"));
-                assertThat(sut.getUri(), is("/index.html"));
+            setUpRequestMessage(Paths.get("./src/test/resources/request/GetRequestMessage.txt"));
 
-                assertThat(sut.findUriQuery("name"), is("asada"));
-                assertThat(sut.findUriQuery("like"), is("cat"));
+            assertThat(sut.getMethod(), is("GET"));
+            assertThat(sut.getUri(), is("/index.html"));
 
-                assertThat(sut.findUriQuery(null), is(nullValue()));
-                assertThat(sut.findUriQuery(""), is(nullValue()));
+            assertThat(sut.findUriQuery("name"), is("asada"));
+            assertThat(sut.findUriQuery("like"), is("cat"));
 
-                assertThat(sut.findHeaderByName("Host"), is("localhost:8080"));
-                assertThat(sut.findHeaderByName("Connection"), is("keep-alive"));
-                assertThat(sut.findHeaderByName("Pragma"), is("no-cache"));
-                assertThat(sut.findHeaderByName("Cache-Control"), is("no-cache"));
-                assertThat(sut.findHeaderByName("Upgrade-Insecure-Requests"), is("1"));
-                assertThat(sut.findHeaderByName("User-Agent"), is("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36"));
-                assertThat(sut.findHeaderByName("Accept"), is("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"));
-                assertThat(sut.findHeaderByName("Accept-Encoding"), is("gzip, deflate, sdch, br"));
-                assertThat(sut.findHeaderByName("Accept-Language"), is("ja,en-US;q=0.8,en;q=0.6"));
-                assertThat(sut.findHeaderByName("Foo"), is("Bar:Fizz:Buzz"));
+            assertThat(sut.findUriQuery(null), is(nullValue()));
+            assertThat(sut.findUriQuery(""), is(nullValue()));
 
-                assertThat(sut.findHeaderByName(null), is(nullValue()));
-                assertThat(sut.findHeaderByName(""), is(nullValue()));
-            }
+            assertThat(sut.findHeaderByName("Host"), is("localhost:8080"));
+            assertThat(sut.findHeaderByName("Connection"), is("keep-alive"));
+            assertThat(sut.findHeaderByName("Pragma"), is("no-cache"));
+            assertThat(sut.findHeaderByName("Cache-Control"), is("no-cache"));
+            assertThat(sut.findHeaderByName("Upgrade-Insecure-Requests"), is("1"));
+            assertThat(sut.findHeaderByName("User-Agent"), is("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36"));
+            assertThat(sut.findHeaderByName("Accept"), is("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"));
+            assertThat(sut.findHeaderByName("Accept-Encoding"), is("gzip, deflate, sdch, br"));
+            assertThat(sut.findHeaderByName("Accept-Language"), is("ja,en-US;q=0.8,en;q=0.6"));
+            assertThat(sut.findHeaderByName("Foo"), is("Bar:Fizz:Buzz"));
+
+            assertThat(sut.findHeaderByName(null), is(nullValue()));
+            assertThat(sut.findHeaderByName(""), is(nullValue()));
         }
 
         @Test
         public void POSTの場合正しく動作するか() throws Exception {
-            String path = "./src/test/resources/request/PostRequestMessage.txt";
-            try (FileInputStream fis = new FileInputStream(new File(path))) {
-                sut = RequestMessageParser.parse(fis);
-                assertThat(sut.getMethod(), is("POST"));
-                assertThat(sut.getUri(), is("/program/board/"));
+            setUpRequestMessage(Paths.get("./src/test/resources/request/PostRequestMessage.txt"));
 
-                assertThat(sut.findHeaderByName("Host"), is("localhost:8080"));
-                assertThat(sut.findHeaderByName("Connection"), is("keep-alive"));
-                assertThat(sut.findHeaderByName("Pragma"), is("no-cache"));
-                assertThat(sut.findHeaderByName("Cache-Control"), is("no-cache"));
-                assertThat(sut.findHeaderByName("Upgrade-Insecure-Requests"), is("1"));
-                assertThat(sut.findHeaderByName("User-Agent"), is("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36"));
-                assertThat(sut.findHeaderByName("Accept"), is("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"));
-                assertThat(sut.findHeaderByName("Accept-Encoding"), is("gzip, deflate, sdch, br"));
-                assertThat(sut.findHeaderByName("Accept-Language"), is("ja,en-US;q=0.8,en;q=0.6"));
-                assertThat(sut.findHeaderByName("Content-Type"), is("application/x-www-form-urlencoded"));
-                assertThat(sut.findHeaderByName("Content-Length"), is("123"));
+            assertThat(sut.getMethod(), is("POST"));
+            assertThat(sut.getUri(), is("/program/board/"));
 
-                Map<String, String> messageBody = sut.parseMessageBodyToMap();
-                assertThat(messageBody.get("name"), is("asada"));
-                assertThat(messageBody.get("title"), is("test"));
-                assertThat(messageBody.get("text"), is("こんにちは"));
-                assertThat(messageBody.get("password"), is("test"));
-                assertThat(messageBody.get("param"), is("contribution"));
-            }
+            assertThat(sut.findHeaderByName("Host"), is("localhost:8080"));
+            assertThat(sut.findHeaderByName("Connection"), is("keep-alive"));
+            assertThat(sut.findHeaderByName("Pragma"), is("no-cache"));
+            assertThat(sut.findHeaderByName("Cache-Control"), is("no-cache"));
+            assertThat(sut.findHeaderByName("Upgrade-Insecure-Requests"), is("1"));
+            assertThat(sut.findHeaderByName("User-Agent"), is("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_4) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/57.0.2987.133 Safari/537.36"));
+            assertThat(sut.findHeaderByName("Accept"), is("text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8"));
+            assertThat(sut.findHeaderByName("Accept-Encoding"), is("gzip, deflate, sdch, br"));
+            assertThat(sut.findHeaderByName("Accept-Language"), is("ja,en-US;q=0.8,en;q=0.6"));
+            assertThat(sut.findHeaderByName("Content-Type"), is("application/x-www-form-urlencoded"));
+            assertThat(sut.findHeaderByName("Content-Length"), is("123"));
+
+            Map<String, String> messageBody = sut.parseMessageBodyToMap();
+            assertThat(messageBody.get("name"), is("asada"));
+            assertThat(messageBody.get("title"), is("test"));
+            assertThat(messageBody.get("text"), is("こんにちは"));
+            assertThat(messageBody.get("password"), is("test"));
+            assertThat(messageBody.get("param"), is("contribution"));
         }
     }
 

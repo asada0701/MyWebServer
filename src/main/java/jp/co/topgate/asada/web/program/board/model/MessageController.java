@@ -31,6 +31,8 @@ public final class MessageController {
 
     /**
      * messageListにメッセージクラスを追加する
+     *
+     * @throws CsvRuntimeException {@link CsvHelper}を参照
      */
     public static void addMessage(String name, String title, String text, String password, String timeID) throws CsvRuntimeException {
         List<Message> messageList = CsvHelper.readMessage();
@@ -57,6 +59,7 @@ public final class MessageController {
      *
      * @param messageID 探したいメッセージのIDを渡す
      * @return ターゲットのメッセージを返す
+     * @throws CsvRuntimeException {@link CsvHelper}を参照
      */
     public static Message findMessageByID(int messageID) throws CsvRuntimeException {
         List<Message> messageList = CsvHelper.readMessage();
@@ -73,6 +76,7 @@ public final class MessageController {
      *
      * @param name 探したい投稿者の名前を渡す
      * @return メッセージのリストを返す。見つからない場合はListを空で返す
+     * @throws CsvRuntimeException {@link CsvHelper}を参照
      */
     public static List<Message> findMessageByName(String name) throws CsvRuntimeException {
         List<Message> messageList = CsvHelper.readMessage();
@@ -91,6 +95,7 @@ public final class MessageController {
      * @param messageID 削除したいメッセージのID
      * @param password  削除したいメッセージのPW
      * @return 削除に成功するとtrueを返す
+     * @throws CsvRuntimeException {@link CsvHelper}を参照
      */
     public static boolean deleteMessage(int messageID, String password) throws CsvRuntimeException {
         List<Message> messageList = CsvHelper.readMessage();
@@ -112,6 +117,7 @@ public final class MessageController {
      *
      * @param messageID 探したいメッセージID
      * @return 投稿した人の名前
+     * @throws CsvRuntimeException {@link CsvHelper}を参照
      */
     @Nullable
     public static String getName(int messageID) throws CsvRuntimeException {
@@ -131,6 +137,7 @@ public final class MessageController {
      *
      * @param timeID 比較したい文字列
      * @return trueの場合は存在する。falseの場合は存在しない。
+     * @throws CsvRuntimeException {@link CsvHelper}を参照
      */
     public static boolean isExist(String timeID) throws CsvRuntimeException {
         List<Message> messageList = CsvHelper.readMessage();
@@ -149,7 +156,7 @@ public final class MessageController {
      * @return （例)2017/5/5 17:20
      */
     @NotNull
-    public static String getNowDate() {
+    private static String getNowDate() {
         LocalDateTime ldt = LocalDateTime.now();
         return String.valueOf(ldt.getYear()) + "/" + ldt.getMonthValue() + "/" + ldt.getDayOfMonth() +
                 " " + ldt.getHour() + ":" + ldt.getMinute();

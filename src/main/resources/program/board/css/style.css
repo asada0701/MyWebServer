@@ -28,3 +28,7 @@ h1 {
 #log table {
   border: solid#808000;
 }
+
+#number_of_result h2 {
+    size: 90%;
+}
