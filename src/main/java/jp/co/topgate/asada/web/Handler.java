@@ -1,9 +1,11 @@
 package jp.co.topgate.asada.web;
 
+import jp.co.topgate.asada.web.exception.FileForbiddenException;
 import jp.co.topgate.asada.web.program.board.ProgramBoardHandler;
 
 import java.io.*;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * ハンドラー抽象クラス
@@ -44,18 +46,17 @@ public abstract class Handler {
 
     /**
      * URIを元に、実際のファイルパスを返すメソッド
-     * 使用した人が例外は必ず気づける（nullよりも良い
      *
-     * @return ファイルのパスを返す。resourcesフォルダ以外にアクセスした場合はnullを返す。
+     * @return ファイルのパスを返す。
+     * @throws FileForbiddenException リソースフォルダ以外のファイルをURIで指定してきた場合に発生する
      */
-    protected static Path getFilePath(String uri) {
-        //使用した人が例外は必ず気づける（nullよりも良い
-        Path normalized_filepath = unsafe_filePath.normalize();
+    protected static Path getFilePath(String uri) throws FileForbiddenException {
+        Path normalized_filepath = Paths.get(FILE_PATH, uri).normalize();
 
-        if (!safe_filepath.startsWith(FILE_PATH)) {
-            return null;
+        if (!normalized_filepath.startsWith(FILE_PATH)) {
+            throw new FileForbiddenException("リソースフォルダに入っていないファイルをURIで指定してきました。");
         }
-        return safe_filepath;
+        return normalized_filepath;
     }
 
     /**
