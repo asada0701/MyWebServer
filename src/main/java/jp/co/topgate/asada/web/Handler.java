@@ -51,12 +51,12 @@ public abstract class Handler {
      * @throws FileForbiddenException リソースフォルダ以外のファイルをURIで指定してきた場合に発生する
      */
     protected static Path getFilePath(String uri) throws FileForbiddenException {
-        Path normalized_filepath = Paths.get(FILE_PATH, uri).normalize();
+        Path normalizedFilepath = Paths.get(FILE_PATH, uri).normalize();
 
-        if (!normalized_filepath.startsWith(FILE_PATH)) {
+        if (!normalizedFilepath.startsWith(FILE_PATH)) {
             throw new FileForbiddenException("リソースフォルダに入っていないファイルをURIで指定してきました。");
         }
-        return normalized_filepath;
+        return normalizedFilepath;
     }
 
     /**
