@@ -84,7 +84,7 @@ public class ProgramBoardHandler extends Handler {
 
         //search.htmlをGETリクエストされた場合の処理
         if (filePath.equals(HtmlList.SEARCH_HTML.getPath())) {
-            String param = requestMessage.findUriQuery("param");
+            String param = requestMessage.findUriQueryOrNull("param");
             doSearch(param, nowTimeID);
             return;
         }
@@ -114,7 +114,7 @@ public class ProgramBoardHandler extends Handler {
 
         //特定のユーザーの書き込んだ内容を表示する処理
         if (param.equals("search")) {
-            String name = requestMessage.findUriQuery("name");
+            String name = requestMessage.findUriQueryOrNull("name");
             List<Message> messageList = MessageController.findMessageByName(name);
 
             if (name == null) {
@@ -144,7 +144,7 @@ public class ProgramBoardHandler extends Handler {
         }
 
         //リクエストのヘッダーフィールドにparamがあるか、メッセージボディは問題ないか確認。
-        Map<String, String> messageBody = requestMessage.parseMessageBodyToMap();
+        Map<String, String> messageBody = requestMessage.parseMessageBodyToMapOrNull();
         if (messageBody == null) {
             sendErrorResponse(responseMessage, StatusLine.BAD_REQUEST);
             return;

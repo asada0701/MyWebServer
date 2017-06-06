@@ -82,7 +82,7 @@ public class RequestMessage {
      * @param name 探したいQuery名
      * @return Query値を返す。URIに含まれていなかった場合はNullを返す
      */
-    public String findUriQuery(String name) {
+    public String findUriQueryOrNull(String name) {
         if (uriQuery == null) {
             return null;
         }
@@ -97,7 +97,7 @@ public class RequestMessage {
      * @param fieldName 探したいヘッダ名
      * @return ヘッダ値を返す。ヘッダーフィールドに含まれていなかった場合はnullを返す
      */
-    public String findHeaderByName(String fieldName) {
+    public String findHeaderByNameOrNull(String fieldName) {
         if (headerField == null) {
             return null;
         }
@@ -113,7 +113,7 @@ public class RequestMessage {
      * @return パースした結果をMapで返す
      * @throws RequestParseException パースした結果不正なリクエストだった
      */
-    public Map<String, String> parseMessageBodyToMap() throws RequestParseException {
+    public Map<String, String> parseMessageBodyToMapOrNull() throws RequestParseException {
         if (headerField == null || messageBody == null) {
             return null;
         }
