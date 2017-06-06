@@ -44,12 +44,12 @@ public class RequestMessageTest {
 
         assertThat(sut.getUri(), is("/index.html"));
 
-        assertThat(sut.findUriQuery("name"), is("asada"));
-        assertThat(sut.findUriQuery("like"), is("cat"));
+        assertThat(sut.findUriQueryOrNull("name"), is("asada"));
+        assertThat(sut.findUriQueryOrNull("like"), is("cat"));
 
-        assertThat(sut.findHeaderByName("Content-Type"), is("application/x-www-form-urlencoded"));
+        assertThat(sut.findHeaderByNameOrNull("Content-Type"), is("application/x-www-form-urlencoded"));
 
-        Map<String, String> messageBody = sut.parseMessageBodyToMap();
+        Map<String, String> messageBody = sut.parseMessageBodyToMapOrNull();
         assertThat(messageBody.get("name"), is("asada"));
         assertThat(messageBody.get("title"), is("test"));
         assertThat(messageBody.get("text"), is("こんにちは"));
@@ -58,18 +58,18 @@ public class RequestMessageTest {
     }
 
     @Test
-    public void findUriQueryメソッドのテスト() {
-        assertThat(sut.findUriQuery("name"), is("asada"));
-        assertThat(sut.findUriQuery("like"), is("cat"));
-        assertThat(sut.findUriQuery("hoge"), is(nullValue()));
-        assertThat(sut.findUriQuery(null), is(nullValue()));
+    public void findUriQueryOrNullメソッドのテスト() {
+        assertThat(sut.findUriQueryOrNull("name"), is("asada"));
+        assertThat(sut.findUriQueryOrNull("like"), is("cat"));
+        assertThat(sut.findUriQueryOrNull("hoge"), is(nullValue()));
+        assertThat(sut.findUriQueryOrNull(null), is(nullValue()));
     }
 
     @Test
-    public void findHeaderByNameメソッドのテスト() {
-        assertThat(sut.findHeaderByName("Content-Type"), is("application/x-www-form-urlencoded"));
-        assertThat(sut.findHeaderByName("nothing"), is(nullValue()));
-        assertThat(sut.findHeaderByName(null), is(nullValue()));
+    public void findHeaderByNameOrNullメソッドのテスト() {
+        assertThat(sut.findHeaderByNameOrNull("Content-Type"), is("application/x-www-form-urlencoded"));
+        assertThat(sut.findHeaderByNameOrNull("nothing"), is(nullValue()));
+        assertThat(sut.findHeaderByNameOrNull(null), is(nullValue()));
     }
 
     private void setMessageBodyAndHeader(String contentType, byte[] messageBody) {
@@ -80,15 +80,15 @@ public class RequestMessageTest {
     }
 
     @Test
-    public void parseMessageBodyToMapメソッドのテスト() {
+    public void parseMessageBodyToMapOrNullメソッドのテスト() {
         byte[] messageBody = "".getBytes();
         setMessageBodyAndHeader("multipart/form-data", messageBody);
-        assertThat(sut.parseMessageBodyToMap(), is(nullValue()));
+        assertThat(sut.parseMessageBodyToMapOrNull(), is(nullValue()));
 
         messageBody = "name%3dasada%26title%3dtest%26text%3d%e3%81%93%e3%82%93%e3%81%ab%e3%81%a1%e3%81%af%26password%3dtest%26param%3Dcontribution".getBytes();
         setMessageBodyAndHeader("application/x-www-form-urlencoded", messageBody);
 
-        Map<String, String> result = sut.parseMessageBodyToMap();
+        Map<String, String> result = sut.parseMessageBodyToMapOrNull();
         assertThat(result.get("name"), is("asada"));
     }
 
@@ -97,7 +97,7 @@ public class RequestMessageTest {
         byte[] messageBody = "name%3dasada%26title%3dtest%26text%3d%e3%81%93%e3%82%93%e3%81%ab%e3%81%a1%e3%81%af%26password%3dtest%26param".getBytes();
         setMessageBodyAndHeader("application/x-www-form-urlencoded", messageBody);
 
-        sut.parseMessageBodyToMap();
+        sut.parseMessageBodyToMapOrNull();
     }
 
     @Test(expected = RequestParseException.class)
@@ -105,6 +105,6 @@ public class RequestMessageTest {
         byte[] messageBody = "name%3Dasadatitle%3Dtest%26text%3D%82%B1%82%F1%82%C9%82%BF%82%CD%26password%3Dtest%26param%3Dcontribution".getBytes();
         setMessageBodyAndHeader("application/x-www-form-urlencoded", messageBody);
 
-        sut.parseMessageBodyToMap();
+        sut.parseMessageBodyToMapOrNull();
     }
 }
