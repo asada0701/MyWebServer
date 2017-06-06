@@ -46,7 +46,7 @@ public class ProgramBoardHandler extends Handler {
                 doGet(requestMessage, responseMessage, issueTimeId());
 
             } else if (method.equals("POST")) {
-                doPost(requestMessage, responseMessage, issueTimeId());
+                doPost(requestMessage, responseMessage);
             }
 
         } catch (CsvRuntimeException e) {
@@ -134,12 +134,11 @@ public class ProgramBoardHandler extends Handler {
      *
      * @param requestMessage  RequestMessageのオブジェクト
      * @param responseMessage ResponseMessageのオブジェクト
-     * @param nowTimeID       ユニークなID。二重リクエスト対策。
      * @throws CsvRuntimeException {@link jp.co.topgate.asada.web.program.board.model.CsvHelper}を参照
      */
-    void doPost(RequestMessage requestMessage, ResponseMessage responseMessage, String nowTimeID) throws CsvRuntimeException {
+    void doPost(RequestMessage requestMessage, ResponseMessage responseMessage) throws CsvRuntimeException {
 
-        if (requestMessage == null || responseMessage == null || nowTimeID == null) {
+        if (requestMessage == null || responseMessage == null) {
             sendErrorResponse(responseMessage, StatusLine.INTERNAL_SERVER_ERROR);
             return;
         }
